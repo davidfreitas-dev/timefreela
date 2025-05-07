@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #038de7;
+  --color-primary-hover: #1a9ef0;
+  --color-primary-focus: #027acc;
+  --color-primary-pressed: #026bb3;
+  --color-primary-accent: #e7ecf8;
+
+  --color-success: #50a97b;
+  --color-success-hover: #64bb8d;
+  --color-success-focus: #449b6e;
+  --color-success-pressed: #357c59;
+  --color-success-accent: #e5f2ec;
+
+  --color-warning: #e5b44a;
+  --color-warning-hover: #edc060;
+  --color-warning-focus: #d8a93a;
+  --color-warning-pressed: #b78b26;
+  --color-warning-accent: #fdf5e6;
+
+  --color-danger: #d35c5c;
+  --color-danger-hover: #df7373;
+  --color-danger-focus: #c54f4f;
+  --color-danger-pressed: #a73e3e;
+  --color-danger-accent: #f9eaea;
+
+  --color-secondary: #888888;
+  --color-disabled: #cccccc;
+  --color-neutral: #eaeaea;
+  --color-accent: #f1f1f1;
+  --color-font: #3c3c3c;
+}
+
+* {
+  font-family: 'Inter', sans-serif;
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
