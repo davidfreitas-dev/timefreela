@@ -1,5 +1,11 @@
+<script setup lang="ts">
+const { sidebarWidth } = defineProps<{
+  sidebarWidth?: string
+}>();
+</script>
+
 <template>
-  <div class="container p-7">
+  <main class="p-7 transition-all ease-in-out duration-200" :style="{ width: `calc(100% - ${sidebarWidth})` }">
     <slot />
-  </div>
+  </main>
 </template>

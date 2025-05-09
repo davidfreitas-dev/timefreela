@@ -20,6 +20,25 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/projects',
+    name: 'Projects',
+    component: () => import('../views/Projects.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/projects/:id',
+    name: 'ProjectDetails',
+    component: () => import('../views/Project.vue'),
+    meta: { requiresAuth: true },
+    props: true,
+  },  
+  {
+    path: '/projects/create',
+    name: 'ProjectCreate',
+    component: () => import('../views/Project.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue'),
@@ -41,7 +60,7 @@ router.beforeEach(async (to, _from, next) => {
         () => authStore.isAuthChecked,
         (checked) => {
           if (checked) {
-            unwatch(); // parar de observar
+            unwatch();
             resolve(true);
           }
         }

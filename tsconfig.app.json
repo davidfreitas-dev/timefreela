@@ -14,7 +14,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+
+    /* Tipagens globais */
+    "types": ["@types/node", "./src/types/vue.d.ts"]
   },
   "include": [
     "src/**/*.ts",

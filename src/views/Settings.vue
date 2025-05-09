@@ -71,7 +71,10 @@ const handleSave = async (event: Event) => {
   
   v$.value.$touch();
   
-  if (v$.value.$invalid) return;
+  if (v$.value.$invalid) {
+    showToast('error', 'Preencha os campos corretamente');
+    return;
+  }
 
   if (needsReauth.value) {
     modalRef.value?.openModal();
