@@ -17,14 +17,15 @@ const baseClasses = 'flex items-center justify-center text-base font-semibold ro
 
 const classes = computed(() => [
   baseClasses,
+  'focus:outline-none focus-visible:ring-2',
   {
-    'py-3.5 px-4 bg-primary text-white hover:bg-primary-hover focus:ring-2 focus:ring-primary-focus focus:bg-primary active:bg-primary-pressed disabled:bg-disabled disabled:cursor-not-allowed':
+    'py-3.5 px-4 bg-primary text-white hover:bg-primary-hover focus-visible:ring-primary-focus focus:bg-primary active:bg-primary-pressed disabled:bg-disabled disabled:cursor-not-allowed':
       color === 'primary',
 
-    'py-3.5 px-4 bg-danger text-white hover:bg-danger-hover focus:ring-2 focus:ring-danger-focus focus:bg-danger active:bg-danger-pressed disabled:bg-disabled disabled:cursor-not-allowed':
+    'py-3.5 px-4 bg-danger text-white hover:bg-danger-hover focus-visible:ring-danger-focus focus:bg-danger active:bg-danger-pressed disabled:bg-disabled disabled:cursor-not-allowed':
       color === 'danger',
 
-    'py-3.5 px-4 bg-transparent text-primary border-2 border-primary focus:ring-2 focus:ring-primary-active':
+    'py-3.5 px-4 bg-transparent text-primary border-2 border-primary focus-visible:ring-primary-active':
       color === 'outline',
 
     'p-2': size === 'small',

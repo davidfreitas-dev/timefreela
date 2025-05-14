@@ -6,9 +6,8 @@ export interface Project {
   description?: string;
   tags?: string[];
   hourlyRate?: number;
-  active?: number;
+  active: number | null;
   userId?: string;
   createdAt?: Date | FieldValue;
   updatedAt?: Date | FieldValue;
 }
-

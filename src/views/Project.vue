@@ -6,7 +6,7 @@ import { required, minLength } from '@vuelidate/validators';
 import { useProjectStore } from '@/stores/projectStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
-import type { Project } from '@/types/project';
+import { type Project } from '@/types/project';
 import Container from '@/components/shared/Container.vue';
 import Breadcrumb from '@/components/shared/Breadcrumb.vue';
 import Input from '@/components/shared/Input.vue';
@@ -15,15 +15,38 @@ import Select from '@/components/shared/Select.vue';
 import Button from '@/components/shared/Button.vue';
 import Dialog from '@/components/shared/Dialog.vue';
 
-const { isLoading, withLoading } = useLoading();
-const { showToast } = useToast();
-const router = useRouter();
+type StatusOption = {
+  label: string;
+  value: number;
+};
+
 const route = useRoute();
+const router = useRouter();
+const { showToast } = useToast();
+const { isLoading, withLoading } = useLoading();
+
+const statusOptions: StatusOption[] = [
+  { label: 'Ativo', value: 1 },
+  { label: 'Inativo', value: 0 }
+];
 
 const projectStore = useProjectStore();
-const formData = ref({ title: '', description: '', tags: '', hourlyRate: '', active: null as StatusOption | null });
 const projectId = computed(() => route.params.id as string | undefined);
 const isEditMode = computed(() => Boolean(projectId.value));
+const formData = ref({
+  title: '',
+  description: '',
+  tags: '',
+  hourlyRate: '',
+  active: null as number | null
+});
+
+const selectedStatus = computed<StatusOption | null>({
+  get: () => statusOptions.find(opt => opt.value === formData.value.active) ?? null,
+  set: (option) => {
+    formData.value.active = option?.value ?? null;
+  }
+});
 
 const rules = computed(() => ({
   title: { required, minLength: minLength(3) },
@@ -49,14 +72,14 @@ const loadProjectData = async () => {
       description: project.description ?? '',
       tags: formatTags(project.tags ?? []),
       hourlyRate: String(project.hourlyRate ?? 0),
-      active: statusOptions.find(opt => opt.id === project.active) ?? null
+      active: project.active ? Number(project.active) : null
     };
   }
 };
 
 const saveProject = async () => {
   v$.value.$touch();
-  
+    
   if (v$.value.$invalid) {
     showToast('error', 'Preencha os campos corretamente');
     return;
@@ -66,8 +89,8 @@ const saveProject = async () => {
     title: formData.value.title,
     description: formData.value.description,
     tags: parseTags(formData.value.tags),
-    hourlyRate: parseInt(formData.value.hourlyRate) || 0,
-    active: formData.value.active?.id ?? 0
+    hourlyRate: Number(formData.value.hourlyRate) || 0,
+    active: formData.value.active ? Number(formData.value.active) : null
   };
 
   await withLoading(async () => {
@@ -98,16 +121,6 @@ const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
 const handleDeleteProject = () => {
   dialogRef.value?.openModal();
 };
-
-type StatusOption = {
-  id: number;
-  name: string;
-};
-
-const statusOptions: StatusOption[] = [
-  { id: 1, name: 'Ativo' },
-  { id: 0, name: 'Inativo' }
-];
 
 onMounted(loadProjectData);
 </script>
@@ -158,11 +171,9 @@ onMounted(loadProjectData);
           />
 
           <Select
-            v-model="formData.active"
+            v-model="selectedStatus"
             :options="statusOptions"
             label="Status"
-            placeholder="Selecione o status"
-            label-key="name"
             :error="v$.active.$dirty && v$.active.$error ? 'O status do projeto é obrigatório' : ''"
           />
 

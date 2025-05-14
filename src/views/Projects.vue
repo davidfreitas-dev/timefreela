@@ -95,7 +95,7 @@ const editProject = (projectId: string) => {
             </tr>
 
             <tr v-if="i < projects.length - 1">
-              <td colspan="4">
+              <td colspan="6">
                 <div class="w-[95%] h-px bg-neutral mx-auto" />
               </td>
             </tr>

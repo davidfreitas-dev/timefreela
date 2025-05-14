@@ -57,7 +57,7 @@ const updateValue = (event: Event) => {
         :placeholder="placeholder"
         :disabled="disabled"
         :class="[
-          'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-lg px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+          'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-lg px-4 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
           error ? 'border-danger focus:ring-danger' : 'border-neutral focus:ring-primary'
         ]"
         @input="updateValue"
