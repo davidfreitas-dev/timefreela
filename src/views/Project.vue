@@ -51,7 +51,6 @@ const selectedStatus = computed<StatusOption | null>({
 const rules = computed(() => ({
   title: { required, minLength: minLength(3) },
   description: { required },
-  hourlyRate: { required },
   active: { required }
 }));
 
@@ -72,7 +71,7 @@ const loadProjectData = async () => {
       description: project.description ?? '',
       tags: formatTags(project.tags ?? []),
       hourlyRate: String(project.hourlyRate ?? 0),
-      active: project.active ? Number(project.active) : null
+      active: project.active !== null ? Number(project.active) : null
     };
   }
 };
@@ -150,7 +149,7 @@ onMounted(loadProjectData);
             v-model="formData.description"
             type="text"
             label="Descrição"
-            placeholder="Descrição do projeto"
+            placeholder="Breve resumo do que deve ser feito"
             :error="v$.description.$dirty && v$.description.$error ? 'A descrição é obrigatória' : ''"
             @blur="v$.description.$touch"
           />
@@ -166,8 +165,6 @@ onMounted(loadProjectData);
             v-model="formData.hourlyRate"
             label="Valor por hora"
             placeholder="Ex: R$ 80,00"
-            :error="v$.hourlyRate.$dirty && v$.hourlyRate.$error ? 'Informe o valor por hora' : ''"
-            @blur="v$.hourlyRate.$touch"
           />
 
           <Select
