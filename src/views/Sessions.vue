@@ -114,7 +114,7 @@ const goToEditSession = (sessionId: string) => {
           </td>
 
           <td class="px-6 py-4 whitespace-nowrap">
-            {{ $filters.formatDate(session.createdAt) }}
+            {{ $filters.formatDate(session.date) }}
           </td>
 
           <td class="px-6 py-4 whitespace-nowrap">
@@ -138,7 +138,7 @@ const goToEditSession = (sessionId: string) => {
 
           <td class="px-6 py-4">
             <button
-              class="p-2 h-10 w-10 bg-primary-accent text-primary rounded-lg"
+              class="p-2 h-10 w-10 bg-primary-accent text-primary rounded-lg cursor-pointer"
               @click="goToEditSession(session.id)"
             >
               <Icon name="edit" />

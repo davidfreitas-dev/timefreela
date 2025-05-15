@@ -15,6 +15,7 @@ import InputDate from '@/components/shared/InputDate.vue';
 import Select from '@/components/shared/Select.vue';
 import Checkbox from '@/components/shared/Checkbox.vue';
 import Button from '@/components/shared/Button.vue';
+import Dialog from '@/components/shared/Dialog.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -115,8 +116,8 @@ const saveSession = async () => {
     return;
   }
 
-  const startTime = buildDateTime(formData.value.date, formData.value.startTime);
-  
+  const date = buildDateTime(formData.value.date, '00:00');
+  const startTime = buildDateTime(formData.value.date, formData.value.startTime);  
   const endTime = buildDateTime(formData.value.date, formData.value.endTime);
 
   if (startTime >= endTime) {
@@ -126,11 +127,12 @@ const saveSession = async () => {
 
   const session = {
     projectId: formData.value.projectId,
-    startTime,
-    endTime,
     duration: calculateDurationInSeconds(startTime, endTime),
     isManual: true,
-    isBilled: formData.value.isBilled
+    isBilled: formData.value.isBilled,
+    startTime,
+    endTime,
+    date
   };
 
   await withLoading(async () => {
@@ -144,6 +146,22 @@ const saveSession = async () => {
 
     setTimeout(() => router.push({ name: 'Sessions' }), 2500);
   });
+};
+
+const deleteSession = async () => {
+  if (!sessionId.value) return;
+
+  await withLoading(async () => {
+    await sessionStore.deleteSession(sessionId.value!);
+    showToast('success', 'Sessão deletada com sucesso.');
+    router.push({ name: 'Sessions' });
+  });
+};
+
+const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
+
+const handleDeleteSession = () => {
+  dialogRef.value?.openModal();
 };
 
 onMounted(() => {
@@ -207,6 +225,7 @@ onMounted(() => {
               class="w-fit"
               color="danger"
               :is-loading="isLoading"
+              @click="handleDeleteSession"
             >
               Deletar Sessão
             </Button>
@@ -218,5 +237,12 @@ onMounted(() => {
         </form>
       </div>
     </section>
+
+    <Dialog
+      ref="dialogRef"
+      header="Tem certeza que deseja deletar esta sessão?"
+      message="Se confirmada essa ação não poderá ser desfeita."
+      @confirm-action="deleteSession"
+    />
   </Container>
 </template>

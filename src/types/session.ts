@@ -4,11 +4,12 @@ export interface Session {
   id: string;
   userId: string;
   projectId: string;
-  startTime: Date | null;
-  endTime: Date | null;
   duration: number; // segundos
   isManual: boolean;
   isBilled: boolean;
+  date: Date | FieldValue;
+  endTime: Date | FieldValue;
+  startTime: Date | FieldValue;
   createdAt?: Date | FieldValue;
   updatedAt?: Date | FieldValue;
 }

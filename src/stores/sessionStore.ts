@@ -54,7 +54,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
             createdAt: data.createdAt?.toDate() || null,
             updatedAt: data.updatedAt?.toDate() || null,
             startTime: data.startTime?.toDate() || null, 
-            endTime: data.endTime?.toDate() || null 
+            endTime: data.endTime?.toDate() || null, 
+            date: data.date?.toDate() || null  
           } as Session;
         });
       },
@@ -106,7 +107,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
       createdAt: data.createdAt?.toDate() || null,
       updatedAt: data.updatedAt?.toDate() || null,
       startTime: data.startTime?.toDate() || null, 
-      endTime: data.endTime?.toDate() || null 
+      endTime: data.endTime?.toDate() || null, 
+      date: data.date?.toDate() || null 
     } as Session;
   };
 
