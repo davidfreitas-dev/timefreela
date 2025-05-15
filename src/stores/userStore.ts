@@ -50,7 +50,6 @@ export const useUserStore = defineStore('user', () => {
 
   const setUser = (userData: User): void => {
     user.value = userData;
-    console.log('USER: ', user.value);
   };
 
   const clearUser = (): void => {

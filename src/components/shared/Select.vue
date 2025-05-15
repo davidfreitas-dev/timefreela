@@ -61,7 +61,7 @@ watch(selectedOption, (newValue) => {
           leave-to-class="opacity-0"
         >
           <ListboxOptions
-            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-white text-base shadow-lg focus:outline-none border border-neutral sm:text-sm z-10"
+            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-white text-base shadow-lg focus:outline-none border border-neutral z-10"
           >
             <ListboxOption
               v-for="option in props.options"

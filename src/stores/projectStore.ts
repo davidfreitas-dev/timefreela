@@ -19,9 +19,9 @@ import type { Project } from '@/types/project';
 import { useUserStore } from '@/stores/userStore';
 
 export const useProjectStore = defineStore('projectStore', () => {
+  const { user } = storeToRefs(useUserStore());
   const unsubscribe = ref<Unsubscribe | null>(null);
   const projects: Ref<Project[]> = ref([]);
-  const { user } = storeToRefs(useUserStore());
 
   const fetchProjects = async () => {
     if (!user.value?.id) {

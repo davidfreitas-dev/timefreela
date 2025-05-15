@@ -12,6 +12,7 @@ interface MenuItemData {
 const menuItems: MenuItemData[] = [
   { to: '/', icon: 'dashboard', text: 'Dashboard' },
   { to: '/projects', icon: 'category', text: 'Projetos' },
+  { to: '/sessions', icon: 'history', text: 'Sessões' },
   { to: '/timer', icon: 'timer', text: 'Timer' },
   { to: '/reports', icon: 'bar_chart', text: 'Relatórios' },
   { to: '/settings', icon: 'settings', text: 'Configurações' }

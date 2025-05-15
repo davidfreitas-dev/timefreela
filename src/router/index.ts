@@ -39,6 +39,25 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/sessions',
+    name: 'Sessions',
+    component: () => import('../views/Sessions.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/sessions/:id',
+    name: 'SessionDetails',
+    component: () => import('../views/Session.vue'),
+    meta: { requiresAuth: true },
+    props: true,
+  },  
+  {
+    path: '/sessions/create',
+    name: 'SessionCreate',
+    component: () => import('../views/Session.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue'),
