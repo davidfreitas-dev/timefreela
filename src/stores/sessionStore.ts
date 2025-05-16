@@ -22,6 +22,41 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const { user } = storeToRefs(useUserStore());
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
   const sessions: Ref<Session[]> = ref([]);
+  const currentSession = ref<Omit<Session, 'id' | 'userId' | 'createdAt'> | null>(null);
+
+  const startSession = (projectId: string) => {
+    currentSession.value = {
+      projectId,
+      duration: 0,
+      isManual: false,
+      isBilled: false,
+      startTime: new Date(),
+      endTime: null,
+      date: null,
+    };
+  };
+
+  const finishSession = async () => {
+    if (!currentSession.value) return;
+
+    if (!user.value?.id) {
+      throw new Error('Usuário não autenticado.');
+    }
+
+    const now = new Date();
+
+    const session: Omit<Session, 'id'> = {
+      ...currentSession.value,
+      userId: user.value.id,
+      endTime: now,
+      date: now,
+      createdAt: serverTimestamp()
+    };
+
+    addSession(session);
+
+    currentSession.value = null;
+  };
 
   const fetchSessions = async (projectId?: string) => {
     if (!user.value?.id) {
@@ -123,12 +158,15 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
   return {
     sessions,
+    currentSession,
     fetchSessions,
     addSession,
     updateSession,
     deleteSession,
     getSessionById,
     stopListeningSessions,
-    resetSessions
+    resetSessions,
+    startSession,
+    finishSession
   };
 });

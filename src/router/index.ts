@@ -58,6 +58,18 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/timer',
+    name: 'Timer',
+    component: () => import('../views/Timer.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/reports',
+    name: 'Reports',
+    component: () => import('../views/Reports.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue'),

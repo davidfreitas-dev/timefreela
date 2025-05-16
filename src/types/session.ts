@@ -7,9 +7,9 @@ export interface Session {
   duration: number; // segundos
   isManual: boolean;
   isBilled: boolean;
-  date: Date | FieldValue;
-  endTime: Date | FieldValue;
-  startTime: Date | FieldValue;
-  createdAt?: Date | FieldValue;
-  updatedAt?: Date | FieldValue;
+  date: Date | FieldValue | null;
+  endTime: Date | FieldValue | null;
+  startTime: Date | FieldValue | null;
+  createdAt?: Date | FieldValue | null;
+  updatedAt?: Date | FieldValue | null;
 }

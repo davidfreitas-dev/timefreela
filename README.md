@@ -83,13 +83,15 @@ TimeFreela é um web app criado para **programadores freelancers** que desejam *
 ### Estrutura de Pastas
 ```
 src/
-├── components/
-├── views/
-├── stores/
-├── composables/
-├── router/
 ├── assets/
-└── utils/
+├── components/
+├── composables/
+├── filters/
+├── plugins/
+├── router/
+├── services/
+├── stores/
+└── views/
 ```
 
 ### Stores
@@ -113,8 +115,11 @@ src/
 ### Estrutura
 ```
 users/{userId}
-  - profile
-  - settings
+  - name
+  - email
+  - image
+  - createdAt
+  - updatedAt 
 
 projects/{projectId}
   - userId
@@ -122,15 +127,21 @@ projects/{projectId}
   - description
   - tags
   - hourlyRate
+  - active
+  - createdAt
+  - updatedAt 
 
 sessions/{sessionId}
   - projectId
   - userId
-  - startTime
-  - endTime
   - duration
   - isManual
   - isBilled
+  - date
+  - startTime
+  - endTime
+  - createdAt
+  - updatedAt 
 ```
 
 ### Segurança

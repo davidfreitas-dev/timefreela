@@ -24,7 +24,6 @@ const { modelValue, error } = toRefs(props);
 const selectedOption = ref<Option | null>(modelValue.value ?? null);
 
 watch(modelValue, (newValue) => {
-  console.log(newValue);
   selectedOption.value = newValue;
 });
 

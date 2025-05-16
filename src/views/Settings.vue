@@ -137,7 +137,7 @@ const handleConfirmLogout = () => {
       <h1 class="section-title text-font text-2xl font-semibold mb-3">
         Minha Conta
       </h1>
-      <div class="content p-7 border border-neutral rounded-xl">
+      <div class="content p-7 border border-neutral rounded-3xl">
         <form class="flex flex-col gap-5">
           <Input
             v-model="formData.name"
