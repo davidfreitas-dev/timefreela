@@ -73,9 +73,11 @@ const loadSessionData = async () => {
 
   const session = await sessionStore.getSessionById(sessionId.value);
 
+  console.log(session);
+
   if (session && session.startTime && session.endTime) {
-    const start = new Date(session.startTime);
-    const end = new Date(session.endTime);
+    const start = new Date(String(session.startTime));
+    const end = new Date(String(session.endTime));
 
     const toTimeString = (date: Date): string =>
       date.toTimeString().slice(0, 5); // "HH:MM"
