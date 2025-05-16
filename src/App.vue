@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RouterView } from 'vue-router';
+import { RouterView, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
 import Sidebar from '@/components/shared/Sidebar.vue';
 import Toast from '@/components/shared/Toast.vue';
 
-const { isAuthenticated } = storeToRefs(useAuthStore());
+const route = useRoute();
 
 const { toast, toastData } = useToast();
+
+const { isAuthenticated } = storeToRefs(useAuthStore());
 
 const sidebarWidth = ref<string>('230px');
 
@@ -34,7 +36,7 @@ const changeSidebarWidth = (event: string): void => {
       >
         <component
           :is="Component"
-          :key="$route.fullPath"
+          :key="route.fullPath"
           :sidebar-width="sidebarWidth"
         />
       </Transition>
