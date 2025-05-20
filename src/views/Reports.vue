@@ -58,9 +58,12 @@ const filterOptions = [
 
 const selectedFilter = ref(filterOptions[0]);
 
-watch(selectedFilter, async (newVal) => {
-  await fetchReports(undefined, undefined, newVal.value);
-});
+watch(
+  () => selectedFilter.value.value,
+  async (filterValue) => {
+    await fetchReports(undefined, undefined, filterValue);
+  }
+);
 
 const filteredRevenue = computed(() => {
   if (!search.value.trim()) return revenueByProject.value;
