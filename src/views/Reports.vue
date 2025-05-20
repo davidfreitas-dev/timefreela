@@ -50,8 +50,8 @@ const revenueByProject = computed(() => {
 
 const search = ref('');
 
-const filterOptions = [
-  { label: 'Todas as receitas', value: 'all' },
+const filterOptions: { label: string; value: 'all' | 'billed' | 'unbilled' }[] = [
+  { label: 'Todas', value: 'all' },
   { label: 'Faturadas', value: 'billed' },
   { label: 'Não Faturadas', value: 'unbilled' },
 ];
