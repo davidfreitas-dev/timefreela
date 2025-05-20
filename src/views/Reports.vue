@@ -56,7 +56,7 @@ const filterOptions = [
   { label: 'Não Faturadas', value: 'unbilled' },
 ];
 
-const selectedFilter = ref(filterOptions[0]);
+const selectedFilter = ref<{ label: string; value: 'all' | 'billed' | 'unbilled' }>(filterOptions[0]);
 
 watch(
   () => selectedFilter.value.value,
