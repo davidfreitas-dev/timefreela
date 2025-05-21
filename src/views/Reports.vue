@@ -79,46 +79,71 @@ const tableHeaders = ['Projeto', 'Tempo Total', 'Receita'];
   <Container>
     <Breadcrumb title="Relatórios" description="Gerencie os relatórios aqui." />
 
-    <div class="bg-background-accent rounded-3xl border border-neutral my-8">
-      <div class="filters flex flex-col md:flex-row gap-4 w-full p-5">
-        <div class="w-full md:w-1/2">
-          <InputSearch
-            v-model="search"
-            placeholder="Buscar por projeto"
-          />
-        </div>
-
-        <div class="w-full md:w-1/2">
-          <Select
-            v-model="selectedFilter"
-            :options="filterOptions"
-          />
-        </div>
+    <div class="cards flex flex-col md:flex-row items-center w-full gap-5 my-8">
+      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
+        <h1 class="card-title text-font text-5xl font-semibold mb-3">
+          {{ $filters.formatDuration(reportStore.totalTime) }}
+        </h1>
+        <span class="card-body">
+          Horas Trabalhadas
+        </span>
       </div>
 
-      <Table
-        v-if="filteredRevenue.length"
-        :headers="tableHeaders"
-        :items="filteredRevenue"
-      >
-        <template #row="{ item }">
-          <td class="px-6 py-4 w-[60%] max-w-[600px] truncate">
-            {{ item.projectTitle }}
-          </td>
-
-          <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap">
-            {{ $filters.formatDuration(item.totalSeconds) }}
-          </td>
-
-          <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap">
-            {{ $filters.formatCurrencyBRL(item.totalAmount) }}
-          </td>
-        </template>
-      </Table>
-
-      <div v-else class="text-gray-500 text-center my-10">
-        Nenhum projeto encontrado.
+      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
+        <h1 class="card-title text-font text-5xl font-semibold mb-3">
+          {{ $filters.formatCurrencyBRL(reportStore.totalAmount) }}
+        </h1>
+        <span>
+          Total Faturado
+        </span>
       </div>
     </div>
+
+    <section class="earning">
+      <h1 class="section-title text-font text-2xl font-semibold mb-3">
+        Faturamento por Projeto
+      </h1>
+      <div class="rounded-3xl border border-neutral">
+        <div class="filters flex flex-col md:flex-row gap-4 w-full p-5">
+          <div class="w-full md:w-1/2">
+            <InputSearch
+              v-model="search"
+              placeholder="Buscar por projeto"
+            />
+          </div>
+
+          <div class="w-full md:w-1/2">
+            <Select
+              v-model="selectedFilter"
+              :options="filterOptions"
+            />
+          </div>
+        </div>
+
+        <Table
+          v-if="filteredRevenue.length"
+          :headers="tableHeaders"
+          :items="filteredRevenue"
+        >
+          <template #row="{ item }">
+            <td class="px-6 py-4 w-[60%] max-w-[600px] truncate">
+              {{ item.projectTitle }}
+            </td>
+
+            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap">
+              {{ $filters.formatDuration(item.totalSeconds) }}
+            </td>
+
+            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap">
+              {{ $filters.formatCurrencyBRL(item.totalAmount) }}
+            </td>
+          </template>
+        </Table>
+
+        <div v-else class="text-gray-500 text-center my-10">
+          Nenhum projeto encontrado.
+        </div>
+      </div>
+    </section>
   </Container>
 </template>

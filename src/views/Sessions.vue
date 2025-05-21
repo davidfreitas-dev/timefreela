@@ -86,7 +86,7 @@ const goToEditSession = (sessionId: string) => {
       </Button>
     </div>
 
-    <div class="bg-background-accent rounded-3xl border border-neutral my-8">
+    <div class="rounded-3xl border border-neutral my-8">
       <div class="filters flex flex-col md:flex-row gap-4 w-full p-5">
         <div class="w-full md:w-1/2">
           <InputSearch
