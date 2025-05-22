@@ -7,12 +7,12 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
-import Container from '@/components/shared/Container.vue';
-import Breadcrumb from '@/components/shared/Breadcrumb.vue';
-import Input from '@/components/shared/Input.vue';
-import Button from '@/components/shared/Button.vue';
-import Modal from '@/components/shared/Modal.vue';
-import Dialog from '@/components/shared/Dialog.vue';
+import Container from '@/components//Container.vue';
+import Breadcrumb from '@/components//Breadcrumb.vue';
+import Input from '@/components//Input.vue';
+import Button from '@/components//Button.vue';
+import Modal from '@/components//Modal.vue';
+import Dialog from '@/components//Dialog.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

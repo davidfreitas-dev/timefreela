@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
-import Logo from '@/components/shared/Logo.vue';
-import MenuItem from '@/components/shared/MenuItem.vue';
+import Logo from '@/components//Logo.vue';
+import MenuItem from '@/components//MenuItem.vue';
 
 interface MenuItemData {
   to: string;

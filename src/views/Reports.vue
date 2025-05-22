@@ -6,12 +6,12 @@ import { helpers, required } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
 import { useProjectStore } from '@/stores/projectStore';
 import { useReportStore } from '@/stores/reportStore';
-import Container from '@/components/shared/Container.vue';
-import Breadcrumb from '@/components/shared/Breadcrumb.vue';
-import InputSearch from '@/components/shared/InputSearch.vue';
-import Select from '@/components/shared/Select.vue';
-import InputDate from '@/components/shared/InputDate.vue';
-import Table from '@/components/shared/Table.vue';
+import Container from '@/components//Container.vue';
+import Breadcrumb from '@/components//Breadcrumb.vue';
+import InputSearch from '@/components//InputSearch.vue';
+import Select from '@/components//Select.vue';
+import InputDate from '@/components//InputDate.vue';
+import Table from '@/components//Table.vue';
 
 const projectStore = useProjectStore();
 const reportStore = useReportStore();

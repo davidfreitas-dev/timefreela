@@ -32,7 +32,6 @@ TimeFreela é um web app criado para **programadores freelancers** que desejam *
 ### Funcionalidades-chave
 - Cronômetro e registro manual de tempo
 - Organização por projeto e tags
-- Relatórios em PDF/CSV
 - Painel financeiro com valor/hora
 - UI responsiva e intuitiva
 
@@ -44,8 +43,8 @@ TimeFreela é um web app criado para **programadores freelancers** que desejam *
 
 ## 2. Requisitos Funcionais
 
-- Autenticação Firebase (Google e email/senha)
-- Projetos com título, cliente, descrição e valor/hora
+- Autenticação Firebase (email/senha)
+- Projetos com título, descrição e valor/hora
 - Cronômetro com início, pausa e fim
 - Registro manual de sessões
 - Sessões organizadas por projeto/período
@@ -70,12 +69,16 @@ TimeFreela é um web app criado para **programadores freelancers** que desejam *
 ## 4. Estrutura de Navegação (Mapa de Páginas)
 
 - `/login` – Login
+- `/register` – Cadastro
 - `/dashboard` – Visão geral
 - `/projects` – Lista de projetos
   - `/projects/:id` – Detalhes do projeto
+  - `/projects/create` – Criação do projeto
+- `/sessions` – Lista de sessões
+  - `/sessions/:id` – Detalhes da sessão
+  - `/sessions/create` – Criação da sessão
 - `/timer` – Cronômetro
 - `/reports` – Relatórios
-- `/profile` – Perfil
 - `/settings` – Configurações
 
 ## 5. Arquitetura Frontend (Vue 3 + Pinia)
@@ -95,7 +98,7 @@ src/
 ```
 
 ### Stores
-- `authStore`, `projectStore`, `sessionStore`, `reportStore`
+- `authStore`, `userStore`, `projectStore`, `sessionStore`, `reportStore`
 
 ### Composables
 - `useTimer`, `useBilling`, `useExport`
@@ -105,7 +108,7 @@ src/
 
 ## 6. Autenticação (Firebase Auth)
 
-- Login com Google/email
+- Login com email e senha
 - Persistência com `onAuthStateChanged`
 - Middleware de proteção
 - Armazenado na `authStore`
@@ -159,7 +162,7 @@ sessions/{sessionId}
 
 - Valor/hora por projeto
 - Sessões mostram valor estimado
-- Marcação: a faturar, faturada, não faturável
+- Marcação: a faturar, faturada
 - Painel financeiro com totais
 - Planejado: preço fixo e pacotes mensais
 
@@ -168,7 +171,6 @@ sessions/{sessionId}
 - TailwindCSS, responsivo
 - Cores: azul, cinza escuro, branco
 - Dark mode nativo
-- Animações com `framer-motion`
 - UI acessível
 
 ## 11. Testes
@@ -199,6 +201,6 @@ sessions/{sessionId}
 
 - Modo escuro
 - Mini-timer flutuante
-- Integração com Notion/Trello
+- Relatórios em PDF/CSV
 - Notificações por e-mail sobre faturamento
 - Suporte a contratos, pacotes e valor por funcionalidade
