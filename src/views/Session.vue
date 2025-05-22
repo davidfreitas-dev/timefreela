@@ -28,7 +28,7 @@ const sessionId = computed(() => route.params.id as string | undefined);
 const isEditMode = computed(() => Boolean(sessionId.value));
 const formData = ref({
   projectId: '' as string,
-  date: '',
+  date: null as Date | null,
   startTime: '',
   endTime: '',
   isBilled: false
@@ -73,8 +73,6 @@ const loadSessionData = async () => {
 
   const session = await sessionStore.getSessionById(sessionId.value);
 
-  console.log(session);
-
   if (session && session.startTime && session.endTime) {
     const start = new Date(String(session.startTime));
     const end = new Date(String(session.endTime));
@@ -82,28 +80,21 @@ const loadSessionData = async () => {
     const toTimeString = (date: Date): string =>
       date.toTimeString().slice(0, 5); // "HH:MM"
 
-    const toDateString = (date: Date): string => {
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
-
     formData.value = {
       projectId: session.projectId ?? '',
-      date: toDateString(start),
+      date: start,          // passa Date diretamente para formData.date
       startTime: toTimeString(start),
       endTime: toTimeString(end),
       isBilled: session.isBilled ?? false
     };
   }
-
 };
 
-const buildDateTime = (dateStr: string, timeStr: string): Date => {
-  const [day, month, year] = dateStr.split('/').map(Number);
+const buildDateTimeFromDate = (date: Date, timeStr: string): Date => {
   const [hour, minute] = timeStr.split(':').map(Number);
-  return new Date(year, month - 1, day, hour, minute);
+  const dt = new Date(date);
+  dt.setHours(hour, minute, 0, 0);
+  return dt;
 };
 
 const calculateDurationInSeconds = (start: Date, end: Date): number => {
@@ -118,9 +109,16 @@ const saveSession = async () => {
     return;
   }
 
-  const date = buildDateTime(formData.value.date, '00:00');
-  const startTime = buildDateTime(formData.value.date, formData.value.startTime);  
-  const endTime = buildDateTime(formData.value.date, formData.value.endTime);
+  if (!formData.value.date) {
+    showToast('error', 'Data inválida.');
+    return;
+  }
+
+  const date = new Date(formData.value.date);
+  date.setHours(0, 0, 0, 0); 
+
+  const startTime = buildDateTimeFromDate(date, formData.value.startTime);
+  const endTime = buildDateTimeFromDate(date, formData.value.endTime);
 
   if (startTime >= endTime) {
     showToast('error', 'A hora de início deve ser menor que a hora de término.');

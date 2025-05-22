@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from 'pinia';
 import { ref, computed } from 'vue';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, Timestamp, where } from 'firebase/firestore';
 import { db } from '@/services/firestore';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -37,8 +37,8 @@ export const useReportStore = defineStore('reportStore', () => {
   );
 
   const fetchReports = async (
-    startDate?: string,
-    endDate?: string,
+    startDate?: Date,
+    endDate?: Date,
     billedFilter: 'all' | 'billed' | 'unbilled' = 'all'
   ): Promise<void> => {
     if (!user.value?.id) {
@@ -49,8 +49,12 @@ export const useReportStore = defineStore('reportStore', () => {
     const conditions = [where('userId', '==', user.value.id)];
 
     if (startDate && endDate) {
-      conditions.push(where('date', '>=', startDate));
-      conditions.push(where('date', '<=', endDate));
+      const startTimestamp = Timestamp.fromDate(startDate);
+      endDate.setHours(23, 59, 59, 999);
+      const endTimestamp = Timestamp.fromDate(endDate);
+
+      conditions.push(where('date', '>=', startTimestamp));
+      conditions.push(where('date', '<=', endTimestamp));
     }
 
     if (billedFilter === 'billed') conditions.push(where('isBilled', '==', true));
