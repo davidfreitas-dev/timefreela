@@ -4,14 +4,16 @@ import { debounce } from 'vue-debounce';
 import { storeToRefs } from 'pinia';
 import { helpers, required } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
+import { useLoading } from '@/composables/useLoading';
 import { useProjectStore } from '@/stores/projectStore';
 import { useReportStore } from '@/stores/reportStore';
-import Container from '@/components//Container.vue';
-import Breadcrumb from '@/components//Breadcrumb.vue';
-import InputSearch from '@/components//InputSearch.vue';
-import Select from '@/components//Select.vue';
-import InputDate from '@/components//InputDate.vue';
-import Table from '@/components//Table.vue';
+import Container from '@/components/Container.vue';
+import Breadcrumb from '@/components/Breadcrumb.vue';
+import InputSearch from '@/components/InputSearch.vue';
+import Select from '@/components/Select.vue';
+import InputDate from '@/components/InputDate.vue';
+import Table from '@/components/Table.vue';
+import Loader from '@/components/Loader.vue';
 
 const projectStore = useProjectStore();
 const reportStore = useReportStore();
@@ -69,12 +71,18 @@ watch(() => selectedFilter.value.value, async () => {
   await loadReports();
 });
 
+const { isLoading, withLoading } = useLoading();
+
 onMounted(async () => {    
-  await fetchProjects();
-  await fetchReports();
+  await withLoading(async () => {
+    await fetchProjects();
+    await fetchReports();
+  }, 'Não foi possível carregar os projetos. Tente novamente mais tarde.');  
 });
 
 const revenueByProject = computed(() => {
+  if (!reports.value?.length) return [];
+
   const grouped: Record<string, {
     projectId: string;
     projectTitle: string;
@@ -178,8 +186,14 @@ const tableHeaders = ['Projeto', 'Tempo Total', 'Receita'];
           </div>
         </div>
 
+        <Loader
+          v-if="isLoading"
+          color="primary"
+          class="w-4 h-4 mx-auto my-10"
+        />
+
         <Table
-          v-if="filteredRevenue.length"
+          v-if="!isLoading && filteredRevenue?.length"
           :headers="tableHeaders"
           :items="filteredRevenue"
         >
@@ -198,7 +212,7 @@ const tableHeaders = ['Projeto', 'Tempo Total', 'Receita'];
           </template>
         </Table>
 
-        <div v-else class="text-gray-500 text-center my-10">
+        <div v-if="!isLoading && !filteredRevenue?.length" class="text-gray-500 text-center mb-10">
           Nenhum projeto encontrado.
         </div>
       </div>

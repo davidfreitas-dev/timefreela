@@ -6,8 +6,8 @@ import { required, email, minLength, sameAs, helpers } from '@vuelidate/validato
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from '@/composables/useToast';
-import Input from '@/components//Input.vue';
-import Button from '@/components//Button.vue';
+import Input from '@/components/Input.vue';
+import Button from '@/components/Button.vue';
 
 const router = useRouter();
 

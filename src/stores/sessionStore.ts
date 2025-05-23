@@ -58,7 +58,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     currentSession.value = null;
   };
 
-  const fetchSessions = async (projectId?: string) => {
+  const fetchSessions = async (projectId?: string): Promise<void> => {
     if (!user.value?.id) {
       throw new Error('Usuário não autenticado.');
     }
@@ -68,7 +68,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     }
 
     const constraints = [
-      where('userId', '==', user.value.id),
+      where('userId', '==', user.value?.id),
       orderBy('startTime', 'desc')
     ];
 
@@ -78,26 +78,30 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
     const querySessions = query(collection(db, 'sessions'), ...constraints);
 
-    unsubscribe.value = onSnapshot(
-      querySessions,
-      (snapshot) => {
-        sessions.value = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate() || null,
-            updatedAt: data.updatedAt?.toDate() || null,
-            startTime: data.startTime?.toDate() || null, 
-            endTime: data.endTime?.toDate() || null, 
-            date: data.date?.toDate() || null  
-          } as Session;
-        });
-      },
-      (error) => {
-        console.error('Erro ao escutar sessões:', error);
-      }
-    );
+    return new Promise<void>((resolve, reject) => {
+      unsubscribe.value = onSnapshot(
+        querySessions,
+        (snapshot) => {
+          sessions.value = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate() || null,
+              updatedAt: data.updatedAt?.toDate() || null,
+              startTime: data.startTime?.toDate() || null, 
+              endTime: data.endTime?.toDate() || null, 
+              date: data.date?.toDate() || null  
+            } as Session;
+          });
+          resolve();
+        },
+        (error) => {
+          console.error('Erro ao escutar sessões:', error);
+          reject(error);
+        }
+      );
+    });
   };
 
   const addSession = async (session: Omit<Session, 'id' | 'userId' | 'createdAt'>) => {

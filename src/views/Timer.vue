@@ -9,11 +9,11 @@ import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
 import { useTimer } from '@/composables/useTimer';
 import { type Option } from '@/types/option';
-import Container from '@/components//Container.vue';
-import Breadcrumb from '@/components//Breadcrumb.vue';
-import Select from '@/components//Select.vue';
-import Button from '@/components//Button.vue';
-import Dialog from '@/components//Dialog.vue';
+import Container from '@/components/Container.vue';
+import Breadcrumb from '@/components/Breadcrumb.vue';
+import Select from '@/components/Select.vue';
+import Button from '@/components/Button.vue';
+import Dialog from '@/components/Dialog.vue';
 
 const router = useRouter();
 const projectStore = useProjectStore();

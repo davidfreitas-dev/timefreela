@@ -4,8 +4,8 @@ import { RouterView, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
-import Sidebar from '@/components//Sidebar.vue';
-import Toast from '@/components//Toast.vue';
+import Sidebar from '@/components/Sidebar.vue';
+import Toast from '@/components/Toast.vue';
 
 const route = useRoute();
 

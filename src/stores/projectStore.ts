@@ -23,15 +23,12 @@ export const useProjectStore = defineStore('projectStore', () => {
   const unsubscribe = ref<Unsubscribe | null>(null);
   const projects: Ref<Project[]> = ref([]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (): Promise<void> => {
     if (!user.value?.id) {
       throw new Error('Usuário não autenticado.');
     }
 
-    if (unsubscribe.value) {
-      console.warn('Reinicializando escuta de projetos anterior.');
-      unsubscribe.value();
-    }
+    if (unsubscribe.value) unsubscribe.value();
 
     const queryProjects = query(
       collection(db, 'projects'),
@@ -39,23 +36,27 @@ export const useProjectStore = defineStore('projectStore', () => {
       orderBy('title')
     );
 
-    unsubscribe.value = onSnapshot(
-      queryProjects,
-      (snapshot) => {
-        projects.value = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate() || null,
-            updatedAt: data.updatedAt?.toDate() || null 
-          } as Project;
-        });
-      },
-      (error) => {
-        console.error('Erro ao escutar projetos:', error);
-      }
-    );
+    return new Promise<void>((resolve, reject) => {
+      unsubscribe.value = onSnapshot(
+        queryProjects,
+        (snapshot) => {
+          projects.value = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate() || null,
+              updatedAt: data.updatedAt?.toDate() || null
+            } as Project;
+          });          
+          resolve();
+        },
+        (error) => {
+          console.error('Erro ao escutar projetos:', error);
+          reject(error);
+        }
+      );
+    });
   };
 
   const getProjectById = async (projectId: string) => {

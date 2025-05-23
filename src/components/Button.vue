@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import Loader from '@/components//Loader.vue';
+import Loader from '@/components/Loader.vue';
 
 defineOptions({ inheritAttrs: false });
 

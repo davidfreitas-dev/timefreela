@@ -7,13 +7,13 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
 import { type Project } from '@/types/project';
-import Container from '@/components//Container.vue';
-import Breadcrumb from '@/components//Breadcrumb.vue';
-import Input from '@/components//Input.vue';
-import InputCurrency from '@/components//InputCurrency.vue';
-import Select from '@/components//Select.vue';
-import Button from '@/components//Button.vue';
-import Dialog from '@/components//Dialog.vue';
+import Container from '@/components/Container.vue';
+import Breadcrumb from '@/components/Breadcrumb.vue';
+import Input from '@/components/Input.vue';
+import InputCurrency from '@/components/InputCurrency.vue';
+import Select from '@/components/Select.vue';
+import Button from '@/components/Button.vue';
+import Dialog from '@/components/Dialog.vue';
 
 type StatusOption = {
   label: string;
