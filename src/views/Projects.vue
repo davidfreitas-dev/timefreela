@@ -139,7 +139,7 @@ const goToEditProject = (projectId: string) => {
 
           <td class="px-6 py-4 w-[5%] min-w-[50px]">
             <button
-              class="p-2 h-10 w-10 bg-primary-accent text-primary rounded-lg"
+              class="p-2 h-10 w-10 bg-primary-accent text-primary rounded-lg cursor-pointer"
               @click="goToEditProject(project.id)"
             >
               <Icon name="edit" />

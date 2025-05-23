@@ -36,6 +36,37 @@ export const useReportStore = defineStore('reportStore', () => {
     reports.value.reduce((sum, day) => sum + day.totalAmount, 0)
   );
 
+  const currentMonthTime = computed(() => {
+    const now = new Date();
+    const yearMonth = now.toISOString().slice(0, 7); // formato YYYY-MM
+    return reports.value
+      .filter(r => r.date.startsWith(yearMonth))
+      .reduce((sum, day) => sum + day.totalSeconds, 0);
+  });
+
+  const currentMonthAmount = computed(() => {
+    const now = new Date();
+    const yearMonth = now.toISOString().slice(0, 7); // formato YYYY-MM
+    return reports.value
+      .filter(r => r.date.startsWith(yearMonth))
+      .reduce((sum, day) => sum + day.totalAmount, 0);
+  });
+
+  const monthlyAmount = computed(() => {
+    const result: Record<string, number> = {};
+
+    reports.value.forEach(report => {
+      const month = report.date.slice(0, 7); // 'YYYY-MM'
+      if (!result[month]) {
+        result[month] = 0;
+      }
+      result[month] += report.totalAmount;
+    });
+
+    return result;
+  });
+
+
   const fetchReports = async (
     startDate?: Date,
     endDate?: Date,
@@ -109,6 +140,10 @@ export const useReportStore = defineStore('reportStore', () => {
     reports,
     fetchReports,
     totalTime,
-    totalAmount
+    totalAmount,
+    currentMonthTime,
+    currentMonthAmount,
+    monthlyAmount
   };
+
 });

@@ -82,7 +82,7 @@ const loadSessionData = async () => {
 
     formData.value = {
       projectId: session.projectId ?? '',
-      date: start,          // passa Date diretamente para formData.date
+      date: start,
       startTime: toTimeString(start),
       endTime: toTimeString(end),
       isBilled: session.isBilled ?? false
@@ -175,7 +175,7 @@ onMounted(() => {
     <div class="header flex justify-between items-center">
       <Breadcrumb 
         :title="isEditMode ? 'Editar Sessão' : 'Cadastro de Sessão'"
-        :description="isEditMode ? 'Edite os dados do sessão aqui.' : 'Cadastre um nova sessão aqui.'"
+        :description="isEditMode ? 'Edite os dados da sessão aqui.' : 'Cadastre um nova sessão aqui.'"
       />
     </div>
 

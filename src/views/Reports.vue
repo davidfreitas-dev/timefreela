@@ -45,9 +45,9 @@ const v$ = useVuelidate(rules, dateInterval);
 const search = ref('');
 
 const filterOptions: { label: string; value: 'all' | 'billed' | 'unbilled' }[] = [
-  { label: 'Todas', value: 'all' },
-  { label: 'Faturadas', value: 'billed' },
-  { label: 'Não Faturadas', value: 'unbilled' },
+  { label: 'Todos', value: 'all' },
+  { label: 'Faturados', value: 'billed' },
+  { label: 'Não Faturados', value: 'unbilled' },
 ];
 
 const selectedFilter = ref<{ label: string; value: 'all' | 'billed' | 'unbilled' }>(filterOptions[0]);
@@ -116,7 +116,7 @@ const filteredRevenue = computed(() => {
   );
 });
 
-const tableHeaders = ['Projeto', 'Tempo Total', 'Receita'];
+const tableHeaders = ['Projeto', 'Horas', 'Receita'];
 </script>
 
 <template>
@@ -125,20 +125,20 @@ const tableHeaders = ['Projeto', 'Tempo Total', 'Receita'];
 
     <div class="cards flex flex-col md:flex-row items-center w-full gap-5 my-8">
       <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
-        <h1 class="card-title text-font text-5xl font-semibold mb-3">
+        <h1 class="card-title text-font text-5xl font-bold mb-3">
           {{ $filters.formatDuration(reportStore.totalTime) }}
         </h1>
-        <span class="card-body">
+        <span class="card-body text-font">
           Horas Trabalhadas
         </span>
       </div>
 
       <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
-        <h1 class="card-title text-font text-5xl font-semibold mb-3">
+        <h1 class="card-title text-font text-5xl font-bold mb-3">
           {{ $filters.formatCurrencyBRL(reportStore.totalAmount) }}
         </h1>
-        <span>
-          Total Faturado
+        <span class="card-body text-font">
+          Receita Total
         </span>
       </div>
     </div>
