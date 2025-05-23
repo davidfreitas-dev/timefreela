@@ -9,9 +9,8 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
-  ChartOptions,
-  ChartData
 } from 'chart.js';
+import type { ChartOptions, ChartData } from 'chart.js';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
