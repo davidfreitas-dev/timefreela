@@ -89,7 +89,7 @@ const saveProject = async () => {
     description: formData.value.description,
     tags: parseTags(formData.value.tags),
     hourlyRate: Number(formData.value.hourlyRate) || 0,
-    active: formData.value.active ? Number(formData.value.active) : null
+    active: formData.value.active !== null ? Number(formData.value.active) : null
   };
 
   await withLoading(async () => {
