@@ -11,6 +11,7 @@ import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import Input from '@/components/Input.vue';
 import Button from '@/components/Button.vue';
+import Icon from '@/components/Icon.vue';
 import Modal from '@/components/Modal.vue';
 import Dialog from '@/components/Dialog.vue';
 
@@ -129,7 +130,7 @@ const handleConfirmLogout = () => {
       <Breadcrumb title="Configurações" description="Gerencie suas configurações aqui." />
       <Button class="h-fit" @click="handleLogout">
         <span class="hidden md:block">Encerrar Sessão</span>
-        <span class="material-icons-outlined text-2xl ml-2">logout</span>
+        <Icon name="logout" class="md:ml-2" />
       </Button>
     </div>
 

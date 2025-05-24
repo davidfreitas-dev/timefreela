@@ -192,7 +192,7 @@ onMounted(() => {
           <InputDate
             v-model="formData.date"
             label="Data"
-            :error="v$.date.$dirty && v$.date.$error ? 'Obrigatório' : ''"
+            :error="v$.date.$dirty && v$.date.$error ? 'A data é obrigatório' : ''"
           />
 
           <div class="grid grid-cols-2 gap-4">
@@ -201,14 +201,14 @@ onMounted(() => {
               label="Hora de Início"
               placeholder="13:00"
               type="time"
-              :error="v$.startTime.$dirty && v$.startTime.$error ? 'Obrigatório' : ''"
+              :error="v$.startTime.$dirty && v$.startTime.$error ? 'O horário de início é obrigatório' : ''"
             />
             <Input
               v-model="formData.endTime"
               label="Hora de Término"
               placeholder="15:00"
               type="time"
-              :error="v$.endTime.$dirty && v$.endTime.$error ? 'Obrigatório' : ''"
+              :error="v$.endTime.$dirty && v$.endTime.$error ? 'O horário de término é obrigatório' : ''"
             />
           </div>
 

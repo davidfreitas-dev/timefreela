@@ -48,7 +48,7 @@ onMounted(() => {
 
 const inputClasses = computed(() =>
   [
-    'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-lg px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+    'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
     props.error ? 'border-danger focus:ring-danger' : 'border-neutral focus:ring-primary'
   ]
 );

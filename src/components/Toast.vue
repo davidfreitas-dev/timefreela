@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue';
 import { TransitionRoot } from '@headlessui/vue';
 import type { ToastData } from '@/types/toast';
+import Icon from '@/components/Icon.vue';
 
 const { toastData } = defineProps<{
   toastData: ToastData;
@@ -61,9 +62,7 @@ defineExpose({ showToast });
           'text-warning-hover bg-warning-accent': toastData.type === 'info'
         }"
       >
-        <span class="material-icons-outlined">
-          {{ toastIcon }}
-        </span>
+        <Icon :name="toastIcon" />
         <span class="sr-only">Icon</span>
       </div>
 

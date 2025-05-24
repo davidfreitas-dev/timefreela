@@ -7,6 +7,7 @@ import {
   ListboxOption,
 } from '@headlessui/vue';
 import { type Option } from '@/types/option';
+import Icon from '@/components/Icon.vue';
 
 const props = defineProps<{
   options: Option[];
@@ -38,20 +39,24 @@ watch(selectedOption, (newValue) => {
       {{ props.label }}
     </label>
 
-    <Listbox v-model="selectedOption">
+    <Listbox v-slot="{ open }" v-model="selectedOption">
       <div class="relative w-full">
         <ListboxButton
           :class="[
-            'flex items-center gap-3 h-[52px] w-full p-4 bg-white border border-neutral rounded-xl text-base text-left placeholder:text-secondary focus:outline-none focus:ring-2 focus:ring-primary',
+            'flex items-center gap-3 h-[52px] w-full p-4 bg-white rounded-xl text-base text-left placeholder:text-secondary focus:outline-none focus:ring-2',
             error
               ? 'border border-danger focus:ring-danger'
-              : 'border border-disabled focus:ring-primary text-font'
+              : 'border border-neutral text-font focus:ring-primary'
           ]"
         >
           <span class="flex-1 truncate text-font">
             {{ selectedOption?.label || 'Selecione uma opção' }}
           </span>
-          <span class="material-icons-outlined">keyboard_arrow_down</span>
+          <Icon
+            name="keyboard_arrow_down"
+            class="transform transition-transform duration-200"
+            :class="{ 'rotate-180': open }"
+          />
         </ListboxButton>
 
         <transition
@@ -87,7 +92,7 @@ watch(selectedOption, (newValue) => {
                   v-if="selected"
                   class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary"
                 >
-                  <span class="material-icons-outlined">check</span>
+                  <Icon name="check" />
                 </span>
               </li>
             </ListboxOption>

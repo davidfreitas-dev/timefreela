@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
+import Icon from '@/components/Icon.vue';
 
 const props = defineProps<{
   to: string;
@@ -26,18 +27,17 @@ const isActive = computed(() => route.path === props.to);
         }
       ]"
     >
-      <span
+      <Icon
+        :name="icon"
         :class="[
-          'material-icons-outlined text-2xl',
+          'text-2xl',
           {
             'text-white': isActive,
             'mr-2': isExpanded,
             '-ml-0.5': !isExpanded,
           }
         ]"
-      >
-        {{ icon }}
-      </span>
+      />
       <span
         :class="[
           'font-medium',

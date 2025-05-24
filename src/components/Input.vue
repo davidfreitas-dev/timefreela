@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { type PropType } from 'vue';
+import Icon from '@/components/Icon.vue';
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: string | number): void;
@@ -57,7 +58,7 @@ const updateValue = (event: Event) => {
         :placeholder="placeholder"
         :disabled="disabled"
         :class="[
-          'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-lg px-4 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+          'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-xl px-4 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
           error ? 'border-danger focus:ring-danger' : 'border-neutral focus:ring-primary'
         ]"
         @input="updateValue"
@@ -70,9 +71,7 @@ const updateValue = (event: Event) => {
         class="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-500 hover:text-gray-700 cursor-pointer"
         @click="showPassword = !showPassword"
       >
-        <span class="material-icons-outlined">
-          {{ showPassword ? 'visibility_off' : 'visibility' }}
-        </span>
+        <Icon :name="showPassword ? 'visibility_off' : 'visibility'" />
       </button>
     </div>
 
