@@ -52,7 +52,7 @@ defineExpose({ showToast });
     <div
       id="toast"
       role="alert"
-      class="fixed z-50 top-10 left-1/2 -translate-x-1/2 flex items-center p-4 mb-4 w-full max-w-xs text-gray-700 bg-white rounded-lg shadow-md"
+      class="fixed z-50 top-10 left-1/2 -translate-x-1/2 flex items-center p-4 mb-4 w-full max-w-xs text-font bg-white rounded-lg shadow-md"
     >
       <div
         class="inline-flex flex-shrink-0 justify-center items-center w-9 h-9 bg-opacity-10 rounded-lg"

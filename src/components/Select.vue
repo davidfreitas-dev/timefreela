@@ -43,7 +43,7 @@ watch(selectedOption, (newValue) => {
       <div class="relative w-full">
         <ListboxButton
           :class="[
-            'flex items-center gap-3 h-[52px] w-full p-4 bg-white rounded-xl text-base text-left placeholder:text-secondary focus:outline-none focus:ring-2',
+            'flex items-center gap-3 h-[52px] w-full p-4 bg-transparent rounded-xl text-base text-left placeholder:text-secondary focus:outline-none focus:ring-2',
             error
               ? 'border border-danger focus:ring-danger'
               : 'border border-neutral text-font focus:ring-primary'

@@ -53,7 +53,7 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
 </script>
 
 <template>
-  <div class="flex md:items-center justify-center w-full h-screen text-gray-800">
+  <div class="flex md:items-center justify-center w-full h-screen">
     <div class="md:bg-white md:shadow-lg md:rounded-xl md:px-8 px-4 py-4 w-full max-w-lg">
       <div class="flex flex-col items-center">
         <img

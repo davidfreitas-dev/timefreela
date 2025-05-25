@@ -90,13 +90,13 @@ const alignmentClass = computed(() => {
                 <div class="sm:flex sm:items-start">
                   <div class="w-full">
                     <div class="modal-header flex justify-between items-center mb-5">
-                      <DialogTitle as="h3" class="text-2xl font-semibold leading-6 text-gray-900">
+                      <DialogTitle as="h3" class="text-2xl font-semibold leading-6 text-font">
                         {{ title }}
                       </DialogTitle>
                       
                       <button
                         type="button"
-                        class="text-gray-400 bg-transparent hover:border-brand hover:text-brand rounded-lg text-sm p-1.5 ml-auto inline-flex items-center outline-none"
+                        class="text-secondary bg-transparent hover:border-brand hover:text-brand rounded-lg text-sm p-1.5 ml-auto inline-flex items-center outline-none"
                         @click="closeModal"
                       >
                         <span class="material-icons text-xl">close</span>

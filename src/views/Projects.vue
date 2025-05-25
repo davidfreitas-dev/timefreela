@@ -148,7 +148,7 @@ const goToEditProject = (projectId: string) => {
         </template>
       </Table>
 
-      <div v-if="!isLoading && !filteredProjects.length" class="text-gray-500 text-center mb-10">
+      <div v-if="!isLoading && !filteredProjects.length" class="text-secondary text-center mb-10">
         Nenhum projeto encontrado.
       </div>
     </div>

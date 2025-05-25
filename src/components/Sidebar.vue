@@ -40,7 +40,7 @@ const toggleSidebar = (): void => {
 </script>
 
 <template>
-  <aside :class="['flex flex-col bg-gray-50 text-secondary border border-neutral overflow-hidden min-h-screen p-4 transition-all ease-in-out duration-200', sidebarWidth]">
+  <aside :class="['flex flex-col bg-accent/30 text-secondary border border-neutral overflow-hidden min-h-screen p-4 transition-all ease-in-out duration-200', sidebarWidth]">
     <Logo :is-expanded="isExpanded" />
 
     <div :class="['menu-toggle-wrap flex mb-4 select-none transition-all duration-200 relative', { 'justify-end': isExpanded, 'top-[-3.25rem]': isExpanded, 'top-0': !isExpanded }]">
