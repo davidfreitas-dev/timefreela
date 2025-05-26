@@ -21,7 +21,7 @@ const changeSidebarWidth = (event: string): void => {
 </script>
 
 <template>
-  <div class="app flex bg-background">
+  <div class="app flex bg-background dark:bg-background-dark">
     <Sidebar v-if="isAuthenticated" @on-width-change="changeSidebarWidth" />
     <RouterView v-slot="{ Component }">
       <Transition

@@ -124,34 +124,35 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
     <Breadcrumb title="Relatórios" description="Gerencie os relatórios aqui." />
 
     <div class="cards flex flex-col md:flex-row items-center w-full gap-5 my-8">
-      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
-        <h1 class="card-title text-font text-5xl font-bold mb-3">
+      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral dark:border-neutral-700 p-6">
+        <h1 class="card-title text-font dark:text-white text-5xl font-bold mb-3">
           {{ $filters.formatDuration(reportStore.totalTime) }}
         </h1>
-        <span class="card-body text-font">
+        <span class="card-body text-font dark:text-gray-300">
           Horas Trabalhadas
         </span>
       </div>
 
-      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
-        <h1 class="card-title text-font text-5xl font-bold mb-3">
+      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral dark:border-neutral-700 p-6">
+        <h1 class="card-title text-font dark:text-white text-5xl font-bold mb-3">
           {{ $filters.formatCurrencyBRL(reportStore.totalAmount) }}
         </h1>
-        <span class="card-body text-font">
+        <span class="card-body text-font dark:text-gray-300">
           Receita Total
         </span>
       </div>
     </div>
 
     <section class="earning">
-      <h1 class="section-title text-font text-2xl font-semibold mb-3">
+      <h1 class="section-title text-font dark:text-white text-2xl font-semibold mb-3">
         Faturamento por Projeto
       </h1>
-      <div class="flex flex-col gap-5 rounded-3xl border border-neutral">
-        <div class="filters flex flex-col md:flex-row gap-4 w-full px-5 pt-5 ">
+      <div class="flex flex-col gap-5 rounded-3xl overflow-hidden border border-neutral dark:border-neutral-700">
+        <div class="filters flex flex-col md:flex-row gap-4 w-full px-5 pt-5">
           <div class="w-full md:w-1/2">
             <InputDate
               v-model="dateInterval.start"
+              placeholder="Data inicial"
               :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
               @blur="v$.start.$touch()"
             />
@@ -160,6 +161,7 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
           <div class="w-full md:w-1/2">
             <InputDate
               v-model="dateInterval.end"
+              placeholder="Data final"
               :error="v$.end.$dirty && v$.end.$error
                 ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
                   ? 'Data final não pode ser anterior à data inicial.'
@@ -172,17 +174,11 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
 
         <div class="filters flex flex-col md:flex-row gap-4 w-full px-5">
           <div class="w-full md:w-1/2">
-            <InputSearch
-              v-model="search"
-              placeholder="Buscar por projeto"
-            />
+            <InputSearch v-model="search" placeholder="Buscar por projeto" />
           </div>
 
           <div class="w-full md:w-1/2">
-            <Select
-              v-model="selectedFilter"
-              :options="filterOptions"
-            />
+            <Select v-model="selectedFilter" :options="filterOptions" />
           </div>
         </div>
 
@@ -198,21 +194,21 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
           :items="filteredRevenue"
         >
           <template #row="{ item }">
-            <td class="px-6 py-4 w-[60%] max-w-[600px] truncate">
+            <td class="px-6 py-4 w-[60%] max-w-[600px] truncate text-font dark:text-white">
               {{ item.projectTitle }}
             </td>
 
-            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap">
+            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
               {{ $filters.formatDuration(item.totalSeconds) }}
             </td>
 
-            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap">
+            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
               {{ $filters.formatCurrencyBRL(item.totalAmount) }}
             </td>
           </template>
         </Table>
 
-        <div v-if="!isLoading && !filteredRevenue?.length" class="text-secondary text-center mb-10">
+        <div v-if="!isLoading && !filteredRevenue?.length" class="text-secondary dark:text-gray-400 text-center mb-10">
           Nenhum projeto encontrado.
         </div>
       </div>

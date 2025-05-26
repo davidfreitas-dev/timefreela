@@ -7,6 +7,7 @@ import router from '@/router';
 
 import './services/firestore';
 import './style.css';
+import './tailwind.css';
 
 import filters from '@/plugins/filters';
 

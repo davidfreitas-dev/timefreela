@@ -22,8 +22,8 @@ const isActive = computed(() => route.path === props.to);
       :class="[
         'flex items-center text-decoration-none focus:outline-none focus:ring-2 focus:ring-primary-pressed transition ease-in-out duration-200 rounded-lg w-[85%] px-4 py-3',
         {
-          'bg-primary': isActive,
-          'hover:bg-primary-accent hover:text-primary-pressed': !isActive,
+          'bg-primary dark:bg-primary-dark': isActive,
+          'hover:bg-primary-accent dark:hover:bg-primary-accent-dark hover:text-primary-pressed dark:hover:text-primary-dark': !isActive,
         }
       ]"
     >

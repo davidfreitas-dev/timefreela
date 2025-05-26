@@ -102,7 +102,7 @@ const hasError = computed(() => !!props.error);
 
 <template>
   <div class="flex flex-col gap-1 relative">
-    <label v-if="label" class="text-font font-semibold">{{ label }}</label>
+    <label v-if="label" class="text-font dark:text-font-dark font-semibold">{{ label }}</label>
 
     <div class="relative">
       <input
@@ -112,8 +112,8 @@ const hasError = computed(() => !!props.error);
         :disabled="disabled"
         maxlength="10"
         :class="[
-          'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
-          hasError ? 'border-danger focus:ring-danger' : 'border-neutral focus:ring-primary'
+          'text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark bg-transparent border text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+          hasError ? 'border-danger focus:ring-danger' : 'border-neutral dark:border-neutral-dark focus:ring-primary dark:focus:ring-primary'
         ]"
         @input="handleInput"
         @keydown="handleKeydown"

@@ -99,20 +99,14 @@ const goToEditSession = (sessionId: string) => {
       </Button>
     </div>
 
-    <div class="rounded-3xl border border-neutral my-8">
+    <div class="rounded-3xl overflow-hidden border border-neutral dark:border-neutral-700 my-8">
       <div class="filters flex flex-col md:flex-row gap-4 w-full p-5">
         <div class="w-full md:w-1/2">
-          <InputSearch
-            v-model="search"
-            placeholder="Buscar por projeto"
-          />
+          <InputSearch v-model="search" placeholder="Buscar por projeto" />
         </div>
 
         <div class="w-full md:w-1/2">
-          <Select
-            v-model="selectedFilter"
-            :options="filterOptions"
-          />
+          <Select v-model="selectedFilter" :options="filterOptions" />
         </div>
       </div>
 
@@ -128,23 +122,23 @@ const goToEditSession = (sessionId: string) => {
         :items="filteredSessions"
       >
         <template #row="{ item: session }">
-          <td class="px-6 py-4 max-w-[250px] truncate">
+          <td class="px-6 py-4 max-w-[250px] truncate text-font dark:text-white">
             {{ getProjectTitle(session.projectId) }}
           </td>
 
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-font dark:text-white">
             {{ $filters.formatDate(session.date) }}
           </td>
 
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-font dark:text-white">
             {{ $filters.formatTime(session.startTime) }}
           </td>
 
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-font dark:text-white">
             {{ $filters.formatTime(session.endTime) }}
           </td>
 
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-font dark:text-white">
             {{ $filters.formatDuration(session.duration) }}
           </td>
 
@@ -157,7 +151,7 @@ const goToEditSession = (sessionId: string) => {
 
           <td class="px-6 py-4">
             <button
-              class="p-2 h-10 w-10 bg-primary-accent text-primary rounded-lg cursor-pointer"
+              class="p-2 h-10 w-10 bg-primary-accent text-primary dark:bg-primary-accent-dark dark:text-primary-dark rounded-lg cursor-pointer"
               @click="goToEditSession(session.id)"
             >
               <Icon name="edit" />
@@ -166,7 +160,7 @@ const goToEditSession = (sessionId: string) => {
         </template>
       </Table>
 
-      <div v-if="!isLoading && !filteredSessions.length" class="text-secondary text-center mb-10">
+      <div v-if="!isLoading && !filteredSessions.length" class="text-secondary dark:text-gray-400 text-center mb-10">
         Nenhuma sessão registrada.
       </div>
     </div>

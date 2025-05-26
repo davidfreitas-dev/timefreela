@@ -3,6 +3,7 @@ import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 import { required, email, helpers } from '@vuelidate/validators';
+import { useDark } from '@vueuse/core';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useLoading } from '@/composables/useLoading';
@@ -12,6 +13,7 @@ import Breadcrumb from '@/components/Breadcrumb.vue';
 import Input from '@/components/Input.vue';
 import Button from '@/components/Button.vue';
 import Icon from '@/components/Icon.vue';
+import Switch from '@/components/Switch.vue';
 import Modal from '@/components/Modal.vue';
 import Dialog from '@/components/Dialog.vue';
 
@@ -122,6 +124,13 @@ const handleConfirmLogout = () => {
   authStore.logOut();
   router.push({ name: 'Login' });
 };
+
+const isDark = useDark({
+  selector: 'html', // Aplica a classe .dark na <html>
+  attribute: 'class',
+  valueDark: 'dark',
+  valueLight: '',
+});
 </script>
 
 <template>
@@ -135,10 +144,10 @@ const handleConfirmLogout = () => {
     </div>
 
     <section class="account my-7">
-      <h1 class="section-title text-font text-2xl font-semibold mb-3">
+      <h1 class="section-title text-font dark:text-font-dark text-2xl font-semibold mb-3">
         Minha Conta
       </h1>
-      <div class="content p-7 border border-neutral rounded-3xl">
+      <div class="p-7 border border-neutral dark:border-neutral-dark rounded-3xl">
         <form class="flex flex-col gap-5">
           <Input
             v-model="formData.name"
@@ -168,6 +177,18 @@ const handleConfirmLogout = () => {
             </Button>
           </div>
         </form>
+      </div>
+    </section>
+
+    <section class="system my-7">
+      <h1 class="section-title text-font dark:text-font-dark text-2xl font-semibold mb-3">
+        Sistema
+      </h1>
+      <div class="p-7 border border-neutral dark:border-neutral-dark rounded-3xl">
+        <div class="flex justify-between items-center">
+          <span class="text-font dark:text-font-dark font-semibold">Modo escuro</span>
+          <Switch v-model="isDark" />
+        </div>
       </div>
     </section>
 

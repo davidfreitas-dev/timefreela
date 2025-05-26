@@ -134,9 +134,9 @@ onMounted(() => {
       <Breadcrumb title="Timer" description="Gerencie o tempo da sua sessão de trabalho aqui." />
     </div>
 
-    <section class="timer my-7">
-      <div class="content p-7 md:p-20 border border-neutral rounded-xl">
-        <h2 class="text-center text-5xl md:text-8xl font-bold mb-10">
+    <section class="timer my-8">
+      <div class="content p-7 md:p-20 border border-neutral dark:border-neutral-dark rounded-3xl">
+        <h2 class="text-font dark:text-font-dark text-center text-5xl md:text-8xl font-bold mb-10">
           {{ formatTime(duration) }}
         </h2>
 
@@ -184,7 +184,7 @@ onMounted(() => {
       <Dialog
         ref="dialogRef"
         header="Tem certeza que deseja finalizar esta sessão?"
-        message="Se confirmada essa ação não poderá ser desfeita."
+        message="Se confirmada, essa ação não poderá ser desfeita."
         @confirm-action="finishSession"
       />
     </section>

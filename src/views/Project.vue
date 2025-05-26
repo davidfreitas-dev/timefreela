@@ -134,7 +134,7 @@ onMounted(loadProjectData);
     </div>
 
     <section class="project my-7">
-      <div class="content p-7 border border-neutral rounded-xl">
+      <div class="content p-7 border border-neutral dark:border-neutral-dark rounded-xl">
         <form class="flex flex-col gap-5" @submit.prevent="saveProject">
           <Input
             v-model="formData.title"

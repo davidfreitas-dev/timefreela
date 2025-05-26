@@ -55,7 +55,7 @@ defineExpose({ openModal });
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-black/50" />
+        <div class="fixed inset-0 bg-black/50 dark:bg-black/80" />
       </TransitionChild>
 
       <div class="fixed inset-0 overflow-y-auto">
@@ -69,13 +69,13 @@ defineExpose({ openModal });
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-accent p-6 text-left align-middle shadow-xl transition-all">
-              <DialogTitle as="h3" class="text-lg font-semibold leading-6 text-font">
+            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-accent dark:bg-background-dark p-6 text-left align-middle shadow-xl transition-all">
+              <DialogTitle as="h3" class="text-lg font-semibold leading-6 text-font dark:text-font-dark">
                 {{ header }}
               </DialogTitle>
               
               <div class="mt-2">
-                <p class="text-sm text-secondary">
+                <p class="text-sm text-secondary dark:text-secondary-dark">
                   {{ message }}
                 </p>
               </div>
@@ -90,7 +90,7 @@ defineExpose({ openModal });
                 </button>
                 <button
                   type="button"
-                  class="inline-flex justify-center rounded-md px-4 py-2 bg-transparent text-sm font-medium text-primary-pressed border-2 border-primary focus:ring-2 focus:ring-primary-active focus:outline-none cursor-pointer"
+                  class="inline-flex justify-center rounded-md px-4 py-2 bg-transparent text-sm font-medium text-primary-pressed dark:text-primary-light border-2 border-primary focus:ring-2 focus:ring-primary-active focus:outline-none cursor-pointer"
                   @click="closeModal"
                 >
                   Cancelar

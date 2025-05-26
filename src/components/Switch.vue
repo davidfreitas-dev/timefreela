@@ -3,18 +3,16 @@ import { computed } from 'vue';
 import { Switch } from '@headlessui/vue';
 
 const props = defineProps<{
-  modelValue: number | boolean;
+  modelValue: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: number): void;
+  (e: 'update:modelValue', value: boolean): void;
 }>();
 
 const isChecked = computed({
-  get: () => props.modelValue === 1,
-  set: (val: boolean) => {
-    emit('update:modelValue', val ? 1 : 0);
-  }
+  get: () => props.modelValue,
+  set: (val: boolean) => emit('update:modelValue', val)
 });
 
 const onToggle = (val: boolean) => {
@@ -25,7 +23,7 @@ const onToggle = (val: boolean) => {
 <template>
   <Switch
     :model-value="isChecked"
-    :class="isChecked ? 'bg-primary' : 'bg-primary-accent'"
+    :class="isChecked ? 'bg-primary dark:bg-primary' : 'bg-primary-accent dark:bg-primary-accent-dark'"
     class="relative inline-flex h-[32px] w-[68px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
     @update:model-value="onToggle"
   >
@@ -33,7 +31,7 @@ const onToggle = (val: boolean) => {
     <span
       aria-hidden="true"
       :class="isChecked ? 'translate-x-9' : 'translate-x-0'"
-      class="pointer-events-none inline-block h-[28px] w-[28px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+      class="pointer-events-none inline-block h-[28px] w-[28px] transform rounded-full bg-white dark:bg-gray-200 shadow-lg ring-0 transition duration-200 ease-in-out"
     />
   </Switch>
 </template>

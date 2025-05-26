@@ -8,7 +8,7 @@ const { color = 'white' } = defineProps<{
 }>();
 
 const bgColor = computed(() => {
-  return color === 'primary' ? 'bg-primary' : 'bg-white';
+  return color === 'primary' ? 'bg-primary dark:bg-primary-dark' : 'bg-white';
 });
 </script>
 

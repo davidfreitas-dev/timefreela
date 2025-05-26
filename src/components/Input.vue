@@ -49,7 +49,7 @@ const updateValue = (event: Event) => {
 
 <template>
   <div class="flex flex-col gap-1 relative">
-    <label v-if="label" class="text-font font-semibold">{{ label }}</label>
+    <label v-if="label" class="text-font dark:text-font-dark font-semibold">{{ label }}</label>
 
     <div class="relative">
       <input
@@ -58,8 +58,8 @@ const updateValue = (event: Event) => {
         :placeholder="placeholder"
         :disabled="disabled"
         :class="[
-          'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-xl px-4 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
-          error ? 'border-danger focus:ring-danger' : 'border-neutral focus:ring-primary'
+          'text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark bg-transparent border text-base w-full h-[52px] rounded-xl px-4 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+          error ? 'border-danger focus:ring-danger' : 'border-neutral dark:border-neutral-dark focus:ring-primary dark:focus:ring-primary'
         ]"
         @input="updateValue"
         @keyup.enter="$emit('onKeyupEnter')"
@@ -68,7 +68,7 @@ const updateValue = (event: Event) => {
       <button
         v-if="type === 'password'"
         type="button"
-        class="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 text-secondary cursor-pointer"
+        class="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 text-secondary dark:text-secondary-dark cursor-pointer"
         @click="showPassword = !showPassword"
       >
         <Icon :name="showPassword ? 'visibility_off' : 'visibility'" />

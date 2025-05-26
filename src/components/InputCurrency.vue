@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
@@ -46,13 +46,6 @@ onMounted(() => {
   }
 });
 
-const inputClasses = computed(() =>
-  [
-    'text-font placeholder:text-disabled bg-white border text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
-    props.error ? 'border-danger focus:ring-danger' : 'border-neutral focus:ring-primary'
-  ]
-);
-
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -66,7 +59,7 @@ watch(
 
 <template>
   <div class="flex flex-col gap-1 relative">
-    <label v-if="label" class="text-font font-semibold">{{ label }}</label>
+    <label v-if="label" class="text-font dark:text-font-dark font-semibold">{{ label }}</label>
 
     <div class="relative">
       <input
@@ -74,7 +67,10 @@ watch(
         :value="formattedValue"
         :placeholder="placeholder"
         :disabled="disabled"
-        :class="inputClasses"
+        :class="[
+          'text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark bg-transparent border text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+          error ? 'border-danger focus:ring-danger' : 'border-neutral dark:border-neutral-dark focus:ring-primary dark:focus:ring-primary'
+        ]"
         @input="updateValue"
         @keyup.enter="$emit('onKeyupEnter')"
       >

@@ -61,26 +61,26 @@ const sortedMonthly = computed(() => {
     <Breadcrumb :title="`Olá, ${user?.name || 'Convidado'}! 👋`" description="É bom te ver de novo." />
   
     <div class="cards flex flex-col md:flex-row items-center w-full gap-5 my-8">
-      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
-        <h1 class="card-title text-font text-5xl font-bold mb-3">
+      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral dark:border-neutral-dark p-6">
+        <h1 class="card-title text-font dark:text-font-dark text-5xl font-bold mb-3">
           {{ $filters.formatDuration(reportStore.currentMonthTime) }}
         </h1>
-        <span class="card-body text-font">
+        <span class="card-body text-font dark:text-font-dark">
           Horas Trabalhadas no Mês
         </span>
       </div>
 
-      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral p-6">
-        <h1 class="card-title text-font text-5xl font-bold mb-3">
+      <div class="card w-full md:w-1/2 rounded-3xl border border-neutral dark:border-neutral-dark p-6">
+        <h1 class="card-title text-font dark:text-font-dark text-5xl font-bold mb-3">
           {{ $filters.formatCurrencyBRL(reportStore.currentMonthAmount) }}
         </h1>
-        <span class="card-body text-font">
+        <span class="card-body text-font dark:text-font-dark">
           Receita Total no Mês
         </span>
       </div>
     </div>
 
-    <div class="rounded-3xl border border-neutral p-7">
+    <div class="rounded-3xl border border-neutral dark:border-neutral-dark p-7">
       <Chart
         dataset-label="Receitas (R$)"
         :labels="sortedMonthly.labels"

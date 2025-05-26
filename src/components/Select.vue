@@ -35,7 +35,7 @@ watch(selectedOption, (newValue) => {
 
 <template>
   <div class="flex flex-col gap-1 relative w-full">
-    <label v-if="props.label" class="text-font font-semibold">
+    <label v-if="props.label" class="text-font font-semibold dark:text-font-dark">
       {{ props.label }}
     </label>
 
@@ -46,10 +46,10 @@ watch(selectedOption, (newValue) => {
             'flex items-center gap-3 h-[52px] w-full p-4 bg-transparent rounded-xl text-base text-left placeholder:text-secondary focus:outline-none focus:ring-2',
             error
               ? 'border border-danger focus:ring-danger'
-              : 'border border-neutral text-font focus:ring-primary'
+              : 'border border-neutral text-font dark:border-neutral-dark dark:text-font-dark dark:placeholder:text-secondary-dark focus:ring-primary'
           ]"
         >
-          <span class="flex-1 truncate text-font">
+          <span class="flex-1 truncate text-font dark:text-font-dark">
             {{ selectedOption?.label || 'Selecione uma opção' }}
           </span>
           <Icon
@@ -65,7 +65,7 @@ watch(selectedOption, (newValue) => {
           leave-to-class="opacity-0"
         >
           <ListboxOptions
-            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-white text-base shadow-lg focus:outline-none border border-neutral z-10"
+            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-background-dark text-base shadow-lg focus:outline-none border border-neutral dark:border-neutral-dark z-10"
           >
             <ListboxOption
               v-for="option in props.options"
@@ -76,13 +76,13 @@ watch(selectedOption, (newValue) => {
             >
               <li
                 :class="[
-                  active ? 'bg-primary-accent text-primary' : 'text-font',
+                  active ? 'bg-accent dark:bg-accent-dark text-font dark:text-font-dark' : 'text-secondary dark:text-secondary-dark',
                   'relative cursor-pointer select-none py-4 pl-10 pr-4',
                 ]"
               >
                 <span
                   :class="[
-                    selected ? 'font-semibold' : 'font-normal',
+                    selected ? 'font-semibold text-font dark:text-font-dark' : 'font-normal',
                     'block truncate',
                   ]"
                 >

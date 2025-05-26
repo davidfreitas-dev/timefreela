@@ -21,11 +21,11 @@ const handleImageError = () => {
       @error="handleImageError"
     >
     <template v-else>
-      <h3 v-if="isExpanded" class="text-font text-2xl font-extrabold">
-        Time<span class="text-primary ml-0.5">Freela</span>
+      <h3 v-if="isExpanded" class="text-font dark:text-white text-2xl font-extrabold">
+        Time<span class="text-primary dark:text-primary ml-0.5">Freela</span>
       </h3>
-      <h3 v-else class="text-font text-2xl font-extrabold">
-        T<span class="text-primary">F</span>
+      <h3 v-else class="text-font dark:text-white text-2xl font-extrabold">
+        T<span class="text-primary dark:text-primary">F</span>
       </h3>
     </template>
   </div>
