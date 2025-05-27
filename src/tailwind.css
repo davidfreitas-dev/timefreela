@@ -52,16 +52,16 @@
   --color-warning-pressed-dark: #c38d2a;
   --color-warning-accent-dark: #3C3426;
 
-  --color-danger-dark: #FF784B;
-  --color-danger-hover-dark: #ff8f6b;
-  --color-danger-focus-dark: #e25f40;
-  --color-danger-pressed-dark: #b74733;
-  --color-danger-accent-dark: #3C2E27;
+  --color-danger-dark: #e57373;
+  --color-danger-hover-dark: #ee8a8a;
+  --color-danger-focus-dark: #d86565;
+  --color-danger-pressed-dark: #bb5050;
+  --color-danger-accent-dark: #321a1a;
 
   --color-font-dark: #f4f4f4;
   --color-secondary-dark: #c7c7c7;
   --color-disabled-dark: #444444;
   --color-neutral-dark: #3a3a3a;
-  --color-accent-dark: #252525;
+  --color-accent-dark: #202020;
   --color-background-dark: #171717;
 }

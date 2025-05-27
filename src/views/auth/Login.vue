@@ -54,8 +54,8 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
 
 <template>
   <div class="flex md:items-center justify-center w-full h-screen">
-    <div class="md:bg-white md:shadow-lg md:rounded-xl md:px-8 px-4 py-4 w-full max-w-lg">
-      <div class="flex flex-col items-center">
+    <div class="md:bg-background dark:md:bg-accent-dark md:shadow-lg md:rounded-xl md:px-8 px-4 py-4 w-full max-w-lg">
+      <div class="flex flex-col items-center mb-3">
         <img
           :src="logoPath"
           alt="Logo Time Freela"
@@ -85,7 +85,7 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
           @blur="v$.password.$touch"
         />
 
-        <router-link to="/forgot" class="text-right text-sm text-primary hover:text-primary-hover outline-primary cursor-pointer">
+        <router-link to="/forgot" class="text-right text-sm text-primary dark:text-primary-dark hover:text-primary-hover dark:hover:text-primary-hover-dark outline-primary dark:outline-primary-dark cursor-pointer">
           Esqueci minha senha
         </router-link>
 
@@ -93,7 +93,7 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
           Entrar na plataforma
         </Button>
 
-        <router-link to="/register" class="text-center text-sm text-primary hover:text-primary-hover outline-primary cursor-pointer m-4">
+        <router-link to="/register" class="text-center text-sm text-primary dark:text-primary-dark hover:text-primary-hover dark:hover:text-primary-hover-dark outline-primary dark:outline-primary-dark cursor-pointer m-4">
           Criar uma conta
         </router-link>
       </form>
