@@ -15,10 +15,10 @@ const updateValue = (event: Event) => {
 </script>
 
 <template>
-  <div class="flex items-center gap-3 h-[52px] w-full p-4 bg-transparent border border-neutral dark:border-neutral-dark focus-within:border-none rounded-xl focus-within:ring-2 ring-primary dark:ring-primary">
+  <div class="flex items-center gap-3 h-[52px] w-full p-4 bg-transparent dark:bg-accent-dark border border-neutral dark:border-neutral-dark focus-within:border-none rounded-xl focus-within:ring-2 ring-primary dark:ring-primary">
     <input
       type="text"
-      class="flex-1 bg-transparent text-base text-font dark:text-font-dark placeholder:text-secondary dark:placeholder:text-secondary-dark outline-none"
+      class="flex-1 bg-transparent text-base text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark outline-none"
       :value="props.modelValue"
       :placeholder="props.placeholder || 'O que você busca?'"
       @input="updateValue"

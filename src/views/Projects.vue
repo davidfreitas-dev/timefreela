@@ -117,23 +117,23 @@ const goToEditProject = (projectId: string) => {
         :items="filteredProjects"
       >
         <template #row="{ item: project }">
-          <td class="px-6 py-4 w-[20%] max-w-[200px] truncate text-font dark:text-font-dark">
+          <td class="px-6 py-4 w-[20%] max-w-[200px] truncate">
             {{ $filters.formatDate(project.createdAt) }}
           </td>
 
-          <td class="px-6 py-4 w-[20%] max-w-[200px] truncate text-font dark:text-font-dark">
+          <td class="px-6 py-4 w-[20%] max-w-[200px] truncate">
             {{ project.title }}
           </td>
 
-          <td class="px-6 py-4 w-[30%] max-w-[300px] truncate text-font dark:text-font-dark">
+          <td class="px-6 py-4 w-[30%] max-w-[300px] truncate">
             {{ project.description || '-' }}
           </td>
 
-          <td class="px-6 py-4 w-[20%] max-w-[200px] truncate text-font dark:text-font-dark">
+          <td class="px-6 py-4 w-[20%] max-w-[200px] truncate">
             {{ $filters.formatCurrencyBRL(project.hourlyRate) }}
           </td>
 
-          <td class="px-6 py-4 w-[5%] min-w-[50px] text-font dark:text-font-dark">
+          <td class="px-6 py-4 w-[5%] min-w-[50px]">
             <Badge :label="project.active ? 'Ativo' : 'Inativo'" :color="project.active ? 'success' : 'danger'" />
           </td>
 

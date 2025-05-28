@@ -19,7 +19,7 @@ defineProps<{
           </th>
         </tr>
       </thead>
-      <tbody class="text-font dark:text-font-dark text-base">
+      <tbody class="text-secondary dark:text-secondary-dark text-base">
         <tr
           v-for="(item, index) in items"
           :key="index"

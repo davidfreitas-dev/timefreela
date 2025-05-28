@@ -43,7 +43,7 @@ watch(selectedOption, (newValue) => {
       <div class="relative w-full">
         <ListboxButton
           :class="[
-            'flex items-center gap-3 h-[52px] w-full p-4 bg-transparent rounded-xl text-base text-left placeholder:text-secondary focus:outline-none focus:ring-2',
+            'flex items-center gap-3 h-[52px] w-full p-4 bg-transparent dark:bg-accent-dark rounded-xl text-base text-left placeholder:text-secondary focus:outline-none focus:ring-2',
             error
               ? 'border border-danger focus:ring-danger'
               : 'border border-neutral text-font dark:border-neutral-dark dark:text-font-dark dark:placeholder:text-secondary-dark focus:ring-primary'
@@ -77,7 +77,7 @@ watch(selectedOption, (newValue) => {
               <li
                 :class="[
                   active ? 'bg-accent dark:bg-accent-dark text-font dark:text-font-dark' : 'text-secondary dark:text-secondary-dark',
-                  'relative cursor-pointer select-none py-4 pl-10 pr-4',
+                  'relative cursor-pointer select-none py-4 pl-12 pr-4',
                 ]"
               >
                 <span
