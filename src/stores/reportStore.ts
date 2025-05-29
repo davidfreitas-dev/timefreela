@@ -36,36 +36,58 @@ export const useReportStore = defineStore('reportStore', () => {
     reports.value.reduce((sum, day) => sum + day.totalAmount, 0)
   );
 
-  const currentMonthTime = computed(() => {
+  const currentMonthStats = computed(() => {
     const now = new Date();
     const yearMonth = now.toISOString().slice(0, 7); // formato YYYY-MM
-    return reports.value
+
+    let totalSeconds = 0;
+    let estimated = 0;
+    let billed = 0;
+    let toReceive = 0;
+
+    reports.value
       .filter(r => r.date.startsWith(yearMonth))
-      .reduce((sum, day) => sum + day.totalSeconds, 0);
+      .forEach(day => {
+        totalSeconds += day.totalSeconds;
+        estimated += day.totalAmount;
+
+        day.sessions.forEach(session => {
+          const sessionAmount = (session.duration / 3600) * session.hourlyRate;
+          if (session.isBilled) {
+            billed += sessionAmount;
+          } else {
+            toReceive += sessionAmount;
+          }
+        });
+      });
+
+    return {
+      totalSeconds,
+      estimated,
+      billed,
+      toReceive
+    };
   });
 
-  const currentMonthAmount = computed(() => {
-    const now = new Date();
-    const yearMonth = now.toISOString().slice(0, 7); // formato YYYY-MM
-    return reports.value
-      .filter(r => r.date.startsWith(yearMonth))
-      .reduce((sum, day) => sum + day.totalAmount, 0);
-  });
-
-  const monthlyAmount = computed(() => {
-    const result: Record<string, number> = {};
+  const monthlySummary = computed(() => {
+    const result: Record<string, { totalEarnings: number; totalTime: number }> = {};
 
     reports.value.forEach(report => {
       const month = report.date.slice(0, 7); // 'YYYY-MM'
+
       if (!result[month]) {
-        result[month] = 0;
+        result[month] = {
+          totalEarnings: 0,
+          totalTime: 0
+        };
       }
-      result[month] += report.totalAmount;
+
+      result[month].totalEarnings += report.totalAmount;
+      result[month].totalTime += report.totalSeconds;
     });
 
     return result;
   });
-
 
   const fetchReports = async (
     startDate?: Date,
@@ -141,9 +163,8 @@ export const useReportStore = defineStore('reportStore', () => {
     fetchReports,
     totalTime,
     totalAmount,
-    currentMonthTime,
-    currentMonthAmount,
-    monthlyAmount
+    currentMonthStats,
+    monthlySummary
   };
 
 });

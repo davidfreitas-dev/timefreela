@@ -125,21 +125,21 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
 
     <div class="cards flex flex-col md:flex-row items-center w-full gap-5 my-8">
       <div class="card w-full md:w-1/2 rounded-3xl border border-neutral dark:border-neutral-700 p-6">
-        <h1 class="card-title text-font dark:text-white text-5xl font-bold mb-3">
-          {{ $filters.formatDuration(reportStore.totalTime) }}
-        </h1>
-        <span class="card-body text-font dark:text-gray-300">
+        <span class="card-body text-secondary dark:text-secondary-dark">
           Horas Trabalhadas
         </span>
+        <h1 class="card-title text-font dark:text-white text-5xl font-bold mt-3">
+          {{ $filters.formatDuration(reportStore.totalTime) }}
+        </h1>
       </div>
 
       <div class="card w-full md:w-1/2 rounded-3xl border border-neutral dark:border-neutral-700 p-6">
-        <h1 class="card-title text-font dark:text-white text-5xl font-bold mb-3">
-          {{ $filters.formatCurrencyBRL(reportStore.totalAmount) }}
-        </h1>
-        <span class="card-body text-font dark:text-gray-300">
+        <span class="card-body text-secondary dark:text-secondary-dark">
           Receita Total
         </span>
+        <h1 class="card-title text-font dark:text-white text-5xl font-bold mt-3">
+          {{ $filters.formatCurrencyBRL(reportStore.totalAmount) }}
+        </h1>
       </div>
     </div>
 
