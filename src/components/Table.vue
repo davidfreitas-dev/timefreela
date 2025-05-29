@@ -8,7 +8,7 @@ defineProps<{
 <template>
   <div class="overflow-x-auto scrollbar">
     <table class="min-w-full text-left">
-      <thead class="border-y border-neutral dark:border-neutral-dark text-font-accent dark:text-font-accent-dark">
+      <thead class="border-b border-neutral dark:border-neutral-dark text-font-accent dark:text-font-accent-dark">
         <tr>
           <th
             v-for="(header, index) in headers"

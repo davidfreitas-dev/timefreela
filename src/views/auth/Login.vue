@@ -55,13 +55,18 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
 <template>
   <div class="flex md:items-center justify-center w-full h-screen">
     <div class="md:bg-background dark:md:bg-accent-dark md:shadow-lg md:rounded-xl md:px-8 px-4 py-4 w-full max-w-lg">
-      <div class="flex flex-col items-center mb-3">
-        <img
-          :src="logoPath"
-          alt="Logo Time Freela"
-          class="h-16"
-        >
-        <span class="font-sans text-sm text-secondary mb-2">
+      <div class="flex flex-col items-center my-3">
+        <div class="flex items-center">
+          <img
+            :src="logoPath"
+            alt="Logo Time Freela"
+            class="h-12"
+          >
+          <h3 class="text-font dark:text-font-dark text-4xl font-extrabold">
+            Time<span class="text-primary ml-0.5">Freela</span>
+          </h3>
+        </div>
+        <span class="font-sans text-sm text-secondary mt-1">
           Faça login para usar nossa plataforma
         </span>
       </div>

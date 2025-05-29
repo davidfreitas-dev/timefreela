@@ -40,10 +40,10 @@ const toggleSidebar = (): void => {
 </script>
 
 <template>
-  <aside :class="['flex flex-col bg-accent/30 dark:bg-accent-dark text-secondary dark:text-secondary-dark border border-neutral dark:border-neutral-dark overflow-hidden min-h-screen p-4 transition-all ease-in-out duration-200', sidebarWidth]">
+  <aside :class="['flex flex-col bg-accent/30 dark:bg-accent-dark text-secondary dark:text-secondary-dark border-r border-neutral dark:border-neutral-dark overflow-hidden min-h-screen p-4 transition-all ease-in-out duration-200', sidebarWidth]">
     <Logo :is-expanded="isExpanded" />
 
-    <div :class="['menu-toggle-wrap flex mb-4 select-none transition-all duration-200 relative', { 'justify-end': isExpanded, 'top-[-3.25rem]': isExpanded, 'top-0': !isExpanded }]">
+    <div :class="['menu-toggle-wrap flex mb-4 select-none transition-all duration-200 relative', { 'justify-end': isExpanded, 'top-[-3rem]': isExpanded, 'top-0': !isExpanded }]">
       <button class="menu-toggle transition-all duration-200 rounded-xl focus:outline-none cursor-pointer" @click="toggleSidebar">
         <span class="material-icons text-secondary hover:text-primary transition-all duration-200 p-1" :style="{ transform: isExpanded ? 'rotate(-180deg)' : 'none' }">
           keyboard_double_arrow_right

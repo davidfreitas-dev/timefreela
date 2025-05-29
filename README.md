@@ -1,6 +1,4 @@
-<img src="src/assets/logo.png" alt="Logo Time Freela" width="400">
-
-# Documentação Oficial
+# Time Freela Documentação Oficial
 
 ## 📚 Índice
 
@@ -199,7 +197,6 @@ sessions/{sessionId}
 
 ## 14. Extras (Planejados/Futuros)
 
-- Modo escuro
 - Mini-timer flutuante
 - Relatórios em PDF/CSV
 - Notificações por e-mail sobre faturamento
