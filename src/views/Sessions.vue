@@ -100,16 +100,16 @@ const goToEditSession = (sessionId: string) => {
     </div>
 
     <div class="rounded-3xl overflow-hidden border border-neutral dark:border-neutral-700 my-8">
-      <div class="filters flex flex-col md:flex-row gap-4 w-full p-5">
-        <div class="w-full md:w-1/2">
+      <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+        <div class="w-full">
           <InputSearch v-model="search" placeholder="Buscar por projeto" />
         </div>
 
-        <div class="w-full md:w-1/2">
+        <div class="w-full">
           <Select v-model="selectedFilter" :options="filterOptions" />
         </div>
       </div>
-
+      
       <Loader
         v-if="isLoading"
         color="primary"

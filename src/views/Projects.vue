@@ -89,15 +89,15 @@ const goToEditProject = (projectId: string) => {
     </div>
 
     <div class="relative rounded-3xl border border-neutral dark:border-neutral-dark my-8">
-      <div class="filters border-b border-neutral dark:border-neutral-dark flex flex-col md:flex-row gap-4 w-full p-5">
-        <div class="w-full md:w-1/2">
+      <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+        <div class="w-full">
           <InputSearch
             v-model="search"
             placeholder="Buscar por título"
           />
         </div>
 
-        <div class="w-full md:w-1/2">
+        <div class="w-full">
           <Select
             v-model="selectedFilter"
             :options="filterOptions"

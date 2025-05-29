@@ -147,9 +147,9 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
       <h1 class="section-title text-font dark:text-white text-2xl font-semibold mb-3">
         Faturamento por Projeto
       </h1>
-      <div class="flex flex-col gap-5 rounded-3xl overflow-hidden border border-neutral dark:border-neutral-700">
-        <div class="filters flex flex-col md:flex-row gap-4 w-full px-5 pt-5">
-          <div class="w-full md:w-1/2">
+      <div class="flex flex-col rounded-3xl overflow-hidden border border-neutral dark:border-neutral-700">
+        <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-5 pt-5 border-b border-neutral dark:border-neutral-dark pb-5">
+          <div class="w-full">
             <InputDate
               v-model="dateInterval.start"
               placeholder="Data inicial"
@@ -158,7 +158,7 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
             />
           </div>
 
-          <div class="w-full md:w-1/2">
+          <div class="w-full">
             <InputDate
               v-model="dateInterval.end"
               placeholder="Data final"
@@ -170,14 +170,12 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
               @blur="v$.end.$touch()"
             />
           </div>
-        </div>
 
-        <div class="filters flex flex-col md:flex-row gap-4 w-full px-5">
-          <div class="w-full md:w-1/2">
+          <div class="w-full">
             <InputSearch v-model="search" placeholder="Buscar por projeto" />
           </div>
 
-          <div class="w-full md:w-1/2">
+          <div class="w-full">
             <Select v-model="selectedFilter" :options="filterOptions" />
           </div>
         </div>
