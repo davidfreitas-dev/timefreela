@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import { useVuelidate } from '@vuelidate/core';
 import { minValue, required } from '@vuelidate/validators';
 import { useProjectStore } from '@/stores/projectStore';
 import { useSessionStore } from '@/stores/sessionStore';
+import { useTimerStore } from '@/stores/timerStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
-import { useTimer } from '@/composables/useTimer';
 import { type Option } from '@/types/option';
 import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
@@ -18,8 +19,10 @@ import Dialog from '@/components/Dialog.vue';
 const router = useRouter();
 const projectStore = useProjectStore();
 const sessionStore = useSessionStore();
+const timerStore = useTimerStore();
 
-const { duration, isRunning, start, pause, reset } = useTimer();
+const { start, pause, reset } = timerStore;
+const { duration, isRunning } = storeToRefs(timerStore);
 const { isLoading, withLoading } = useLoading();
 const { showToast } = useToast();
 
@@ -29,7 +32,7 @@ const rules = computed(() => ({
 }));
 
 const session = computed(() => {
-  const base = sessionStore.currentSession ?? { projectId: '', duration: 0 };
+  const base = sessionStore.activeSession ?? { projectId: '', duration: 0 };
   return { ...base, duration: duration.value };
 });
 
@@ -38,23 +41,26 @@ const v$ = useVuelidate(rules, session);
 const selectedProject = computed({
   get: () => {
     return projectOptions.value.find(
-      option => option.value === sessionStore.currentSession?.projectId
+      option => option.value === sessionStore.activeSession?.projectId
     ) || { label: 'Selecione uma opção', value: '' };
   },
   set: (option: Option) => {
-    if (!sessionStore.currentSession) {
+    if (!sessionStore.activeSession) {
       sessionStore.startSession(String(option.value));
     } else {
-      sessionStore.currentSession.projectId = String(option.value);
+      sessionStore.activeSession.projectId = String(option.value);
     }
   }
 });
 
-watch(duration, newValue => {
-  if (sessionStore.currentSession) {
-    sessionStore.currentSession.duration = newValue;
+watch(
+  () => timerStore.duration,
+  (newValue) => {
+    if (sessionStore.activeSession) {
+      sessionStore.activeSession.duration = newValue;
+    }
   }
-});
+);
 
 const projectOptions = computed(() => {
   return projectStore.projects
@@ -88,7 +94,7 @@ const startSession = () => {
 };
 
 const isSessionStarted = computed(() => {
-  const s = sessionStore.currentSession;
+  const s = sessionStore.activeSession;
   return s !== null && !!s.projectId && (s.duration > 0 || isRunning.value);
 });
 
@@ -125,6 +131,9 @@ const finishSession = async () => {
 
 onMounted(() => {
   loadProjects();
+  if (isRunning.value) {
+    start();
+  }
 });
 </script>
 

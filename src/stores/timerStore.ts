@@ -1,8 +1,9 @@
+import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export function useTimer() {
-  const isRunning = ref<boolean>(false);
-  const duration = ref<number>(0); // segundos
+export const useTimerStore = defineStore('timer', () => {
+  const isRunning = ref(false);
+  const duration = ref(0); // em segundos
   let intervalId: ReturnType<typeof setInterval> | null = null;
 
   const start = () => {
@@ -31,6 +32,8 @@ export function useTimer() {
     duration,
     start,
     pause,
-    reset
+    reset,
   };
-}
+}, {
+  persist: true, 
+});

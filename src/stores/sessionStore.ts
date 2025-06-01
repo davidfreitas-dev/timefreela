@@ -12,20 +12,39 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
+  FieldValue,
   type Unsubscribe
 } from 'firebase/firestore';
 import { db } from '@/services/firestore';
 import { useUserStore } from '@/stores/userStore';
-import type { Session } from '@/types/session';
+
+type Session = {
+  id: string;
+  userId: string;
+  projectId: string;
+  duration: number; // segundos
+  isManual: boolean;
+  isBilled: boolean;
+  date: Date | FieldValue | null;
+  endTime: Date | FieldValue | null;
+  startTime: Date | FieldValue | null;
+  createdAt?: Date | FieldValue | null;
+  updatedAt?: Date | FieldValue | null;
+}
 
 export const useSessionStore = defineStore('sessionStore', () => {
   const { user } = storeToRefs(useUserStore());
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
   const sessions: Ref<Session[]> = ref([]);
-  const currentSession = ref<Omit<Session, 'id' | 'userId' | 'createdAt'> | null>(null);
+  const activeSession = ref<Omit<Session, 'id' | 'userId' | 'createdAt'> | null>(null);
+
+  const getUserId = (): string => {
+    if (!user.value?.id) throw new Error('Usuário não autenticado.');
+    return user.value.id;
+  };
 
   const startSession = (projectId: string) => {
-    currentSession.value = {
+    activeSession.value = {
       projectId,
       duration: 0,
       isManual: false,
@@ -37,17 +56,13 @@ export const useSessionStore = defineStore('sessionStore', () => {
   };
 
   const finishSession = async () => {
-    if (!currentSession.value) return;
-
-    if (!user.value?.id) {
-      throw new Error('Usuário não autenticado.');
-    }
+    if (!activeSession.value) return;
 
     const now = new Date();
 
     const session: Omit<Session, 'id'> = {
-      ...currentSession.value,
-      userId: user.value.id,
+      ...activeSession.value,
+      userId: getUserId(),
       endTime: now,
       date: now,
       createdAt: serverTimestamp()
@@ -55,20 +70,16 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
     addSession(session);
 
-    currentSession.value = null;
+    activeSession.value = null;
   };
 
-  const fetchSessions = async (projectId?: string): Promise<void> => {
-    if (!user.value?.id) {
-      throw new Error('Usuário não autenticado.');
-    }
-
+  const listenToSessions = async (projectId?: string): Promise<void> => {
     if (unsubscribe.value) {
       unsubscribe.value();
     }
 
     const constraints = [
-      where('userId', '==', user.value?.id),
+      where('userId', '==', getUserId()),
       orderBy('startTime', 'desc')
     ];
 
@@ -105,13 +116,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
   };
 
   const addSession = async (session: Omit<Session, 'id' | 'userId' | 'createdAt'>) => {
-    if (!user.value?.id) {
-      throw new Error('Usuário não autenticado.');
-    }
-
     const sessionData: Omit<Session, 'id'> = {
       ...session,
-      userId: user.value.id,
+      userId: getUserId(),
       createdAt: serverTimestamp()
     };
 
@@ -162,8 +169,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
   return {
     sessions,
-    currentSession,
-    fetchSessions,
+    activeSession,
+    listenToSessions,
     addSession,
     updateSession,
     deleteSession,
@@ -173,4 +180,31 @@ export const useSessionStore = defineStore('sessionStore', () => {
     startSession,
     finishSession
   };
+}, {
+  persist: {
+    key: 'sessionStore',
+    storage: localStorage,
+    serializer: {
+      serialize: (state) => {
+        return JSON.stringify({
+          activeSession: state.activeSession,
+        });
+      },
+      deserialize: (value) => {
+        const parsed = JSON.parse(value);
+        const session = parsed?.activeSession;
+
+        if (!session) return { activeSession: null };
+
+        return {
+          activeSession: {
+            ...session,
+            date: session.date ? new Date(session.date) : null,
+            endTime: session.endTime ? new Date(session.endTime) : null,
+            startTime: session.startTime ? new Date(session.startTime) : null,
+          }
+        };
+      }
+    }
+  }
 });

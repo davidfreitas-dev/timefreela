@@ -5,13 +5,14 @@ import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
 import Sidebar from '@/components/Sidebar.vue';
+import TimerWidget from '@/components/TimerWidget.vue';
 import Toast from '@/components/Toast.vue';
 
 const route = useRoute();
 
-const { toast, toastData } = useToast();
-
 const { isAuthenticated } = storeToRefs(useAuthStore());
+
+const { toast, toastData } = useToast();
 
 const sidebarWidth = ref<string>('230px');
 
@@ -41,6 +42,7 @@ const changeSidebarWidth = (event: string): void => {
         />
       </Transition>
     </RouterView>
+    <TimerWidget />
     <Toast ref="toast" :toast-data="toastData" />
   </div>
 </template>

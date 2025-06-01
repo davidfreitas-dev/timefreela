@@ -34,7 +34,7 @@ onMounted(() => {
   withLoading(
     async () => {
       await Promise.all([
-        sessionStore.fetchSessions(),
+        sessionStore.listenToSessions(),
         projectStore.fetchProjects()
       ]);
     },
