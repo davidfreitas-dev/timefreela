@@ -5,6 +5,7 @@ import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { useProjectStore } from '@/stores/projectStore';
 import { useSessionStore } from '@/stores/sessionStore';
+import { useTimerStore } from '@/stores/timerStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
 import { type Option } from '@/types/option';
@@ -164,7 +165,13 @@ const handleDeleteSession = () => {
   dialogRef.value?.openModal();
 };
 
+const timerStore = useTimerStore();
+
 onMounted(() => {
+  if (timerStore.isRunning) {
+    timerStore.start();
+  }
+  
   loadProjects();
   loadSessionData();
 });

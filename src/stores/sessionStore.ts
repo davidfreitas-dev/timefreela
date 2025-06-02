@@ -12,65 +12,22 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
-  FieldValue,
   type Unsubscribe
 } from 'firebase/firestore';
 import { db } from '@/services/firestore';
 import { useUserStore } from '@/stores/userStore';
-
-type Session = {
-  id: string;
-  userId: string;
-  projectId: string;
-  duration: number; // segundos
-  isManual: boolean;
-  isBilled: boolean;
-  date: Date | FieldValue | null;
-  endTime: Date | FieldValue | null;
-  startTime: Date | FieldValue | null;
-  createdAt?: Date | FieldValue | null;
-  updatedAt?: Date | FieldValue | null;
-}
+import type { SessionFirestoreData, Session, NewSession } from '@/types/session';
 
 export const useSessionStore = defineStore('sessionStore', () => {
   const { user } = storeToRefs(useUserStore());
+  
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
+  const activeSession: Ref<NewSession | null> = ref(null);
   const sessions: Ref<Session[]> = ref([]);
-  const activeSession = ref<Omit<Session, 'id' | 'userId' | 'createdAt'> | null>(null);
 
   const getUserId = (): string => {
     if (!user.value?.id) throw new Error('Usuário não autenticado.');
     return user.value.id;
-  };
-
-  const startSession = (projectId: string) => {
-    activeSession.value = {
-      projectId,
-      duration: 0,
-      isManual: false,
-      isBilled: false,
-      startTime: new Date(),
-      endTime: null,
-      date: null,
-    };
-  };
-
-  const finishSession = async () => {
-    if (!activeSession.value) return;
-
-    const now = new Date();
-
-    const session: Omit<Session, 'id'> = {
-      ...activeSession.value,
-      userId: getUserId(),
-      endTime: now,
-      date: now,
-      createdAt: serverTimestamp()
-    };
-
-    addSession(session);
-
-    activeSession.value = null;
   };
 
   const listenToSessions = async (projectId?: string): Promise<void> => {
@@ -115,29 +72,6 @@ export const useSessionStore = defineStore('sessionStore', () => {
     });
   };
 
-  const addSession = async (session: Omit<Session, 'id' | 'userId' | 'createdAt'>) => {
-    const sessionData: Omit<Session, 'id'> = {
-      ...session,
-      userId: getUserId(),
-      createdAt: serverTimestamp()
-    };
-
-    await addDoc(collection(db, 'sessions'), sessionData);
-  };
-
-  const updateSession = async (sessionId: string, updatedData: Partial<Session>) => {
-    const sessionRef = doc(db, 'sessions', sessionId);
-
-    await updateDoc(sessionRef, {
-      ...updatedData,
-      updatedAt: serverTimestamp()
-    });
-  };
-
-  const deleteSession = async (sessionId: string) => {
-    await deleteDoc(doc(db, 'sessions', sessionId));
-  };
-
   const getSessionById = async (sessionId: string): Promise<Session | null> => {
     const sessionRef = doc(db, 'sessions', sessionId);
     
@@ -158,6 +92,59 @@ export const useSessionStore = defineStore('sessionStore', () => {
     } as Session;
   };
 
+  const startSession = (projectId: string): void => {
+    activeSession.value = {
+      projectId,
+      duration: 0,
+      isManual: false,
+      isBilled: false,
+      startTime: new Date(),
+      endTime: null,
+      date: null,
+    };
+  };
+
+  const addSession = async (session: NewSession): Promise<void> => {
+    const sessionData: SessionFirestoreData = {
+      ...session,
+      userId: getUserId(),
+      createdAt: serverTimestamp()
+    };
+
+    await addDoc(collection(db, 'sessions'), sessionData);
+  };
+
+  const updateSession = async (sessionId: string, updatedData: Partial<Session>): Promise<void> => {
+    const sessionRef = doc(db, 'sessions', sessionId);
+
+    await updateDoc(sessionRef, {
+      ...updatedData,
+      updatedAt: serverTimestamp()
+    });
+  };
+
+  const deleteSession = async (sessionId: string): Promise<void> => {
+    await deleteDoc(doc(db, 'sessions', sessionId));
+  };
+
+  const finishSession = async () => {
+    if (!activeSession.value) return;
+
+    const now = new Date();
+
+    const session: SessionFirestoreData = {
+      ...activeSession.value,
+      userId: getUserId(),
+      endTime: now,
+      date: now,
+      createdAt: serverTimestamp()
+    };
+
+    addSession(session);
+
+    activeSession.value = null;
+  };
+
   const stopListeningSessions = () => {
     unsubscribe.value?.();
     unsubscribe.value = null;
@@ -171,14 +158,14 @@ export const useSessionStore = defineStore('sessionStore', () => {
     sessions,
     activeSession,
     listenToSessions,
+    getSessionById,
+    startSession,
     addSession,
     updateSession,
     deleteSession,
-    getSessionById,
+    finishSession,
     stopListeningSessions,
-    resetSessions,
-    startSession,
-    finishSession
+    resetSessions
   };
 }, {
   persist: {

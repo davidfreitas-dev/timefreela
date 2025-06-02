@@ -6,6 +6,7 @@ import { required, email, helpers } from '@vuelidate/validators';
 import { useDark } from '@vueuse/core';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
+import { useTimerStore } from '@/stores/timerStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
 import Container from '@/components/Container.vue';
@@ -20,6 +21,7 @@ import Dialog from '@/components/Dialog.vue';
 const router = useRouter();
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const timerStore = useTimerStore();
 
 const formData = ref({
   name: '',
@@ -27,6 +29,10 @@ const formData = ref({
 });
 
 onMounted(() => {
+  if (timerStore.isRunning) {
+    timerStore.start();
+  }
+  
   if (userStore.user) {
     formData.value.name = userStore.user.name;
     formData.value.email = userStore.user.email;

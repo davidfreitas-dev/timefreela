@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useLoading } from '@/composables/useLoading';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useTimerStore } from '@/stores/timerStore';
 import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import Icon from '@/components/Icon.vue';
@@ -17,6 +18,7 @@ import Loader from '@/components/Loader.vue';
 const router = useRouter();
 const sessionStore = useSessionStore();
 const projectStore = useProjectStore();
+const timerStore = useTimerStore();
 
 const search = ref('');
 
@@ -31,6 +33,10 @@ const selectedFilter = ref(filterOptions[0]);
 const { isLoading, withLoading } = useLoading();
 
 onMounted(() => {
+  if (timerStore.isRunning) {
+    timerStore.start();
+  }
+  
   withLoading(
     async () => {
       await Promise.all([

@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useReportStore } from '@/stores/reportStore';
+import { useTimerStore } from '@/stores/timerStore';
 import { useLoading } from '@/composables/useLoading';
 import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
@@ -12,14 +13,21 @@ import BarChart from '@/components/BarChart.vue';
 const userStore = useUserStore();
 const projectStore = useProjectStore();
 const reportStore = useReportStore();
+const timerStore = useTimerStore();
 
 const { user } = storeToRefs(userStore);
+const { isRunning } = storeToRefs(timerStore);
 const { fetchProjects } = projectStore;
 const { fetchReports } = reportStore;
+const { start } = timerStore;
 
 const { withLoading } = useLoading();
 
-onMounted(async () => {    
+onMounted(async () => {
+  if (isRunning.value) {
+    start();
+  }
+  
   await withLoading(async () => {
     await fetchProjects();
     await fetchReports();

@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength } from '@vuelidate/validators';
 import { useProjectStore } from '@/stores/projectStore';
+import { useTimerStore } from '@/stores/timerStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
 import { type Project } from '@/types/project';
@@ -121,7 +122,14 @@ const handleDeleteProject = () => {
   dialogRef.value?.openModal();
 };
 
-onMounted(loadProjectData);
+const timerStore = useTimerStore();
+
+onMounted(() => {
+  if (timerStore.isRunning) {
+    timerStore.start();
+  }
+  loadProjectData();
+});
 </script>
 
 <template>

@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLoading } from '@/composables/useLoading';
 import { useProjectStore } from '@/stores/projectStore';
+import { useTimerStore } from '@/stores/timerStore';
 import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import Icon from '@/components/Icon.vue';
@@ -32,11 +33,15 @@ const tableHead = ref([
   'Ações'
 ]);
 
+const timerStore = useTimerStore();
 const projectStore = useProjectStore();
-
 const { isLoading, withLoading } = useLoading();
 
 onMounted(async () => {  
+  if (timerStore.isRunning) {
+    timerStore.start();
+  }
+
   await withLoading(async () => {
     await projectStore.fetchProjects();
   }, 'Não foi possível carregar os projetos. Tente novamente mais tarde.');

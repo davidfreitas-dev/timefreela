@@ -7,6 +7,7 @@ import { useVuelidate } from '@vuelidate/core';
 import { useLoading } from '@/composables/useLoading';
 import { useProjectStore } from '@/stores/projectStore';
 import { useReportStore } from '@/stores/reportStore';
+import { useTimerStore } from '@/stores/timerStore';
 import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import InputSearch from '@/components/InputSearch.vue';
@@ -17,10 +18,13 @@ import Loader from '@/components/Loader.vue';
 
 const projectStore = useProjectStore();
 const reportStore = useReportStore();
+const timerStore = useTimerStore();
 
 const { fetchProjects } = projectStore;
 const { fetchReports } = reportStore;
+const { start } = timerStore;
 const { reports } = storeToRefs(reportStore);
+const { isRunning } = storeToRefs(timerStore);
 
 const dateInterval = ref({
   start: null as Date | null,
@@ -73,7 +77,11 @@ watch(() => selectedFilter.value.value, async () => {
 
 const { isLoading, withLoading } = useLoading();
 
-onMounted(async () => {    
+onMounted(async () => {  
+  if (isRunning.value) {
+    start();
+  }
+    
   await withLoading(async () => {
     await fetchProjects();
     await fetchReports();
