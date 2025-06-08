@@ -1,26 +1,31 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import { TransitionRoot } from '@headlessui/vue';
+import { ref, computed } from 'vue';
 import type { ToastData } from '@/types/toast';
 import Icon from '@/components/Icon.vue';
+import 'animate.css';
 
 const { toastData } = defineProps<{
   toastData: ToastData;
 }>();
 
 const isShowing = ref(false);
+const animationClass = ref('');
 
 const showToast = () => {
+  animationClass.value = 'animate__bounceInRight';
   isShowing.value = true;
+
+  setTimeout(() => {
+    animationClass.value = 'animate__bounceOutRight';
+  }, 3000);
 };
 
-watch(isShowing, (newIsShowing) => {
-  if (newIsShowing) {
-    setTimeout(() => {
-      isShowing.value = false;
-    }, 2500);
+const handleAnimationEnd = () => {
+  if (animationClass.value === 'animate__bounceOutRight') {
+    isShowing.value = false;
+    animationClass.value = '';
   }
-});
+};
 
 const toastIcon = computed(() => {
   switch (toastData.type) {
@@ -40,35 +45,35 @@ defineExpose({ showToast });
 </script>
 
 <template>
-  <TransitionRoot
-    :show="isShowing"
-    enter="transition-opacity duration-75"
-    enter-from="opacity-0"
-    enter-to="opacity-100"
-    leave="transition-opacity duration-150"
-    leave-from="opacity-100"
-    leave-to="opacity-0"
+  <div
+    v-if="isShowing"
+    id="toast"
+    role="alert"
+    :class="[
+      'fixed z-50 top-5 right-7 flex items-center p-4 mb-4 w-full max-w-xs text-white rounded-lg shadow-md animate__animated',
+      animationClass,
+      {
+        'bg-success': toastData.type === 'success',
+        'bg-danger': toastData.type === 'error',
+        'bg-warning': toastData.type === 'info'
+      }
+    ]"
+    @animationend="handleAnimationEnd"
   >
     <div
-      id="toast"
-      role="alert"
-      class="fixed z-50 top-10 left-1/2 -translate-x-1/2 flex items-center p-4 mb-4 w-full max-w-xs text-font bg-white rounded-lg shadow-md"
+      class="inline-flex flex-shrink-0 justify-center items-center w-9 h-9 rounded-lg"
+      :class="{
+        'bg-success-hover': toastData.type === 'success',
+        'bg-danger-hover': toastData.type === 'error',
+        'bg-warning-hover': toastData.type === 'info'
+      }"
     >
-      <div
-        class="inline-flex flex-shrink-0 justify-center items-center w-9 h-9 bg-opacity-10 rounded-lg"
-        :class="{
-          'text-success-hover bg-success-accent': toastData.type === 'success',
-          'text-danger-hover bg-danger-accent': toastData.type === 'error',
-          'text-warning-hover bg-warning-accent': toastData.type === 'info'
-        }"
-      >
-        <Icon :name="toastIcon" />
-        <span class="sr-only">Icon</span>
-      </div>
-
-      <div class="ml-3 text-sm font-normal">
-        {{ toastData.message }}
-      </div>
+      <Icon :name="toastIcon" class="text-white" />
+      <span class="sr-only">Icon</span>
     </div>
-  </TransitionRoot>
+
+    <div class="ml-3 text-sm font-normal">
+      {{ toastData.message }}
+    </div>
+  </div>
 </template>

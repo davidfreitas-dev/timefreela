@@ -54,7 +54,7 @@ watch(selectedOption, (newValue) => {
           </span>
           <Icon
             name="keyboard_arrow_down"
-            class="transform transition-transform duration-200"
+            class="text-font dark:text-font-dark transform transition-transform duration-200"
             :class="{ 'rotate-180': open }"
           />
         </ListboxButton>

@@ -83,6 +83,8 @@ const formatTime = (seconds: number) => {
 };
 
 const startSession = () => {
+  v$.value.$touch();
+
   if (!session.value.projectId) {
     showToast('error', 'Selecione um projeto para iniciar a sessão.');
     return;
@@ -154,7 +156,7 @@ onMounted(() => {
             v-model="selectedProject"
             :options="projectOptions"
             label="Projeto"
-            :error="v$.projectId.$dirty && v$.projectId.$error ? 'O projeto é obrigatório' : ''"
+            :error="v$.projectId.$dirty && v$.projectId.$error ? 'A seleção do projeto é obrigatória' : ''"
           />
 
           <div class="flex justify-center gap-4 mt-4">

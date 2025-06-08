@@ -157,7 +157,7 @@ onMounted(() => {
             v-model="formData.description"
             type="text"
             label="Descrição"
-            placeholder="Breve resumo do que deve ser feito"
+            placeholder="Descrição curta do que deve ser feito"
             :error="v$.description.$dirty && v$.description.$error ? 'A descrição é obrigatória' : ''"
             @blur="v$.description.$touch"
           />
