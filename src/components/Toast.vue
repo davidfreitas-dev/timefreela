@@ -53,9 +53,9 @@ defineExpose({ showToast });
       'fixed z-50 top-5 right-7 flex items-center p-4 mb-4 w-full max-w-xs text-white rounded-lg shadow-md animate__animated',
       animationClass,
       {
-        'bg-success': toastData.type === 'success',
-        'bg-danger': toastData.type === 'error',
-        'bg-warning': toastData.type === 'info'
+        'bg-success dark:bg-success-dark': toastData.type === 'success',
+        'bg-danger dark:bg-danger-dark': toastData.type === 'error',
+        'bg-warning dark:bg-warning-dark': toastData.type === 'info'
       }
     ]"
     @animationend="handleAnimationEnd"
@@ -63,9 +63,9 @@ defineExpose({ showToast });
     <div
       class="inline-flex flex-shrink-0 justify-center items-center w-9 h-9 rounded-lg"
       :class="{
-        'bg-success-hover': toastData.type === 'success',
-        'bg-danger-hover': toastData.type === 'error',
-        'bg-warning-hover': toastData.type === 'info'
+        'bg-success-hover dark:bg-success-hover-dark': toastData.type === 'success',
+        'bg-danger-hover dark:bg-danger-hover-dark': toastData.type === 'error',
+        'bg-warning-hover dark:bg-warning-hover-dark': toastData.type === 'info'
       }"
     >
       <Icon :name="toastIcon" class="text-white" />

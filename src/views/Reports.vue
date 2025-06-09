@@ -155,7 +155,7 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
       <h1 class="section-title text-font dark:text-white text-2xl font-semibold mb-3">
         Faturamento por Projeto
       </h1>
-      <div class="flex flex-col rounded-3xl overflow-hidden border border-neutral dark:border-neutral-700">
+      <div class="relative rounded-3xl border border-neutral dark:border-neutral-dark">
         <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-5 pt-5 border-b border-neutral dark:border-neutral-dark pb-5">
           <div class="w-full">
             <InputDate

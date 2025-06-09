@@ -73,7 +73,10 @@ const sortedMonthly = computed(() => {
   const avgHourPart = Math.floor(avgHours);
   const avgMinutePart = Math.round((avgHours - avgHourPart) * 60);
   const formattedAvgTime = `${avgHourPart}h ${avgMinutePart}min`;
-  const formattedAvgRevenue = `R$ ${avgEarnings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  const formattedAvgRevenue = `R$ ${avgEarnings.toLocaleString('pt-BR', { 
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2 
+  })}`;
 
   return {
     chartLabels: entries.map(e => e.label),

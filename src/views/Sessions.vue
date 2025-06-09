@@ -105,7 +105,7 @@ const goToEditSession = (sessionId: string) => {
       </Button>
     </div>
 
-    <div class="rounded-3xl overflow-hidden border border-neutral dark:border-neutral-700 my-8">
+    <div class="relative rounded-3xl border border-neutral dark:border-neutral-dark my-8">
       <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
         <div class="w-full">
           <InputSearch v-model="search" placeholder="Buscar por projeto" />
