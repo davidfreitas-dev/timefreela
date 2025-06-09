@@ -194,26 +194,28 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
           class="w-4 h-4 mx-auto my-10"
         />
 
-        <Table
-          v-if="!isLoading && filteredRevenue?.length"
-          :headers="tableHeaders"
-          :items="filteredRevenue"
-        >
-          <template #row="{ item }">
-            <td class="px-6 py-4 w-[60%] max-w-[600px] truncate text-font dark:text-white">
-              {{ item.projectTitle }}
-            </td>
+        <div class="rounded-2xl overflow-auto">
+          <Table
+            v-if="!isLoading && filteredRevenue?.length"
+            :headers="tableHeaders"
+            :items="filteredRevenue"
+          >
+            <template #row="{ item }">
+              <td class="px-6 py-4 w-[60%] max-w-[600px] truncate text-font dark:text-white">
+                {{ item.projectTitle }}
+              </td>
 
-            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
-              {{ $filters.formatDuration(item.totalSeconds) }}
-            </td>
+              <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
+                {{ $filters.formatDuration(item.totalSeconds) }}
+              </td>
 
-            <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
-              {{ $filters.formatCurrencyBRL(item.totalAmount) }}
-            </td>
-          </template>
-        </Table>
-
+              <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
+                {{ $filters.formatCurrencyBRL(item.totalAmount) }}
+              </td>
+            </template>
+          </Table>
+        </div>
+        
         <div v-if="!isLoading && !filteredRevenue?.length" class="text-secondary dark:text-gray-400 text-center mb-10">
           Nenhum projeto encontrado.
         </div>

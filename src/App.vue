@@ -3,6 +3,8 @@ import { ref } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/authStore';
+import { useTimerStore } from '@/stores/timerStore';
+import { useBeforeUnloadGuard } from '@/composables/useBeforeUnloadGuard';
 import { useToast } from '@/composables/useToast';
 import Sidebar from '@/components/Sidebar.vue';
 import TimerWidget from '@/components/TimerWidget.vue';
@@ -11,14 +13,17 @@ import Toast from '@/components/Toast.vue';
 const route = useRoute();
 
 const { isAuthenticated } = storeToRefs(useAuthStore());
+const { isRunning } = storeToRefs(useTimerStore());
 
-const { toast, toastData } = useToast();
+useBeforeUnloadGuard(() => isRunning.value);
 
 const sidebarWidth = ref<string>('230px');
 
 const changeSidebarWidth = (event: string): void => {
   sidebarWidth.value = event;
 };
+
+const { toast, toastData } = useToast();
 </script>
 
 <template>
