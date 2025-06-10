@@ -145,6 +145,18 @@ export const useSessionStore = defineStore('sessionStore', () => {
     activeSession.value = null;
   };
 
+  const markSessionsAsBilled = async (selectedIds: string[]): Promise<void> => {
+    const batchUpdates = selectedIds.map(async (id) => {
+      const sessionRef = doc(db, 'sessions', id);
+      await updateDoc(sessionRef, {
+        isBilled: true,
+        updatedAt: serverTimestamp()
+      });
+    });
+
+    await Promise.all(batchUpdates);
+  };
+
   const stopListeningSessions = () => {
     unsubscribe.value?.();
     unsubscribe.value = null;
@@ -164,6 +176,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     updateSession,
     deleteSession,
     finishSession,
+    markSessionsAsBilled,
     stopListeningSessions,
     resetSessions
   };

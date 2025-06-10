@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, h, type VNode } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLoading } from '@/composables/useLoading';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -11,6 +11,7 @@ import Icon from '@/components/Icon.vue';
 import Button from '@/components/Button.vue';
 import InputSearch from '@/components/InputSearch.vue';
 import Select from '@/components/Select.vue';
+import Checkbox from '@/components/Checkbox.vue';
 import Badge from '@/components/Badge.vue';
 import Table from '@/components/Table.vue';
 import Loader from '@/components/Loader.vue';
@@ -52,16 +53,6 @@ onBeforeUnmount(() => {
   sessionStore.stopListeningSessions();
 });
 
-const tableHead = ref([
-  'Projeto',
-  'Data',
-  'Início',
-  'Término',
-  'Duração',
-  'Status',
-  'Ações'
-]);
-
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
 const getProjectTitle = (projectId: string) => {
@@ -85,6 +76,64 @@ const filteredSessions = computed(() => {
     });
 });
 
+const selectedSessions = ref<string[]>([]);
+
+const allSelectableSessionIds = computed(() =>
+  filteredSessions.value
+    .filter(s => !s.isBilled)
+    .map(s => s.id)
+);
+
+const isAllSelected = computed({
+  get() {
+    return selectedSessions.value.length === allSelectableSessionIds.value.length && allSelectableSessionIds.value.length > 0;
+  },
+  set(checked: boolean) {
+    selectedSessions.value = checked ? [...allSelectableSessionIds.value] : [];
+  },
+});
+
+const isSelected = (id: string) => selectedSessions.value.includes(id);
+
+const toggleSelection = (id: string, value: boolean) => {
+  if (value) {
+    selectedSessions.value.push(id);
+  } else {
+    selectedSessions.value = selectedSessions.value.filter(sessionId => sessionId !== id);
+  }
+};
+
+const markSelectedAsBilled = async () => {
+  await withLoading(async () => {
+    await sessionStore.markSessionsAsBilled(selectedSessions.value);
+    selectedSessions.value = []; // limpa a seleção após faturar
+  }, 'Não foi possível faturar as sessões.');
+};
+
+const tableHead = computed<(string | VNode)[]>(() => {
+  const baseHeaders: (string | VNode)[] = [
+    'Projeto',
+    'Data',
+    'Início',
+    'Término',
+    'Duração',
+    'Status',
+    'Ações',
+  ];
+
+  const shouldShowCheckboxColumn = allSelectableSessionIds.value.length > 0;
+
+  return shouldShowCheckboxColumn
+    ? [
+      h(Checkbox, {
+        modelValue: isAllSelected.value,
+        'onUpdate:modelValue': (val: boolean) => (isAllSelected.value = val),
+      }),
+      ...baseHeaders,
+    ]
+    : baseHeaders;
+});
+
 const goToCreateSession = () => {
   router.push({ name: 'SessionCreate' });
 };
@@ -96,13 +145,25 @@ const goToEditSession = (sessionId: string) => {
 
 <template>
   <Container>
-    <div class="header flex justify-between items-center">
+    <div class="header flex justify-between items-center flex-wrap gap-4">
       <Breadcrumb title="Sessões" description="Gerencie suas sessões aqui." />
 
-      <Button class="h-fit" @click="goToCreateSession">
-        <Icon name="add" class="md:mr-2" />
-        <span class="hidden md:block">Nova Sessão</span>
-      </Button>
+      <div class="flex gap-2 ml-auto">
+        <Button
+          v-if="selectedSessions.length"
+          color="success"
+          @click="markSelectedAsBilled"
+        >
+          <Icon name="check" class="md:mr-2" />
+          <span class="hidden md:block">Faturar Selecionadas</span>
+        </Button>
+
+        <!-- Botão de Nova Sessão -->
+        <Button class="h-fit" @click="goToCreateSession">
+          <Icon name="add" class="md:mr-2" />
+          <span class="hidden md:block">Nova Sessão</span>
+        </Button>
+      </div>
     </div>
 
     <div class="relative rounded-3xl border border-neutral dark:border-neutral-dark my-8">
@@ -129,6 +190,16 @@ const goToEditSession = (sessionId: string) => {
           :items="filteredSessions"
         >
           <template #row="{ item: session }">
+            <template v-if="allSelectableSessionIds.length > 0">
+              <td class="pl-6 py-4">
+                <Checkbox
+                  v-if="!session.isBilled"
+                  :model-value="isSelected(session.id)"
+                  @update:model-value="checked => toggleSelection(session.id, checked)"
+                />
+              </td>
+            </template>
+
             <td class="px-6 py-4 max-w-[250px] truncate text-font dark:text-white">
               {{ getProjectTitle(session.projectId) }}
             </td>

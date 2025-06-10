@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T">
+import { type VNode } from 'vue';
 defineProps<{
-  headers: string[];
+  headers: (string | VNode)[];
   items: T[];
 }>();
 </script>
@@ -13,9 +14,16 @@ defineProps<{
           <th
             v-for="(header, index) in headers"
             :key="index"
-            class="px-6 py-4 text-font dark:text-font-dark"
+            :class="[
+              'px-6 py-4 text-font dark:text-font-dark',
+              index === 0 && 'pr-0'
+            ]"
           >
-            {{ header }}
+            <component 
+              :is="header" 
+              v-if="typeof header !== 'string'" 
+            />
+            <span v-else>{{ header }}</span>
           </th>
         </tr>
       </thead>
