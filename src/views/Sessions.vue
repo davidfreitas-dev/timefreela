@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, h, type VNode } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, h, type VNode } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLoading } from '@/composables/useLoading';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useTimerStore } from '@/stores/timerStore';
+import { helpers, required } from '@vuelidate/validators';
+import { useVuelidate } from '@vuelidate/core';
 import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import Icon from '@/components/Icon.vue';
 import Button from '@/components/Button.vue';
 import InputSearch from '@/components/InputSearch.vue';
 import Select from '@/components/Select.vue';
+import InputDate from '@/components/InputDate.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import Badge from '@/components/Badge.vue';
 import Table from '@/components/Table.vue';
@@ -59,6 +62,30 @@ const getProjectTitle = (projectId: string) => {
   return projectStore.projects.find(p => p.id === projectId)?.title || 'Projeto não encontrado';
 };
 
+const dateInterval = ref({
+  start: null as Date | null,
+  end: null as Date | null,
+});
+
+const isAfterStart = helpers.withParams(
+  { type: 'isAfterStart' },
+  (value: Date | null, vm) => {
+    if (!value || !vm.start) return true;
+    return value >= vm.start;
+  }
+);
+
+const rules = computed(() => ({
+  start: { required },
+  end: { required, isAfterStart }
+}));
+
+const v$ = useVuelidate(rules, dateInterval);
+
+watch(dateInterval, () => {
+  v$.value.$touch();
+}, { deep: true });
+
 const filteredSessions = computed(() => {
   if (!sessionStore.sessions?.length) return [];
 
@@ -73,6 +100,14 @@ const filteredSessions = computed(() => {
       if (!normalizedSearch.value) return true;
       const title = getProjectTitle(session.projectId).toLowerCase();
       return title.includes(normalizedSearch.value);
+    })
+    .filter(session => {
+      const start = dateInterval.value.start;
+      const end = dateInterval.value.end;
+      if (!start || !end) return true;
+      if (!session.date) return false;
+      const sessionDate = new Date(session.date);
+      return sessionDate >= start && sessionDate <= end;
     });
 });
 
@@ -168,13 +203,27 @@ const goToEditSession = (sessionId: string) => {
 
     <div class="relative rounded-3xl border border-neutral dark:border-neutral-dark my-8">
       <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
-        <div class="w-full">
-          <InputSearch v-model="search" placeholder="Buscar por projeto" />
-        </div>
+        <InputDate
+          v-model="dateInterval.start"
+          placeholder="Data inicial"
+          :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
+          @blur="v$.start.$touch()"
+        />
 
-        <div class="w-full">
-          <Select v-model="selectedFilter" :options="filterOptions" />
-        </div>
+        <InputDate
+          v-model="dateInterval.end"
+          placeholder="Data final"
+          :error="v$.end.$dirty && v$.end.$error
+            ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
+              ? 'Data final não pode ser anterior à data inicial.'
+              : 'Data final é obrigatória.'
+            : ''"
+          @blur="v$.end.$touch()"
+        />
+
+        <InputSearch v-model="search" placeholder="Buscar por projeto" />
+
+        <Select v-model="selectedFilter" :options="filterOptions" />
       </div>
       
       <Loader

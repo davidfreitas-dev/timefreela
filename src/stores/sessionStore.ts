@@ -30,18 +30,27 @@ export const useSessionStore = defineStore('sessionStore', () => {
     return user.value.id;
   };
 
-  const listenToSessions = async (projectId?: string): Promise<void> => {
-    if (unsubscribe.value) {
-      unsubscribe.value();
-    }
+  const listenToSessions = async (
+    projectId?: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<void> => {
+    if (unsubscribe.value) unsubscribe.value();
 
     const constraints = [
       where('userId', '==', getUserId()),
-      orderBy('startTime', 'desc')
+      orderBy('date', 'desc')
     ];
 
-    if (projectId) {
-      constraints.push(where('projectId', '==', projectId));
+    if (projectId) constraints.push(where('projectId', '==', projectId));
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      constraints.push(where('date', '>=', start));
+      constraints.push(where('date', '<=', end));
     }
 
     const querySessions = query(collection(db, 'sessions'), ...constraints);
@@ -57,9 +66,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
               ...data,
               createdAt: data.createdAt?.toDate() || null,
               updatedAt: data.updatedAt?.toDate() || null,
-              startTime: data.startTime?.toDate() || null, 
-              endTime: data.endTime?.toDate() || null, 
-              date: data.date?.toDate() || null  
+              startTime: data.startTime?.toDate() || null,
+              endTime: data.endTime?.toDate() || null,
+              date: data.date?.toDate() || null
             } as Session;
           });
           resolve();

@@ -157,35 +157,27 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
       </h1>
       <div class="relative rounded-3xl border border-neutral dark:border-neutral-dark">
         <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-5 pt-5 border-b border-neutral dark:border-neutral-dark pb-5">
-          <div class="w-full">
-            <InputDate
-              v-model="dateInterval.start"
-              placeholder="Data inicial"
-              :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
-              @blur="v$.start.$touch()"
-            />
-          </div>
+          <InputDate
+            v-model="dateInterval.start"
+            placeholder="Data inicial"
+            :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
+            @blur="v$.start.$touch()"
+          />          
 
-          <div class="w-full">
-            <InputDate
-              v-model="dateInterval.end"
-              placeholder="Data final"
-              :error="v$.end.$dirty && v$.end.$error
-                ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
-                  ? 'Data final não pode ser anterior à data inicial.'
-                  : 'Data final é obrigatória.'
-                : ''"
-              @blur="v$.end.$touch()"
-            />
-          </div>
+          <InputDate
+            v-model="dateInterval.end"
+            placeholder="Data final"
+            :error="v$.end.$dirty && v$.end.$error
+              ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
+                ? 'Data final não pode ser anterior à data inicial.'
+                : 'Data final é obrigatória.'
+              : ''"
+            @blur="v$.end.$touch()"
+          />          
 
-          <div class="w-full">
-            <InputSearch v-model="search" placeholder="Buscar por projeto" />
-          </div>
+          <InputSearch v-model="search" placeholder="Buscar por projeto" />          
 
-          <div class="w-full">
-            <Select v-model="selectedFilter" :options="filterOptions" />
-          </div>
+          <Select v-model="selectedFilter" :options="filterOptions" />
         </div>
 
         <Loader
