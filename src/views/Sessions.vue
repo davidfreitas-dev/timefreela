@@ -168,7 +168,7 @@ const goToEditSession = (sessionId: string) => {
         </Table>
       </div>
       
-      <div v-if="!isLoading && !filteredSessions.length" class="text-secondary dark:text-gray-400 text-center mb-10">
+      <div v-if="!isLoading && !filteredSessions.length" class="text-secondary dark:text-gray-400 text-center my-10">
         Nenhuma sessão registrada.
       </div>
     </div>

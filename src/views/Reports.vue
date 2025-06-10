@@ -216,8 +216,8 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
           </Table>
         </div>
         
-        <div v-if="!isLoading && !filteredRevenue?.length" class="text-secondary dark:text-gray-400 text-center mb-10">
-          Nenhum projeto encontrado.
+        <div v-if="!isLoading && !filteredRevenue?.length" class="text-secondary dark:text-gray-400 text-center my-10">
+          Nenhum dado encontrado.
         </div>
       </div>
     </section>

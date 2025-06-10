@@ -155,7 +155,7 @@ const goToEditProject = (projectId: string) => {
         </Table>
       </div>
 
-      <div v-if="!isLoading && !filteredProjects.length" class="text-secondary dark:text-secondary-dark text-center mb-10">
+      <div v-if="!isLoading && !filteredProjects.length" class="text-secondary dark:text-secondary-dark text-center my-10">
         Nenhum projeto encontrado.
       </div>
     </div>
