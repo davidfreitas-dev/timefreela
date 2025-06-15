@@ -12,6 +12,7 @@ import InputSearch from '@/components/InputSearch.vue';
 import Select from '@/components/Select.vue';
 import Badge from '@/components/Badge.vue';
 import Table from '@/components/Table.vue';
+import Dialog from '@/components/Dialog.vue';
 import Loader from '@/components/Loader.vue';
 
 const search = ref('');
@@ -78,6 +79,25 @@ const goToCreateProject = () => {
 const goToEditProject = (projectId: string) => {
   router.push({ name: 'ProjectDetails', params: { id: projectId } });
 };
+
+const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
+
+const projectToDelete = ref<string | null>(null);
+
+const handleDeleteClick = (projectId: string) => {
+  projectToDelete.value = projectId;
+  dialogRef.value?.openModal();
+};
+
+const confirmDelete = async () => {
+  if (!projectToDelete.value) return;
+
+  await withLoading(async () => {
+    await projectStore.deleteProject(projectToDelete.value!);
+    projectToDelete.value = null;
+  }, 'Erro ao deletar o projeto. Tente novamente.');
+};
+
 </script>
 
 <template>
@@ -144,12 +164,20 @@ const goToEditProject = (projectId: string) => {
             </td>
 
             <td class="px-6 py-4 w-[5%] min-w-[50px]">
-              <button
-                class="p-2 h-10 w-10 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-lg cursor-pointer"
-                @click="goToEditProject(project.id)"
-              >
-                <Icon name="edit" />
-              </button>
+              <div class="flex item-center gap-3">
+                <button
+                  class="p-2 h-10 w-10 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-full cursor-pointer"
+                  @click="goToEditProject(project.id)"
+                >
+                  <Icon name="edit" />
+                </button>
+                <button
+                  class="p-2 h-10 w-10 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer"
+                  @click="handleDeleteClick(project.id)"
+                >
+                  <Icon name="delete" />
+                </button>
+              </div>
             </td>
           </template>
         </Table>
@@ -159,5 +187,12 @@ const goToEditProject = (projectId: string) => {
         Nenhum projeto encontrado.
       </div>
     </div>
+
+    <Dialog
+      ref="dialogRef"
+      header="Tem certeza que deseja deletar este projeto?"
+      message="Se confirmada essa ação não poderá ser desfeita."
+      @confirm-action="confirmDelete"
+    />
   </Container>
 </template>

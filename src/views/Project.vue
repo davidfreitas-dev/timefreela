@@ -14,7 +14,6 @@ import Input from '@/components/Input.vue';
 import InputCurrency from '@/components/InputCurrency.vue';
 import Select from '@/components/Select.vue';
 import Button from '@/components/Button.vue';
-import Dialog from '@/components/Dialog.vue';
 
 type StatusOption = {
   label: string;
@@ -106,22 +105,6 @@ const saveProject = async () => {
   });
 };
 
-const deleteProject = async () => {
-  if (!projectId.value) return;
-
-  await withLoading(async () => {
-    await projectStore.deleteProject(projectId.value!);
-    showToast('success', 'Projeto deletado com sucesso.');
-    router.push({ name: 'Projects' });
-  });
-};
-
-const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
-
-const handleDeleteProject = () => {
-  dialogRef.value?.openModal();
-};
-
 const timerStore = useTimerStore();
 
 onMounted(() => {
@@ -184,19 +167,8 @@ onMounted(() => {
 
           <div class="flex justify-end items-center gap-3">
             <Button
-              v-if="isEditMode"
-              type="button"
-              class="w-fit"
-              color="danger"
-              :is-loading="isLoading"
-              @click="handleDeleteProject"
-            >
-              Deletar Projeto
-            </Button>
-
-            <Button
               type="submit"
-              class="w-fit"
+              class="w-full md:w-fit"
               :is-loading="isLoading"
             >
               {{ isEditMode ? 'Atualizar Projeto' : 'Cadastrar Projeto' }}
@@ -205,12 +177,5 @@ onMounted(() => {
         </form>
       </div>
     </section>
-
-    <Dialog
-      ref="dialogRef"
-      header="Tem certeza que deseja deletar este projeto?"
-      message="Se confirmada essa ação não poderá ser desfeita."
-      @confirm-action="deleteProject"
-    />
   </Container>
 </template>

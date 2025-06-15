@@ -50,7 +50,7 @@ defineExpose({ showToast });
     id="toast"
     role="alert"
     :class="[
-      'fixed z-50 top-5 right-10 flex items-center p-4 mb-4 w-full max-w-xs text-white rounded-lg shadow-md animate__animated',
+      'fixed z-50 top-5 right-6 flex items-center p-4 mb-4 w-full max-w-xs text-white rounded-lg shadow-md animate__animated',
       animationClass,
       {
         'bg-success dark:bg-success-dark': toastData.type === 'success',
