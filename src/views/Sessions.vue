@@ -18,6 +18,7 @@ import Checkbox from '@/components/Checkbox.vue';
 import Badge from '@/components/Badge.vue';
 import Table from '@/components/Table.vue';
 import Loader from '@/components/Loader.vue';
+import Dialog from '@/components/Dialog.vue';
 
 const router = useRouter();
 const sessionStore = useSessionStore();
@@ -176,6 +177,24 @@ const goToCreateSession = () => {
 const goToEditSession = (sessionId: string) => {
   router.push({ name: 'SessionDetails', params: { id: sessionId } });
 };
+
+const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
+
+const sessionToDelete = ref<string | null>(null);
+
+const handleDeleteSession = (sessionId: string) => {
+  sessionToDelete.value = sessionId;
+  dialogRef.value?.openModal();
+};
+
+const deleteSession = async () => {
+  if (!sessionToDelete.value) return;
+
+  await withLoading(async () => {
+    await sessionStore.deleteSession(sessionToDelete.value!);
+    router.push({ name: 'Sessions' });
+  });
+};
 </script>
 
 <template>
@@ -277,12 +296,20 @@ const goToEditSession = (sessionId: string) => {
             </td>
 
             <td class="px-6 py-4">
-              <button
-                class="p-2 h-10 w-10 bg-primary-accent text-primary dark:bg-primary-accent-dark dark:text-primary-dark rounded-lg cursor-pointer"
-                @click="goToEditSession(session.id)"
-              >
-                <Icon name="edit" />
-              </button>
+              <div class="flex item-center gap-3">
+                <button
+                  class="p-2 h-10 w-10 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-full cursor-pointer"
+                  @click="goToEditSession(session.id)"
+                >
+                  <Icon name="edit" />
+                </button>
+                <button
+                  class="p-2 h-10 w-10 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer"
+                  @click="handleDeleteSession(session.id)"
+                >
+                  <Icon name="delete" />
+                </button>
+              </div>
             </td>
           </template>
         </Table>
@@ -292,5 +319,12 @@ const goToEditSession = (sessionId: string) => {
         Nenhuma sessão registrada.
       </div>
     </div>
+
+    <Dialog
+      ref="dialogRef"
+      header="Tem certeza que deseja deletar esta sessão?"
+      message="Se confirmada essa ação não poderá ser desfeita."
+      @confirm-action="deleteSession"
+    />
   </Container>
 </template>

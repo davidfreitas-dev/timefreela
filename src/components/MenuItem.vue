@@ -26,7 +26,7 @@ const menuItemStyle = computed(() =>
     <router-link
       :to="to"
       :class="[
-        'flex items-center text-decoration-none focus:outline-none focus:ring-2 focus:ring-primary-pressed transition ease-in-out duration-200 rounded-xl w-full p-3',
+        'flex items-center text-decoration-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-pressed transition ease-in-out duration-200 rounded-xl w-full p-3',
         menuItemStyle
       ]"
     >

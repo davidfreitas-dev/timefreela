@@ -18,24 +18,24 @@ const baseClasses =
 
 const classes = computed(() => [
   baseClasses,
-  'focus:outline-none focus-visible:ring-2',
+  'focus:outline-none focus-visible:ring-2 transition-all duration-200 ease-in active:scale-95',
   {
     // Primary
-    'py-3.5 px-4 bg-primary text-white hover:bg-primary-hover focus-visible:ring-primary-focus focus:bg-primary active:bg-primary-pressed disabled:bg-disabled disabled:cursor-not-allowed':
+    'py-3.5 px-4 bg-primary text-white hover:bg-primary-hover focus-visible:ring-primary-focus focus-visible:bg-primary active:bg-primary-pressed disabled:bg-disabled disabled:cursor-not-allowed':
       color === 'primary',
-    'dark:bg-primary-dark dark:hover:bg-primary-hover-dark dark:focus-visible:ring-primary-focus-dark dark:focus:bg-primary-dark dark:active:bg-primary-pressed-dark dark:disabled:bg-disabled-dark':
+    'dark:bg-primary-dark dark:hover:bg-primary-hover-dark dark:focus-visible:ring-primary-focus-dark dark:focus-visible:bg-primary-dark dark:active:bg-primary-pressed-dark dark:disabled:bg-disabled-dark':
       color === 'primary',
 
     // Danger
-    'py-3.5 px-4 bg-danger text-white hover:bg-danger-hover focus-visible:ring-danger-focus focus:bg-danger active:bg-danger-pressed disabled:bg-disabled disabled:cursor-not-allowed':
+    'py-3.5 px-4 bg-danger text-white hover:bg-danger-hover focus-visible:ring-danger-focus focus-visible:bg-danger active:bg-danger-pressed disabled:bg-disabled disabled:cursor-not-allowed':
       color === 'danger',
-    'dark:bg-danger-dark dark:hover:bg-danger-hover-dark dark:focus-visible:ring-danger-focus-dark dark:focus:bg-danger-dark dark:active:bg-danger-pressed-dark dark:disabled:bg-disabled-dark':
+    'dark:bg-danger-dark dark:hover:bg-danger-hover-dark dark:focus-visible:ring-danger-focus-dark dark:focus-visible:bg-danger-dark dark:active:bg-danger-pressed-dark dark:disabled:bg-disabled-dark':
       color === 'danger',
 
     // Success
-    'py-3.5 px-4 bg-success text-white hover:bg-success-hover focus-visible:ring-success-focus focus:bg-success active:bg-success-pressed disabled:bg-disabled disabled:cursor-not-allowed':
+    'py-3.5 px-4 bg-success text-white hover:bg-success-hover focus-visible:ring-success-focus focus-visible:bg-success active:bg-success-pressed disabled:bg-disabled disabled:cursor-not-allowed':
       color === 'success',
-    'dark:bg-success-dark dark:hover:bg-success-hover-dark dark:focus-visible:ring-success-focus-dark dark:focus:bg-success-dark dark:active:bg-success-pressed-dark dark:disabled:bg-disabled-dark':
+    'dark:bg-success-dark dark:hover:bg-success-hover-dark dark:focus-visible:ring-success-focus-dark dark:focus-visible:bg-success-dark dark:active:bg-success-pressed-dark dark:disabled:bg-disabled-dark':
       color === 'success',
 
     // Outline

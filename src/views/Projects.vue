@@ -84,7 +84,7 @@ const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
 
 const projectToDelete = ref<string | null>(null);
 
-const handleDeleteClick = (projectId: string) => {
+const handleDeleteProject = (projectId: string) => {
   projectToDelete.value = projectId;
   dialogRef.value?.openModal();
 };
@@ -173,7 +173,7 @@ const confirmDelete = async () => {
                 </button>
                 <button
                   class="p-2 h-10 w-10 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer"
-                  @click="handleDeleteClick(project.id)"
+                  @click="handleDeleteProject(project.id)"
                 >
                   <Icon name="delete" />
                 </button>

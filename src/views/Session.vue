@@ -16,7 +16,6 @@ import InputDate from '@/components/InputDate.vue';
 import Select from '@/components/Select.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import Button from '@/components/Button.vue';
-import Dialog from '@/components/Dialog.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -149,22 +148,6 @@ const saveSession = async () => {
   });
 };
 
-const deleteSession = async () => {
-  if (!sessionId.value) return;
-
-  await withLoading(async () => {
-    await sessionStore.deleteSession(sessionId.value!);
-    showToast('success', 'Sessão deletada com sucesso.');
-    router.push({ name: 'Sessions' });
-  });
-};
-
-const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
-
-const handleDeleteSession = () => {
-  dialogRef.value?.openModal();
-};
-
 const timerStore = useTimerStore();
 
 onMounted(() => {
@@ -227,29 +210,15 @@ onMounted(() => {
 
           <div class="flex justify-end items-center gap-3">
             <Button
-              v-if="isEditMode"
-              type="button"
-              class="w-fit"
-              color="danger"
+              type="submit"
+              class="w-full md:w-fit"
               :is-loading="isLoading"
-              @click="handleDeleteSession"
             >
-              Deletar Sessão
-            </Button>
-
-            <Button class="w-fit" :is-loading="isLoading">
               {{ isEditMode ? 'Atualizar Sessão' : 'Cadastrar Sessão' }}
             </Button>
           </div>
         </form>
       </div>
     </section>
-
-    <Dialog
-      ref="dialogRef"
-      header="Tem certeza que deseja deletar esta sessão?"
-      message="Se confirmada essa ação não poderá ser desfeita."
-      @confirm-action="deleteSession"
-    />
   </Container>
 </template>
