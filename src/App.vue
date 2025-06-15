@@ -17,7 +17,7 @@ const { isRunning } = storeToRefs(useTimerStore());
 
 useBeforeUnloadGuard(() => isRunning.value);
 
-const sidebarWidth = ref<string>('230px');
+const sidebarWidth = ref<string>('240px');
 
 const changeSidebarWidth = (event: string): void => {
   sidebarWidth.value = event;

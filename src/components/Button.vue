@@ -14,7 +14,7 @@ const { size = '', color = 'primary', isLoading = false } = defineProps<{
 }>();
 
 const baseClasses =
-  'flex items-center justify-center text-base font-semibold rounded-lg cursor-pointer transition-colors';
+  'flex items-center justify-center text-base font-semibold rounded-xl cursor-pointer transition-colors';
 
 const classes = computed(() => [
   baseClasses,

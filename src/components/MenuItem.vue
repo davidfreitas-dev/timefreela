@@ -13,40 +13,30 @@ const props = defineProps<{
 const route = useRoute();
 
 const isActive = computed(() => route.path === props.to);
+
+const menuItemStyle = computed(() =>
+  isActive.value
+    ? 'bg-primary dark:bg-primary-dark'
+    : 'hover:bg-primary-accent dark:hover:bg-primary-accent-dark hover:text-primary-pressed dark:hover:text-primary-dark'
+);
 </script>
 
 <template>
-  <div class="button flex justify-center">
+  <div class="menu-item flex justify-center">
     <router-link
       :to="to"
       :class="[
-        'flex items-center text-decoration-none focus:outline-none focus:ring-2 focus:ring-primary-pressed transition ease-in-out duration-200 rounded-lg w-[85%] px-4 py-3',
-        {
-          'bg-primary dark:bg-primary-dark': isActive,
-          'hover:bg-primary-accent dark:hover:bg-primary-accent-dark hover:text-primary-pressed dark:hover:text-primary-dark': !isActive,
-        }
+        'flex items-center text-decoration-none focus:outline-none focus:ring-2 focus:ring-primary-pressed transition ease-in-out duration-200 rounded-xl w-full p-3',
+        menuItemStyle
       ]"
     >
       <Icon
         :name="icon"
-        :class="[
-          'text-2xl',
-          {
-            'text-white': isActive,
-            'mr-2': isExpanded,
-            '-ml-0.5': !isExpanded,
-          }
-        ]"
+        :class="{ 'text-white': isActive }"
       />
-      <span
-        :class="[
-          'font-medium',
-          {
-            'text-white': isActive,
-            'opacity-100': isExpanded,
-            'opacity-0': !isExpanded,
-          }
-        ]"
+      <span 
+        v-if="isExpanded" 
+        :class="['ml-2 font-medium', { 'text-white': isActive, }]"
       >
         {{ text }}
       </span>

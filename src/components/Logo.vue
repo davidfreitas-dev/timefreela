@@ -12,16 +12,16 @@ const handleImageError = () => {
 </script>
 
 <template>
-  <div class="logo mb-4">
-    <div class="flex items-center">
+  <div class="logo">
+    <div :class="['flex items-center', { 'justify-center': !isExpanded }]">
       <img
         v-if="showImage"
         :src="logoPath"
-        alt="TimeFreela logo"
-        class="h-8"
+        alt="Time Freela logo"
+        class="h-6"
         @error="handleImageError"
       >
-      <h3 v-if="isExpanded" class="text-font dark:text-font-dark text-2xl font-extrabold">
+      <h3 v-if="isExpanded" class="text-font dark:text-font-dark text-xl font-extrabold ml-1">
         Time<span class="text-primary ml-0.5">Freela</span>
       </h3>
     </div>
