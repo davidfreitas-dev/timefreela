@@ -14,6 +14,7 @@ import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import Select from '@/components/Select.vue';
 import Button from '@/components/Button.vue';
+import Icon from '@/components/Icon.vue';
 import Dialog from '@/components/Dialog.vue';
 
 const router = useRouter();
@@ -166,6 +167,7 @@ onMounted(() => {
                 :is-loading="isLoading"
                 @click="handlePauseSession"
               >
+                <Icon :name="isRunning ? 'pause' : 'play_arrow'" /> 
                 {{ isRunning ? 'Pausar' : 'Continuar' }}
               </Button>
 
@@ -175,7 +177,8 @@ onMounted(() => {
                 :is-loading="isLoading"
                 @click="handleFinishSession"
               >
-                Finalizar
+                <Icon name="stop" /> 
+                <span class="ml-2">Finalizar</span>
               </Button>
             </template>
 
@@ -185,7 +188,8 @@ onMounted(() => {
                 :is-loading="isLoading"
                 @click="startSession"
               >
-                Iniciar Sessão
+                <Icon name="play_arrow" /> 
+                <span class="ml-2">Iniciar Sessão</span>
               </Button>
             </template>
           </div>

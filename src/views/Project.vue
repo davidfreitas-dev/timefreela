@@ -12,8 +12,10 @@ import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import Input from '@/components/Input.vue';
 import InputCurrency from '@/components/InputCurrency.vue';
+import Textarea from '@/components/Textarea.vue';
 import Select from '@/components/Select.vue';
 import Button from '@/components/Button.vue';
+import Icon from '@/components/Icon.vue';
 
 type StatusOption = {
   label: string;
@@ -136,11 +138,10 @@ onMounted(() => {
             @blur="v$.title.$touch"
           />
 
-          <Input
+          <Textarea
             v-model="formData.description"
-            type="text"
             label="Descrição"
-            placeholder="Descrição curta do que deve ser feito"
+            placeholder="Descrição do que deve ser feito"
             :error="v$.description.$dirty && v$.description.$error ? 'A descrição é obrigatória' : ''"
             @blur="v$.description.$touch"
           />
@@ -171,7 +172,8 @@ onMounted(() => {
               class="w-full md:w-fit"
               :is-loading="isLoading"
             >
-              {{ isEditMode ? 'Atualizar Projeto' : 'Cadastrar Projeto' }}
+              <Icon name="check" /> 
+              <span class="ml-2">Confirmar</span>
             </Button>
           </div>
         </form>

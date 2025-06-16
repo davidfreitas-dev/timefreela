@@ -16,6 +16,7 @@ import InputDate from '@/components/InputDate.vue';
 import Select from '@/components/Select.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import Button from '@/components/Button.vue';
+import Icon from '@/components/Icon.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -214,7 +215,8 @@ onMounted(() => {
               class="w-full md:w-fit"
               :is-loading="isLoading"
             >
-              {{ isEditMode ? 'Atualizar Sessão' : 'Cadastrar Sessão' }}
+              <Icon name="check" /> 
+              <span class="ml-2">Confirmar</span>
             </Button>
           </div>
         </form>
