@@ -26,10 +26,11 @@ const filterOptions = [
 const selectedFilter = ref(filterOptions[0]);
 
 const tableHead = ref([
-  'Criado em', 
   'Título', 
   'Descrição', 
-  'Valor/Hora', 
+  'Cobrança', 
+  'Valor', 
+  'Estimativa', 
   'Status', 
   'Ações'
 ]);
@@ -144,19 +145,23 @@ const confirmDelete = async () => {
         >
           <template #row="{ item: project }">
             <td class="px-6 py-4 w-[20%] max-w-[200px] truncate">
-              {{ $filters.formatDate(project.createdAt) }}
-            </td>
-
-            <td class="px-6 py-4 w-[20%] max-w-[200px] truncate">
               {{ project.title }}
             </td>
 
-            <td class="px-6 py-4 w-[30%] max-w-[300px] truncate">
+            <td class="px-6 py-4 w-[25%] max-w-[250px] truncate">
               {{ project.description || '-' }}
             </td>
 
-            <td class="px-6 py-4 w-[20%] max-w-[200px] truncate">
-              {{ $filters.formatCurrencyBRL(project.hourlyRate) }}
+            <td class="px-6 py-4 w-[15%] max-w-[150px] truncate">
+              {{ project.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
+            </td>
+
+            <td class="px-6 py-4 w-[15%] max-w-[150px] truncate">
+              {{ $filters.formatCurrencyBRL(project.billingAmount) }}
+            </td>
+
+            <td class="px-6 py-4 w-[15%] max-w-[150px] truncate">
+              {{ $filters.formatDuration(project.estimatedDuration) }}
             </td>
 
             <td class="px-6 py-4 w-[5%] min-w-[50px]">

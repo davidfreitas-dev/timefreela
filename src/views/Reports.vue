@@ -94,23 +94,41 @@ const revenueByProject = computed(() => {
   const grouped: Record<string, {
     projectId: string;
     projectTitle: string;
+    billingType: 'hourly' | 'fixed';
     totalSeconds: number;
     totalAmount: number;
   }> = {};
 
+  const fixedProjectsAccounted = new Set<string>();
+
   for (const day of reports.value) {
     for (const session of day.sessions) {
-      const { projectId, duration, hourlyRate, projectTitle } = session;
+      const {
+        projectId,
+        projectTitle,
+        billingType,
+        billingAmount,
+        duration
+      } = session;
+
       if (!grouped[projectId]) {
         grouped[projectId] = {
           projectId,
           projectTitle,
+          billingType,
           totalSeconds: 0,
-          totalAmount: 0,
+          totalAmount: 0
         };
       }
+
       grouped[projectId].totalSeconds += duration;
-      grouped[projectId].totalAmount += (duration / 3600) * hourlyRate;
+
+      if (billingType === 'hourly') {
+        grouped[projectId].totalAmount += (duration / 3600) * billingAmount;
+      } else if (!fixedProjectsAccounted.has(projectId)) {
+        grouped[projectId].totalAmount += billingAmount;
+        fixedProjectsAccounted.add(projectId);
+      }
     }
   }
 
@@ -124,7 +142,7 @@ const filteredRevenue = computed(() => {
   );
 });
 
-const tableHeaders = ['Projeto', 'Horas', 'Receita'];
+const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
 </script>
 
 <template>
@@ -193,15 +211,19 @@ const tableHeaders = ['Projeto', 'Horas', 'Receita'];
             :items="filteredRevenue"
           >
             <template #row="{ item }">
-              <td class="px-6 py-4 w-[60%] max-w-[600px] truncate text-font dark:text-white">
+              <td class="px-6 py-4 w-[55%] max-w-[550px] truncate text-font dark:text-white">
                 {{ item.projectTitle }}
               </td>
 
-              <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
+              <td class="px-6 py-4 w-[15%] min-w-[150px] whitespace-nowrap text-font dark:text-white">
+                {{ item.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
+              </td>
+
+              <td class="px-6 py-4 w-[15%] min-w-[150px] whitespace-nowrap text-font dark:text-white">
                 {{ $filters.formatDuration(item.totalSeconds) }}
               </td>
 
-              <td class="px-6 py-4 w-[20%] min-w-[200px] whitespace-nowrap text-font dark:text-white">
+              <td class="px-6 py-4 w-[15%] min-w-[150px] whitespace-nowrap text-font dark:text-white">
                 {{ $filters.formatCurrencyBRL(item.totalAmount) }}
               </td>
             </template>

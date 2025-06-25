@@ -30,29 +30,35 @@ TimeFreela é um web app criado para **programadores freelancers** que desejam *
 ### Funcionalidades-chave
 - Cronômetro e registro manual de tempo
 - Organização por projeto e tags
-- Painel financeiro com valor/hora
+- Painel financeiro com valor/hora e valor fixo
 - UI responsiva e intuitiva
 
 ### Benefícios
 - Controle profissional de tempo e faturamento
 - Agilidade na criação de relatórios
 - Redução de erros manuais
-- Pronto para expansão (preço fixo, pacotes mensais)
+- Pronto para expansão (pacotes mensais)
 
 ## 2. Requisitos Funcionais
 
-- Autenticação Firebase (email/senha)
-- Projetos com título, descrição e valor/hora
-- Cronômetro com início, pausa e fim
-- Registro manual de sessões
-- Sessões organizadas por projeto/período
-- Relatórios PDF/CSV
+- Autenticação com Firebase (email/senha)
+- Criação e gerenciamento de projetos com:
+  - Título, descrição
+  - Tipo de faturamento: valor por hora ou valor fixo
+  - Tags/categorias
+- Cronômetro com início, pausa e fim para registro automático de sessões
+- Registro manual de sessões de trabalho
+- Sessões organizadas por projeto e por período
 - Marcação de sessões como faturadas
-- Tags/categorias para projetos
-- Dashboard com horas, faturamento, sessões pendentes
-- Valor/hora por projeto
-- Painel financeiro com filtros e totais
-- Expansões futuras para preço fixo e pacotes
+- Dashboard com:
+  - Total de horas trabalhadas
+  - Faturamento (considerando valor/hora e valor fixo dos projetos)
+  - Gráfico de progressão
+- Painel financeiro com filtros por período, projeto e status de faturamento, exibindo totais agregados
+- Suporte a expansões futuras, como:
+  - Geração de relatórios em PDF/CSV
+  - Pacotes de horas
+  - Modelos de cobrança personalizados
 
 ## 3. Requisitos Não Funcionais
 
@@ -96,10 +102,10 @@ src/
 ```
 
 ### Stores
-- `authStore`, `userStore`, `projectStore`, `sessionStore`, `reportStore`
+- `authStore`, `userStore`, `projectStore`, `sessionStore`, `reportStore`, `timerStore`
 
 ### Composables
-- `useTimer`, `useBilling`, `useExport`
+- `useTimer`, `useBilling`, `useExport`, `useLoading`, `useToast`, `useBeforeUnloadGuard`
 
 ### Roteamento
 - SPA com vue-router, lazy loading, middleware de proteção
@@ -127,7 +133,8 @@ projects/{projectId}
   - title
   - description
   - tags
-  - hourlyRate
+  - billingType
+  - billingAmount
   - active
   - createdAt
   - updatedAt 
@@ -151,18 +158,18 @@ sessions/{sessionId}
 
 ## 8. Geração de Relatórios
 
-- PDF com jsPDF
-- CSV com agrupamentos
 - Filtros por projeto, cliente, status
 - Totais de horas, valores e faturamento
+- CSV com agrupamentos
+- PDF com jsPDF
 
 ## 9. Gestão Financeira
 
-- Valor/hora por projeto
+- Valor/hora ou preço fixo por projeto
 - Sessões mostram valor estimado
 - Marcação: a faturar, faturada
 - Painel financeiro com totais
-- Planejado: preço fixo e pacotes mensais
+- Planejado: pacotes mensais
 
 ## 10. Design e UX
 

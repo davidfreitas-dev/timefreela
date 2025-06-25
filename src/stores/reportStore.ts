@@ -9,11 +9,22 @@ interface Session {
   userId: string;
   projectId: string;
   projectTitle: string;
-  hourlyRate: number;
-  duration: number;
+  billingType: 'hourly' | 'fixed';
+  billingAmount: number;
+  estimatedDuration?: number;
   isBilled: boolean;
   isManual: boolean;
-  date: string; // YYYY-MM-DD
+  duration: number;
+  date: string;
+}
+
+interface FirestoreSessionData {
+  userId: string;
+  projectId: string;
+  isBilled: boolean;
+  isManual: boolean;
+  duration: number;
+  date: Timestamp;
 }
 
 interface ReportDay {
@@ -21,6 +32,96 @@ interface ReportDay {
   totalSeconds: number;
   totalAmount: number;
   sessions: Session[];
+}
+
+function buildQueryConditions(
+  userId: string,
+  startDate?: Date,
+  endDate?: Date,
+  billedFilter: 'all' | 'billed' | 'unbilled' = 'all'
+) {
+  const conditions = [where('userId', '==', userId)];
+
+  if (startDate && endDate) {
+    const startTimestamp = Timestamp.fromDate(startDate);
+    const endCopy = new Date(endDate);
+    endCopy.setHours(23, 59, 59, 999);
+    const endTimestamp = Timestamp.fromDate(endCopy);
+
+    conditions.push(where('date', '>=', startTimestamp));
+    conditions.push(where('date', '<=', endTimestamp));
+  }
+
+  if (billedFilter === 'billed') conditions.push(where('isBilled', '==', true));
+  if (billedFilter === 'unbilled') conditions.push(where('isBilled', '==', false));
+
+  return conditions;
+}
+
+function mapSnapshotToRawSessions(snapshot: Awaited<ReturnType<typeof getDocs>>) {
+  return snapshot.docs.map(doc => {
+    const data = doc.data() as FirestoreSessionData;
+
+    return {
+      userId: data.userId,
+      projectId: data.projectId,
+      isBilled: data.isBilled,
+      isManual: data.isManual,
+      duration: data.duration,
+      date: data.date?.toDate().toISOString().split('T')[0] || '',
+    };
+  });
+}
+
+function enrichSessionsWithProjectData(
+  rawSessions: Omit<Session, 'projectTitle' | 'billingType' | 'billingAmount'>[],
+  projects: { id: string; title: string; billingType: 'hourly' | 'fixed'; billingAmount: number; estimatedDuration?: number; }[]
+): Session[] {
+  return rawSessions.map(session => {
+    const project = projects.find(p => p.id === session.projectId);
+
+    return {
+      ...session,
+      projectTitle: project?.title || '',
+      billingType: project?.billingType || 'hourly',
+      billingAmount: project?.billingAmount || 0,
+      estimatedDuration: project?.estimatedDuration
+    };
+  });
+}
+
+function groupSessionsByDate(sessions: Session[]): Record<string, ReportDay> {
+  const grouped: Record<string, ReportDay> = {};
+
+  for (const session of sessions) {
+    if (!grouped[session.date]) {
+      grouped[session.date] = {
+        date: session.date,
+        totalSeconds: 0,
+        totalAmount: 0,
+        sessions: []
+      };
+    }
+
+    grouped[session.date].totalSeconds += session.duration;
+    grouped[session.date].totalAmount += calculateSessionAmount(session);
+    grouped[session.date].sessions.push(session);
+  }
+
+  return grouped;
+}
+
+function calculateSessionAmount(session: Session): number {
+  if (session.billingType === 'hourly') {
+    return (session.duration / 3600) * session.billingAmount;
+  } else {
+    const estimatedHours = (session.estimatedDuration || 0) / 3600;
+    if (estimatedHours > 0) {
+      const sessionHours = session.duration / 3600;
+      return (session.billingAmount / estimatedHours) * sessionHours;
+    }
+    return 0;
+  }
 }
 
 export const useReportStore = defineStore('reportStore', () => {
@@ -52,7 +153,7 @@ export const useReportStore = defineStore('reportStore', () => {
         estimated += day.totalAmount;
 
         day.sessions.forEach(session => {
-          const sessionAmount = (session.duration / 3600) * session.hourlyRate;
+          const sessionAmount = calculateSessionAmount(session);
           if (session.isBilled) {
             billed += sessionAmount;
           } else {
@@ -73,8 +174,7 @@ export const useReportStore = defineStore('reportStore', () => {
     const result: Record<string, { totalEarnings: number; totalTime: number }> = {};
 
     reports.value.forEach(report => {
-      const month = report.date.slice(0, 7); // 'YYYY-MM'
-
+      const month = report.date.slice(0, 7);
       if (!result[month]) {
         result[month] = {
           totalEarnings: 0,
@@ -82,8 +182,11 @@ export const useReportStore = defineStore('reportStore', () => {
         };
       }
 
-      result[month].totalEarnings += report.totalAmount;
       result[month].totalTime += report.totalSeconds;
+
+      for (const session of report.sessions) {
+        result[month].totalEarnings += calculateSessionAmount(session);
+      }
     });
 
     return result;
@@ -98,64 +201,17 @@ export const useReportStore = defineStore('reportStore', () => {
       throw new Error('Usuário não autenticado.');
     }
 
-    const sessionsRef = collection(db, 'sessions');
-    const conditions = [where('userId', '==', user.value.id)];
+    const q = query(
+      collection(db, 'sessions'),
+      ...buildQueryConditions(user.value.id, startDate, endDate, billedFilter)
+    );
 
-    if (startDate && endDate) {
-      const startTimestamp = Timestamp.fromDate(startDate);
-      endDate.setHours(23, 59, 59, 999);
-      const endTimestamp = Timestamp.fromDate(endDate);
-
-      conditions.push(where('date', '>=', startTimestamp));
-      conditions.push(where('date', '<=', endTimestamp));
-    }
-
-    if (billedFilter === 'billed') conditions.push(where('isBilled', '==', true));
-    if (billedFilter === 'unbilled') conditions.push(where('isBilled', '==', false));
-    
-    const q = query(sessionsRef, ...conditions);
     const snapshot = await getDocs(q);
+    const rawSessions = mapSnapshotToRawSessions(snapshot);
+    const sessions = enrichSessionsWithProjectData(rawSessions, projects.value);
+    const groupedReports = groupSessionsByDate(sessions);
 
-    const rawSessions: Omit<Session, 'hourlyRate' | 'projectTitle'>[] = [];
-
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      rawSessions.push({
-        userId: data.userId,
-        projectId: data.projectId,
-        duration: data.duration,
-        date: data.date?.toDate().toISOString().split('T')[0] || '',
-        isBilled: data.isBilled,
-        isManual: data.isManual
-      });
-    });
-
-    const sessions: Session[] = rawSessions.map(session => {
-      const project = projects.value.find(p => p.id === session.projectId);
-      return {
-        ...session,
-        projectTitle: project?.title || '',
-        hourlyRate: project?.hourlyRate || 0
-      };
-    });
-
-    const grouped: Record<string, ReportDay> = {};
-    for (const session of sessions) {
-      if (!grouped[session.date]) {
-        grouped[session.date] = {
-          date: session.date,
-          totalSeconds: 0,
-          totalAmount: 0,
-          sessions: []
-        };
-      }
-      const { duration, hourlyRate } = session;
-      grouped[session.date].totalSeconds += duration;
-      grouped[session.date].totalAmount += (duration / 3600) * hourlyRate;
-      grouped[session.date].sessions.push(session);
-    }
-
-    reports.value = Object.values(grouped).sort((a, b) => b.date.localeCompare(a.date));
+    reports.value = Object.values(groupedReports).sort((a, b) => b.date.localeCompare(a.date));
   };
 
   return {
@@ -166,5 +222,4 @@ export const useReportStore = defineStore('reportStore', () => {
     currentMonthStats,
     monthlySummary
   };
-
 });

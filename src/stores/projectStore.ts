@@ -84,7 +84,6 @@ export const useProjectStore = defineStore('projectStore', () => {
     const projectData: Omit<Project, 'id'> = {
       ...project,
       userId: user.value?.id,
-      active: 1,
       createdAt: serverTimestamp()
     };
 

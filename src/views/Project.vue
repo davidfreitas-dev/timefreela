@@ -22,15 +22,15 @@ type StatusOption = {
   value: number;
 };
 
+type BillingTypeOption = {
+  label: string;
+  value: 'hourly' | 'fixed';
+};
+
 const route = useRoute();
 const router = useRouter();
 const { showToast } = useToast();
 const { isLoading, withLoading } = useLoading();
-
-const statusOptions: StatusOption[] = [
-  { label: 'Ativo', value: 1 },
-  { label: 'Inativo', value: 0 }
-];
 
 const projectStore = useProjectStore();
 const projectId = computed(() => route.params.id as string | undefined);
@@ -39,9 +39,28 @@ const formData = ref({
   title: '',
   description: '',
   tags: '',
-  hourlyRate: '',
+  billingType: null as 'hourly' | 'fixed' | null,
+  billingAmount: '',
+  estimatedDurationHours: '',
   active: null as number | null
 });
+
+const billingTypeOptions: BillingTypeOption[] = [
+  { label: 'Valor por hora', value: 'hourly' },
+  { label: 'Valor fixo', value: 'fixed' }
+];
+
+const selectedBillingType = computed<BillingTypeOption | null>({
+  get: () => billingTypeOptions.find(opt => opt.value === formData.value.billingType) ?? null,
+  set: (option) => {
+    formData.value.billingType = option?.value ?? null;
+  }
+});
+
+const statusOptions: StatusOption[] = [
+  { label: 'Ativo', value: 1 },
+  { label: 'Inativo', value: 0 }
+];
 
 const selectedStatus = computed<StatusOption | null>({
   get: () => statusOptions.find(opt => opt.value === formData.value.active) ?? null,
@@ -53,6 +72,7 @@ const selectedStatus = computed<StatusOption | null>({
 const rules = computed(() => ({
   title: { required, minLength: minLength(3) },
   description: { required },
+  billingType: { required },
   active: { required }
 }));
 
@@ -72,7 +92,9 @@ const loadProjectData = async () => {
       title: project.title ?? '',
       description: project.description ?? '',
       tags: formatTags(project.tags ?? []),
-      hourlyRate: String(project.hourlyRate ?? 0),
+      billingType: project.billingType ?? 'hourly',
+      billingAmount: String(project.billingAmount ?? 0),
+      estimatedDurationHours: project.estimatedDuration ? String(project.estimatedDuration / 3600) : '',
       active: project.active !== null ? Number(project.active) : null
     };
   }
@@ -90,8 +112,12 @@ const saveProject = async () => {
     title: formData.value.title,
     description: formData.value.description,
     tags: parseTags(formData.value.tags),
-    hourlyRate: Number(formData.value.hourlyRate) || 0,
-    active: formData.value.active !== null ? Number(formData.value.active) : null
+    billingType: formData.value.billingType ?? 'hourly',
+    billingAmount: Number(formData.value.billingAmount) || 0,
+    active: formData.value.active !== null ? Number(formData.value.active) : 1,
+    ...(formData.value.billingType === 'fixed' && formData.value.estimatedDurationHours
+      ? { estimatedDuration: Number(formData.value.estimatedDurationHours) * 3600 }
+      : {})
   };
 
   await withLoading(async () => {
@@ -153,10 +179,26 @@ onMounted(() => {
             placeholder="design, frontend, site"
           />
 
+          <Select
+            v-model="selectedBillingType"
+            :options="billingTypeOptions"
+            label="Tipo de cobrança"
+            :error="v$.billingType.$dirty && v$.billingType.$error ? 'O tipo de cobrança é obrigatório' : ''"
+            @blur="v$.billingType.$touch"
+          />
+
           <InputCurrency
-            v-model="formData.hourlyRate"
-            label="Valor por hora"
-            placeholder="Ex: R$ 80,00"
+            v-model="formData.billingAmount"
+            label="Valor"
+          />
+
+          <Input
+            v-if="formData.billingType === 'fixed'"
+            v-model="formData.estimatedDurationHours"
+            type="number"
+            label="Tempo estimado (em horas)"
+            placeholder="Ex: 50"
+            min="0"
           />
 
           <Select
