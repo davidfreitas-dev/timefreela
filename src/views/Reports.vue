@@ -142,7 +142,7 @@ const filteredRevenue = computed(() => {
   );
 });
 
-const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
+const tableHeaders = ['Título do Projeto', 'Tipo', 'Horas', 'Receita'];
 </script>
 
 <template>
@@ -193,7 +193,11 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
             @blur="v$.end.$touch()"
           />          
 
-          <InputSearch v-model="search" placeholder="Buscar por projeto" />          
+          <InputSearch
+            v-model="search"
+            label="Pesquisar por título"
+            floating-label
+          />          
 
           <Select v-model="selectedFilter" :options="filterOptions" />
         </div>
