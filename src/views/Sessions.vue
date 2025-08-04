@@ -33,6 +33,8 @@ const filterOptions = [
   { label: 'Não Faturadas', value: 'unbilled' },
 ];
 
+const itemsPerPage = 7;
+
 const selectedFilter = ref(filterOptions[0]);
 
 const { isLoading, withLoading } = useLoading();
@@ -41,11 +43,18 @@ onMounted(() => {
   if (timerStore.isRunning) {
     timerStore.start();
   }
-  
+
+  sessionStore.resetSessionPagination();
+
   withLoading(
     async () => {
       await Promise.all([
-        sessionStore.listenToSessions(),
+        sessionStore.fetchSessions(
+          itemsPerPage,
+          undefined,
+          dateInterval.value.start ?? undefined,
+          dateInterval.value.end ?? undefined
+        ),
         projectStore.fetchProjects()
       ]);
     },
@@ -56,6 +65,18 @@ onMounted(() => {
 onBeforeUnmount(() => {
   sessionStore.stopListeningSessions();
 });
+
+const loadMore = async () => {
+  await withLoading(() =>
+    sessionStore.fetchSessions(
+      itemsPerPage,
+      undefined,
+      dateInterval.value.start ?? undefined,
+      dateInterval.value.end ?? undefined
+    )
+  );
+};
+
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
@@ -321,6 +342,16 @@ const deleteSession = async () => {
         Nenhuma sessão registrada.
       </div>
     </div>
+
+    <Button
+      v-if="sessionStore.hasMore && !isLoading && filteredSessions.length"
+      class="mx-auto"
+      color="primary"
+      :is-loading="isLoading"
+      @click="loadMore"
+    >
+      Carregar mais
+    </Button>
 
     <Dialog
       ref="dialogRef"

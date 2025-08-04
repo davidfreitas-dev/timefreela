@@ -7,12 +7,17 @@ import {
   updateDoc,
   deleteDoc,
   getDoc,
+  getDocs,
   query,
   where,
   orderBy,
-  onSnapshot,
+  limit as limitQuery,
+  startAfter,
   serverTimestamp,
-  type Unsubscribe
+  onSnapshot,
+  QueryDocumentSnapshot,
+  type QueryConstraint,
+  type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '@/services/firestore';
 import { useUserStore } from '@/stores/userStore';
@@ -24,10 +29,70 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
   const activeSession: Ref<NewSession | null> = ref(null);
   const sessions: Ref<Session[]> = ref([]);
+  const lastVisible: Ref<QueryDocumentSnapshot<SessionFirestoreData> | null> = ref(null);
+  const hasMore: Ref<boolean> = ref(true);
 
   const getUserId = (): string => {
     if (!user.value?.id) throw new Error('Usuário não autenticado.');
     return user.value.id;
+  };
+
+  const resetSessionPagination = () => {
+    sessions.value = [];
+    lastVisible.value = null;
+    hasMore.value = true;
+  };
+
+  const fetchSessions = async (
+    limit: number,
+    projectId?: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<void> => {
+    const constraints: QueryConstraint[] = [
+      where('userId', '==', getUserId()),
+      orderBy('date', 'desc'),
+      limitQuery(limit)
+    ];
+
+    if (projectId) constraints.push(where('projectId', '==', projectId));
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      constraints.push(where('date', '>=', start));
+      constraints.push(where('date', '<=', end));
+    }
+
+    const baseQuery = query(collection(db, 'sessions'), ...constraints);
+
+    const paginatedQuery = lastVisible.value
+      ? query(baseQuery, startAfter(lastVisible.value))
+      : baseQuery;
+
+    const snapshot = await getDocs(paginatedQuery);
+
+    if (!snapshot.empty) {
+      const docs = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate() || null,
+          updatedAt: data.updatedAt?.toDate() || null,
+          startTime: data.startTime?.toDate() || null,
+          endTime: data.endTime?.toDate() || null,
+          date: data.date?.toDate() || null
+        } as Session;
+      });
+
+      sessions.value = [...sessions.value, ...docs];
+      lastVisible.value = snapshot.docs[snapshot.docs.length - 1] as QueryDocumentSnapshot<SessionFirestoreData>;
+      hasMore.value = snapshot.docs.length === limit;
+    } else {
+      hasMore.value = false;
+    }
   };
 
   const listenToSessions = async (
@@ -178,6 +243,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
   return {
     sessions,
     activeSession,
+    hasMore,
+    resetSessionPagination,
+    fetchSessions,
     listenToSessions,
     getSessionById,
     startSession,
