@@ -8,6 +8,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   label?: string;
+  floatingLabel?: boolean;
   placeholder?: string;
   modelValue: Date | null;
   disabled?: boolean;
@@ -17,6 +18,56 @@ const props = defineProps<{
 const MAX_DIGITS = 8;
 const rawValue = ref('');
 const formattedValue = ref('');
+
+const isFocused = ref(false);
+
+const isFloating = computed(() =>
+  props.floatingLabel && (isFocused.value || !!props.modelValue)
+);
+
+const hasError = computed(() => !!props.error);
+
+const labelClasses = computed(() => {
+  if (!props.label) return [];
+
+  const base = props.floatingLabel
+    ? 'absolute left-4 transition-all duration-200 bg-background dark:bg-background-dark pointer-events-none z-10 text-normal'
+    : 'block mb-1.5 text-font dark:text-font-dark font-semibold';
+
+  const color = props.disabled
+    ? 'text-disabled dark:text-disabled-dark'
+    : props.floatingLabel && isFocused.value && hasError.value
+      ? 'text-danger dark:text-danger-dark'
+      : props.floatingLabel && isFocused.value
+        ? 'text-primary dark:text-primary'
+        : props.floatingLabel
+          ? 'text-neutral-400'
+          : '';
+
+  const position = props.floatingLabel
+    ? isFloating.value
+      ? '-top-2 text-xs px-1'
+      : 'top-1/2 -translate-y-1/2'
+    : '';
+
+  return [base, color, position];
+});
+
+const inputClasses = computed(() => {
+  const base = 'w-full h-[52px] rounded-xl px-4 bg-transparent text-base text-font dark:text-font-dark outline-none transition-all duration-200 border focus:ring-2';
+
+  const stateClasses = hasError.value
+    ? 'border-danger dark:border-danger-dark focus:ring-danger dark:focus:ring-danger-dark'
+    : isFocused.value
+      ? 'border-neutral dark:border-neutral-dark focus:ring-primary dark:focus:ring-primary-dark'
+      : 'border-neutral dark:border-neutral-dark';
+      
+  const placeholder = props.floatingLabel ? 'placeholder-transparent' : '';
+  
+  const disabled = props.disabled ? 'cursor-not-allowed opacity-60' : '';
+
+  return [base, stateClasses, placeholder, disabled];
+});
 
 // Formata para "dd/MM/yyyy"
 const formatDate = (value: string): string => {
@@ -96,31 +147,27 @@ const handleKeydown = (event: KeyboardEvent) => {
     event.preventDefault();
   }
 };
-
-const hasError = computed(() => !!props.error);
 </script>
 
 <template>
-  <div class="flex flex-col gap-1 relative">
-    <label v-if="label" class="text-font dark:text-font-dark font-semibold">{{ label }}</label>
+  <div>
+    <div class="relative w-full">
+      <label v-if="label" :class="labelClasses">{{ label }}</label>
 
-    <div class="relative">
       <input
         type="text"
+        maxlength="10"
         :value="formattedValue"
         :placeholder="placeholder || 'dd/MM/yyyy'"
         :disabled="disabled"
-        maxlength="10"
-        :class="[
-          'text-font dark:text-font-dark bg-transparent border text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 transition-all duration-200 disabled:cursor-not-allowed',
-          hasError ? 'border-danger focus:ring-danger' : 'border-neutral dark:border-neutral-dark focus:ring-primary dark:focus:ring-primary'
-        ]"
+        :class="inputClasses"
         @input="handleInput"
+        @focus="isFocused = true"
+        @blur="isFocused = false"
         @keydown="handleKeydown"
         @keyup.enter="emit('onKeyupEnter')"
       >
     </div>
-
     <span v-if="error" class="text-sm text-danger">{{ error }}</span>
   </div>
 </template>

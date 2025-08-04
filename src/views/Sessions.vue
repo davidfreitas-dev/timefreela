@@ -224,19 +224,21 @@ const deleteSession = async () => {
       <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
         <InputDate
           v-model="dateInterval.start"
-          placeholder="Data inicial"
+          label="Data inicial"
           :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
+          floating-label
           @blur="v$.start.$touch()"
         />
 
         <InputDate
           v-model="dateInterval.end"
-          placeholder="Data final"
+          label="Data final"
           :error="v$.end.$dirty && v$.end.$error
             ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
               ? 'Data final não pode ser anterior à data inicial.'
               : 'Data final é obrigatória.'
             : ''"
+          floating-label
           @blur="v$.end.$touch()"
         />
 

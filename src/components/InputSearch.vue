@@ -44,7 +44,6 @@ const labelClasses = computed(() => {
   return [base, color, position];
 });
 
-
 const inputClasses = computed(() => [
   'w-full h-[52px] rounded-xl border px-4 text-base bg-transparent text-font dark:text-font-dark outline-none focus:outline-none focus:ring-2 transition-all duration-200',
   props.floatingLabel ? 'placeholder-transparent' : '',
@@ -66,9 +65,9 @@ const updateValue = (event: Event) => {
 
     <input
       type="text"
-      :value="props.modelValue"
-      :placeholder="props.floatingLabel ? (props.placeholder || '') : props.placeholder"
-      :disabled="props.disabled"
+      :value="modelValue"
+      :placeholder="placeholder || ''"
+      :disabled="disabled"
       :class="inputClasses"
       :aria-label="label"
       @input="updateValue"

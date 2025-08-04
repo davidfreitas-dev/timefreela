@@ -177,19 +177,21 @@ const tableHeaders = ['Título do Projeto', 'Tipo', 'Horas', 'Receita'];
         <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-5 pt-5 border-b border-neutral dark:border-neutral-dark pb-5">
           <InputDate
             v-model="dateInterval.start"
-            placeholder="Data inicial"
+            label="Data inicial"
             :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
+            floating-label
             @blur="v$.start.$touch()"
           />          
 
           <InputDate
             v-model="dateInterval.end"
-            placeholder="Data final"
+            label="Data final"
             :error="v$.end.$dirty && v$.end.$error
               ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
                 ? 'Data final não pode ser anterior à data inicial.'
                 : 'Data final é obrigatória.'
               : ''"
+            floating-label
             @blur="v$.end.$touch()"
           />          
 
