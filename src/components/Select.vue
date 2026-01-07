@@ -39,7 +39,7 @@ watch(selectedOption, (newValue) => {
       {{ props.label }}
     </label>
 
-    <Listbox v-slot="{ open }" v-model="selectedOption">
+    <Listbox v-slot="{ open }" v-model="selectedOption" by="value">
       <div class="relative w-full">
         <ListboxButton
           :class="[

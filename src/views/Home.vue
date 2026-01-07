@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -9,6 +9,7 @@ import { useLoading } from '@/composables/useLoading';
 import Container from '@/components/Container.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import BarChart from '@/components/BarChart.vue';
+import type { Option } from '@/types/option';
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -18,10 +19,22 @@ const timerStore = useTimerStore();
 const { user } = storeToRefs(userStore);
 const { isRunning } = storeToRefs(timerStore);
 const { fetchProjects } = projectStore;
-const { fetchReports } = reportStore;
+const { fetchReports, getYearsWithData } = reportStore;
 const { start } = timerStore;
 
 const { withLoading } = useLoading();
+
+const selectedYear = ref<Option | null>(null);
+const years = ref<Option[]>([]);
+
+const fetchChartData = async () => {
+  if (selectedYear.value) {
+    const year = Number(selectedYear.value.value);
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31);
+    await fetchReports(startDate, endDate);
+  }
+};
 
 onMounted(async () => {
   if (isRunning.value) {
@@ -30,12 +43,25 @@ onMounted(async () => {
   
   await withLoading(async () => {
     await fetchProjects();
-    await fetchReports();
+    
+    const availableYears = await getYearsWithData();
+    years.value = availableYears.map(y => ({ value: y.toString(), label: y.toString() }));
+    
+    const currentYear = new Date().getFullYear().toString();
+    if (availableYears.includes(Number(currentYear))) {
+      selectedYear.value = { value: currentYear, label: currentYear };
+    } else if (years.value.length > 0) {
+      selectedYear.value = years.value[0];
+    }
+    
+    await fetchChartData();
   }, 'Não foi possível carregar os dados. Tente novamente mais tarde.');  
 });
 
+watch(selectedYear, fetchChartData);
+
 const sortedMonthly = computed(() => {
-  const year = new Date().getFullYear();
+  const year = selectedYear.value ? Number(selectedYear.value.value) : new Date().getFullYear();
 
   const monthNames = [
     'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
@@ -146,9 +172,11 @@ const sortedMonthly = computed(() => {
 
     <div class="rounded-3xl border border-neutral dark:border-neutral-dark p-7">
       <BarChart
+        v-model="selectedYear"
         :datasets="sortedMonthly.datasets"
         :chart-labels="sortedMonthly.chartLabels"
         :metrics="sortedMonthly.metrics"
+        :years="years"
       />
     </div>
   </Container>

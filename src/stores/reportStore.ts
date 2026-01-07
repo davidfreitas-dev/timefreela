@@ -170,6 +170,35 @@ export const useReportStore = defineStore('reportStore', () => {
     };
   });
 
+  const yearStats = computed(() => {
+    let totalSeconds = 0;
+    let estimated = 0;
+    let billed = 0;
+    let toReceive = 0;
+
+    reports.value
+      .forEach(day => {
+        totalSeconds += day.totalSeconds;
+        estimated += day.totalAmount;
+
+        day.sessions.forEach(session => {
+          const sessionAmount = calculateSessionAmount(session);
+          if (session.isBilled) {
+            billed += sessionAmount;
+          } else {
+            toReceive += sessionAmount;
+          }
+        });
+      });
+
+    return {
+      totalSeconds,
+      estimated,
+      billed,
+      toReceive
+    };
+  });
+
   const monthlySummary = computed(() => {
     const result: Record<string, { totalEarnings: number; totalTime: number }> = {};
 
@@ -214,12 +243,37 @@ export const useReportStore = defineStore('reportStore', () => {
     reports.value = Object.values(groupedReports).sort((a, b) => b.date.localeCompare(a.date));
   };
 
+  const getYearsWithData = async (): Promise<number[]> => {
+    if (!user.value?.id) {
+      throw new Error('Usuário não autenticado.');
+    }
+
+    const q = query(
+      collection(db, 'sessions'),
+      where('userId', '==', user.value.id)
+    );
+
+    const snapshot = await getDocs(q);
+    const rawSessions = mapSnapshotToRawSessions(snapshot);
+
+    const years = new Set<number>();
+    rawSessions.forEach(session => {
+      if (session.date) {
+        years.add(new Date(session.date).getFullYear());
+      }
+    });
+
+    return Array.from(years).sort((a, b) => b - a);
+  };
+
   return {
     reports,
     fetchReports,
+    getYearsWithData,
     totalTime,
     totalAmount,
     currentMonthStats,
+    yearStats,
     monthlySummary
   };
 });

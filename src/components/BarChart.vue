@@ -12,6 +12,8 @@ import {
   LinearScale,
 } from 'chart.js';
 import type { ChartOptions, ChartData } from 'chart.js';
+import type { Option } from '@/types/option';
+import Select from '@/components/Select.vue';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -29,10 +31,19 @@ const props = defineProps<{
     label: string;
     value: string;
   }[];
-  options?: ChartOptions<'bar'>;
+  chartOptionsProp?: ChartOptions<'bar'>;
+  modelValue: Option | null;
+  years: Option[];
 }>();
 
+const emit = defineEmits(['update:modelValue']);
+
 const isDark = useDark();
+
+const selectedYear = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+});
 
 const defaultColors = [
   ['#026bb3', '#2f64b5'],
@@ -110,14 +121,14 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
         borderSkipped: false,
       }
     },
-    ...props.options
+    ...props.chartOptionsProp
   };
 });
 </script>
 
 <template>
   <div class="wrapper">
-    <div v-if="props.metrics.length" class="mb-4">
+    <div v-if="props.metrics.length" class="mb-4 flex justify-between items-center">
       <div
         v-for="(metric, i) in props.metrics"
         :key="i"
@@ -129,6 +140,15 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
         <h2 class="text-font dark:text-font-dark text-2xl sm:text-3xl font-bold">
           {{ metric.value }}
         </h2>
+      </div>
+
+      <div>
+        <Select
+          v-model="selectedYear"
+          :options="props.years"
+          placeholder="Selecione o ano"
+          class="w-40"
+        />
       </div>
     </div>
 
