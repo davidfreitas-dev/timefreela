@@ -1,5 +1,11 @@
 import { ref, type Ref } from 'vue';
-import type { ToastData, ToastType } from '@/types/toast';
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+export interface ToastData {
+  type: ToastType;
+  message: string;
+}
 
 interface ToastComponent {
   showToast: () => void;

@@ -6,9 +6,9 @@ import { useAuthStore } from '@/stores/authStore';
 import { useTimerStore } from '@/stores/timerStore';
 import { useBeforeUnloadGuard } from '@/composables/useBeforeUnloadGuard';
 import { useToast } from '@/composables/useToast';
-import Sidebar from '@/components/Sidebar.vue';
-import TimerWidget from '@/components/TimerWidget.vue';
-import Toast from '@/components/Toast.vue';
+import AppSidebar from '@/components/layout/AppSidebar.vue';
+import AppTimerWidget from '@/components/layout/AppTimerWidget.vue';
+import AppToast from '@/components/ui/AppToast.vue';
 
 const route = useRoute();
 
@@ -23,12 +23,12 @@ const changeSidebarWidth = (event: string): void => {
   sidebarWidth.value = event;
 };
 
-const { toast, toastData } = useToast();
+const { toastData, toast } = useToast();
 </script>
 
 <template>
   <div class="app flex bg-background dark:bg-background-dark">
-    <Sidebar v-if="isAuthenticated" @on-width-change="changeSidebarWidth" />
+    <AppSidebar v-if="isAuthenticated" @on-width-change="changeSidebarWidth" />
     <RouterView v-slot="{ Component }">
       <Transition
         appear
@@ -47,7 +47,7 @@ const { toast, toastData } = useToast();
         />
       </Transition>
     </RouterView>
-    <TimerWidget />
-    <Toast ref="toast" :toast-data="toastData" />
+    <AppTimerWidget />
+    <AppToast ref="toast" :toast-data="toastData" />
   </div>
 </template>

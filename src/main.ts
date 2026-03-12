@@ -23,6 +23,6 @@ app.use(filters);
 app.use(router);
 
 const authStore = useAuthStore();
-authStore.setUserFromAuth(); 
+authStore.init(); 
 
 app.mount('#app');

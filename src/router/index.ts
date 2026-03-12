@@ -1,78 +1,86 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import { ROUTES } from '@/constants/routes';
 import { watch } from 'vue';
 
 const routes = [
-  { 
-    path: '/login', 
-    name: 'Login',
-    component: () => import('../views/auth/Login.vue') 
-  },
-  { 
-    path: '/register', 
-    name: 'Register',
-    component: () => import('../views/auth/Register.vue') 
-  },
   {
     path: '/',
-    name: 'Home',
-    component: () => import('../views/Home.vue'),
+    redirect: ROUTES.DASHBOARD,
     meta: { requiresAuth: true },
   },
   {
-    path: '/projects',
+    path: ROUTES.LOGIN,
+    name: 'Login',
+    component: () => import('../views/auth/LoginView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: ROUTES.REGISTER,
+    name: 'Register',
+    component: () => import('../views/auth/RegisterView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: ROUTES.DASHBOARD,
+    name: 'Dashboard',
+    component: () => import('../views/HomeView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: ROUTES.PROJECTS,
     name: 'Projects',
-    component: () => import('../views/Projects.vue'),
+    component: () => import('../views/ProjectsView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/projects/:id',
-    name: 'ProjectDetails',
-    component: () => import('../views/Project.vue'),
-    meta: { requiresAuth: true },
-    props: true,
-  },  
-  {
-    path: '/projects/create',
+    path: ROUTES.PROJECT_CREATE,
     name: 'ProjectCreate',
-    component: () => import('../views/Project.vue'),
+    component: () => import('../views/ProjectView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/sessions',
-    name: 'Sessions',
-    component: () => import('../views/Sessions.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/sessions/:id',
-    name: 'SessionDetails',
-    component: () => import('../views/Session.vue'),
-    meta: { requiresAuth: true },
+    path: ROUTES.PROJECT_DETAIL,
+    name: 'ProjectDetail',
+    component: () => import('../views/ProjectView.vue'),
     props: true,
-  },  
+    meta: { requiresAuth: true },
+  },
   {
-    path: '/sessions/create',
+    path: ROUTES.SESSIONS,
+    name: 'Sessions',
+    component: () => import('../views/SessionsView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: ROUTES.SESSION_CREATE,
     name: 'SessionCreate',
-    component: () => import('../views/Session.vue'),
+    component: () => import('../views/SessionView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/timer',
+    path: ROUTES.SESSION_DETAIL,
+    name: 'SessionDetail',
+    component: () => import('../views/SessionView.vue'),
+    props: true,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: ROUTES.TIMER,
     name: 'Timer',
-    component: () => import('../views/Timer.vue'),
+    component: () => import('../views/TimerView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/reports',
+    path: ROUTES.REPORTS,
     name: 'Reports',
-    component: () => import('../views/Reports.vue'),
+    component: () => import('../views/ReportsView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/settings',
+    path: ROUTES.SETTINGS,
     name: 'Settings',
-    component: () => import('../views/Settings.vue'),
+    component: () => import('../views/SettingsView.vue'),
     meta: { requiresAuth: true },
   },
 ];
@@ -85,6 +93,7 @@ const router = createRouter({
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
 
+  // Wait for auth to be checked
   if (!authStore.isAuthChecked) {
     await new Promise(resolve => {
       const unwatch = watch(
@@ -99,8 +108,12 @@ router.beforeEach(async (to, _from, next) => {
     });
   }
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'Login' });
+  const { isAuthenticated } = authStore;
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next(ROUTES.LOGIN);
+  } else if ((to.path === ROUTES.LOGIN || to.path === ROUTES.REGISTER) && isAuthenticated) {
+    next(ROUTES.DASHBOARD);
   } else {
     next();
   }

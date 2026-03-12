@@ -1,210 +1,150 @@
-# Time Freela Documentação Oficial
+# Time Freela - Documentação Oficial
 
 ## 📚 Índice
 
 1. [Visão Geral do Projeto](#1-visão-geral-do-projeto)
-2. [Requisitos Funcionais](#2-requisitos-funcionais)
-3. [Requisitos Não Funcionais](#3-requisitos-não-funcionais)
+2. [Stack Tecnológica](#2-stack-tecnológica)
+3. [Como Executar o Projeto](#3-como-executar-o-projeto)
 4. [Estrutura de Navegação (Mapa de Páginas)](#4-estrutura-de-navegação-mapa-de-páginas)
 5. [Arquitetura Frontend (Vue 3 + Pinia)](#5-arquitetura-frontend-vue-3--pinia)
-6. [Autenticação (Firebase Auth)](#6-autenticação-firebase-auth)
-7. [Integração com Firestore](#7-integração-com-firestore)
-8. [Geração de Relatórios](#8-geraçã-de-relatórios)
-9. [Gestão Financeira](#9-gestão-financeira)
-10. [Design e UX](#10-design-e-ux)
-11. [Testes](#11-testes)
-12. [Deploy](#12-deploy)
-13. [Glossário](#13-glossário)
-14. [Extras (Planejados/Futuros)](#14-extras-planejadosfuturos)
+6. [Integração com Firestore (Data Model)](#6-integração-com-firestore-data-model)
+7. [Testes Manuais](#7-testes-manuais)
+8. [Deploy](#8-deploy)
+9. [Glossário](#9-glossário)
+
+---
 
 ## 1. Visão Geral do Projeto
 
 ### Propósito
 TimeFreela é um web app criado para **programadores freelancers** que desejam **cronometrar, organizar e documentar seus trabalhos com precisão e profissionalismo**, oferecendo também controle financeiro por projeto.
 
-### Público-alvo
-- Desenvolvedores autônomos
-- Profissionais de tecnologia que trabalham com múltiplos clientes
-- Agências com times freelancers
+### Funcionalidades Implementadas
+- **Autenticação**: Login e Registro via Firebase Auth.
+- **Gestão de Projetos**: Controle de valor/hora ou preço fixo.
+- **Timer em Tempo Real**: Rastreamento de sessões com persistência (mesmo ao fechar o navegador).
+- **Sessões**: Histórico detalhado e registro manual de horas.
+- **Financeiro**: Cálculo automático de valores pendentes e faturados.
+- **Relatórios**: Visualização gráfica com Chart.js e exportação em PDF (jsPDF).
 
-### Funcionalidades-chave
-- Cronômetro e registro manual de tempo
-- Organização por projeto e tags
-- Painel financeiro com valor/hora e valor fixo
-- UI responsiva e intuitiva
+---
 
-### Benefícios
-- Controle profissional de tempo e faturamento
-- Agilidade na criação de relatórios
-- Redução de erros manuais
-- Pronto para expansão (pacotes mensais)
+## 2. Stack Tecnológica
 
-## 2. Requisitos Funcionais
+- **Framework**: [Vue 3](https://vuejs.org/) (Composition API)
+- **Linguagem**: [TypeScript](https://www.typescriptlang.org/)
+- **Estado Global**: [Pinia](https://pinia.vuejs.org/) (com `pinia-plugin-persistedstate`)
+- **Estilização**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Backend/DB/Auth**: [Firebase](https://firebase.google.com/) (Firestore & Auth)
+- **Componentes UI**: [Headless UI](https://headlessui.com/)
+- **Gráficos**: [Chart.js](https://www.chartjs.org/) + [Vue-Chartjs](https://vue-chartjs.org/)
+- **Manipulação de Datas**: [Day.js](https://day.js.org/)
+- **Validação**: [Vuelidate](https://vuelidate-next.netlify.app/)
 
-- Autenticação com Firebase (email/senha)
-- Criação e gerenciamento de projetos com:
-  - Título, descrição
-  - Tipo de faturamento: valor por hora ou valor fixo
-  - Tags/categorias
-- Cronômetro com início, pausa e fim para registro automático de sessões
-- Registro manual de sessões de trabalho
-- Sessões organizadas por projeto e por período
-- Marcação de sessões como faturadas
-- Dashboard com:
-  - Total de horas trabalhadas
-  - Faturamento (considerando valor/hora e valor fixo dos projetos)
-  - Gráfico de progressão
-- Painel financeiro com filtros por período, projeto e status de faturamento, exibindo totais agregados
-- Suporte a expansões futuras, como:
-  - Geração de relatórios em PDF/CSV
-  - Pacotes de horas
-  - Modelos de cobrança personalizados
+---
 
-## 3. Requisitos Não Funcionais
+## 3. Como Executar o Projeto
 
-- Responsividade mobile
-- Armazenamento em nuvem (Firestore)
-- Carregamento abaixo de 2s
-- Regras de segurança no Firestore
-- Backup automático via Firebase
-- UI moderna com TailwindCSS
-- Acessibilidade com `aria`, contraste e navegação por teclado
+### Pré-requisitos
+- Node.js (v18 ou superior)
+- Conta no Firebase
+
+### Passo a Passo
+
+1. **Clonar o repositório**
+   ```bash
+   git clone <url-do-repositorio>
+   cd timefreela
+   ```
+
+2. **Instalar dependências**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar Variáveis de Ambiente**
+   Crie um arquivo `.env` na raiz do projeto com as chaves do seu projeto Firebase (use o `.env.example` como base):
+   ```env
+   VITE_FIREBASE_API_KEY=sua_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=seu_projeto_id
+   VITE_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
+   VITE_FIREBASE_APP_ID=seu_app_id
+   ```
+
+4. **Rodar em desenvolvimento**
+   ```bash
+   npm run dev
+   ```
+
+5. **Build para produção**
+   ```bash
+   npm run build
+   ```
+
+---
 
 ## 4. Estrutura de Navegação (Mapa de Páginas)
 
-- `/login` – Login
-- `/register` – Cadastro
-- `/dashboard` – Visão geral
-- `/projects` – Lista de projetos
-  - `/projects/:id` – Detalhes do projeto
-  - `/projects/create` – Criação do projeto
-- `/sessions` – Lista de sessões
-  - `/sessions/:id` – Detalhes da sessão
-  - `/sessions/create` – Criação da sessão
-- `/timer` – Cronômetro
-- `/reports` – Relatórios
-- `/settings` – Configurações
+- `/login` – Acesso à conta
+- `/register` – Criação de perfil
+- `/dashboard` – Resumo geral e métricas
+- `/projects` – Listagem e gestão de projetos
+- `/sessions` – Histórico de todas as sessões trabalhadas
+- `/timer` – Interface principal de controle de tempo
+- `/reports` – Gráficos e exportação de PDF
+- `/settings` – Perfil do usuário
+
+---
 
 ## 5. Arquitetura Frontend (Vue 3 + Pinia)
 
 ### Estrutura de Pastas
 ```
 src/
-├── assets/
-├── components/
-├── composables/
-├── filters/
-├── plugins/
-├── router/
-├── services/
-├── stores/
-└── views/
+├── api/          # Configuração direta de chamadas Firestore
+├── assets/       # Imagens e ícones estáticos
+├── components/   # Componentes reutilizáveis (UI e Layout)
+├── composables/  # Lógica compartilhada (useTimer, useBilling, etc)
+├── constants/    # Enums e strings constantes
+├── lib/          # Instâncias de bibliotecas (Firebase, Dayjs, jsPDF)
+├── services/     # Regras de negócio e abstração do Firebase
+├── stores/       # Gerenciamento de estado (Pinia)
+├── types/        # Definições de interfaces TypeScript
+└── views/        # Componentes de página (Roteamento)
 ```
 
-### Stores
-- `authStore`, `userStore`, `projectStore`, `sessionStore`, `reportStore`, `timerStore`
+---
 
-### Composables
-- `useTimer`, `useBilling`, `useExport`, `useLoading`, `useToast`, `useBeforeUnloadGuard`
+## 6. Integração com Firestore (Data Model)
 
-### Roteamento
-- SPA com vue-router, lazy loading, middleware de proteção
+### Principais Coleções:
+- **users**: Perfil e preferências.
+- **projects**: Configurações de faturamento e status.
+- **sessions**: Registros de tempo vinculados a projetos e usuários.
 
-## 6. Autenticação (Firebase Auth)
+---
 
-- Login com email e senha
-- Persistência com `onAuthStateChanged`
-- Middleware de proteção
-- Armazenado na `authStore`
+## 7. Testes Manuais
 
-## 7. Integração com Firestore
+Para garantir a qualidade da aplicação antes de cada release, siga o roteiro detalhado em:
+👉 **[TESTING_GUIDE.md](./TESTING_GUIDE.md)**
 
-### Estrutura
-```
-users/{userId}
-  - name
-  - email
-  - image
-  - createdAt
-  - updatedAt 
+---
 
-projects/{projectId}
-  - userId
-  - title
-  - description
-  - tags
-  - billingType
-  - billingAmount
-  - active
-  - createdAt
-  - updatedAt 
+## 8. Deploy
 
-sessions/{sessionId}
-  - projectId
-  - userId
-  - duration
-  - isManual
-  - isBilled
-  - date
-  - startTime
-  - endTime
-  - createdAt
-  - updatedAt 
-```
+O projeto está configurado para deploy automático no **Firebase Hosting** via GitHub Actions sempre que houver merge na branch `main`.
 
-### Segurança
-- Regras baseadas em `userId`
-- Escritas com batch para múltiplas sessões
+---
 
-## 8. Geração de Relatórios
-
-- Filtros por projeto, cliente, status
-- Totais de horas, valores e faturamento
-- CSV com agrupamentos
-- PDF com jsPDF
-
-## 9. Gestão Financeira
-
-- Valor/hora ou preço fixo por projeto
-- Sessões mostram valor estimado
-- Marcação: a faturar, faturada
-- Painel financeiro com totais
-- Planejado: pacotes mensais
-
-## 10. Design e UX
-
-- TailwindCSS, responsivo
-- Cores: azul, cinza escuro, branco
-- Dark mode nativo
-- UI acessível
-
-## 11. Testes
-
-- Unitários com Vitest
-- Integração nas stores
-- Componentes com Vue Test Utils
-- Cobertura mínima recomendada: 80%
-
-## 12. Deploy
-
-- Firebase Hosting
-- Domínio customizado
-- CI/CD com GitHub Actions
-
-## 13. Glossário
+## 9. Glossário
 
 | Termo            | Definição |
 |------------------|----------|
-| Sessão           | Tempo cronometrado/manual de trabalho |
-| Faturada         | Sessão paga ou enviada para cliente |
-| Valor/hora       | Preço por hora definido no projeto |
-| Projeto fixo     | Projeto com valor fechado |
-| Pacote mensal    | Cobrança recorrente mensal |
-| Tag              | Classificação de projeto ou sessão |
-
-## 14. Extras (Planejados/Futuros)
-
-- Mini-timer flutuante
-- Relatórios em PDF/CSV
-- Notificações por e-mail sobre faturamento
-- Suporte a contratos, pacotes e valor por funcionalidade
+| Sessão           | Intervalo de tempo trabalhado em um projeto. |
+| Faturada         | Sessão que já foi cobrada ou paga pelo cliente. |
+| Hourly Rate      | Valor cobrado por cada hora trabalhada. |
+| Fixed Price      | Valor total fechado para o projeto, independente das horas. |
+| Timer Persistence| Capacidade do cronômetro continuar contando mesmo após fechar a aba. |

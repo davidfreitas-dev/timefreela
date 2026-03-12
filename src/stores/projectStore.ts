@@ -1,125 +1,99 @@
-import { defineStore, storeToRefs } from 'pinia';
-import { ref, type Ref } from 'vue';
-import {
-  collection,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  where,
-  onSnapshot,
-  serverTimestamp,
-  type Unsubscribe
-} from 'firebase/firestore';
-import { db } from '@/services/firestore';
-import type { Project } from '@/types/project';
-import { useUserStore } from '@/stores/userStore';
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { projectService } from '../services/projectService';
+import type { Project } from '../types';
 
-export const useProjectStore = defineStore('projectStore', () => {
-  const { user } = storeToRefs(useUserStore());
-  const unsubscribe = ref<Unsubscribe | null>(null);
-  const projects: Ref<Project[]> = ref([]);
+export const useProjectStore = defineStore('projects', () => {
+  const items = ref<Project[]>([]);
+  const current = ref<Project | null>(null);
 
-  const fetchProjects = async (): Promise<void> => {
-    if (!user.value?.id) {
-      throw new Error('Usuário não autenticado.');
-    }
-
-    if (unsubscribe.value) unsubscribe.value();
-
-    const queryProjects = query(
-      collection(db, 'projects'),
-      where('userId', '==', user.value?.id),
-      orderBy('title')
-    );
-
-    return new Promise<void>((resolve, reject) => {
-      unsubscribe.value = onSnapshot(
-        queryProjects,
-        (snapshot) => {
-          projects.value = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              ...data,
-              createdAt: data.createdAt?.toDate() || null,
-              updatedAt: data.updatedAt?.toDate() || null
-            } as Project;
-          });          
-          resolve();
-        },
-        (error) => {
-          console.error('Erro ao escutar projetos:', error);
-          reject(error);
-        }
-      );
-    });
-  };
-
-  const getProjectById = async (projectId: string) => {
-    const projectRef = doc(db, 'projects', projectId);
-
-    const snapshot = await getDoc(projectRef);
-
-    if (!snapshot.exists()) return null; 
+  const activeProjects = computed(() => items.value.filter((p) => p.active));
   
-    const data = snapshot.data();
+  const getById = computed(() => (id: string) => 
+    items.value.find((p) => p.id === id)
+  );
 
-    return {
-      id: snapshot.id,
-      ...data,
-      createdAt: data.createdAt?.toDate() || null,
-      updatedAt: data.updatedAt?.toDate() || null 
-    } as Project;
-  };
-
-  const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
-    if (!user.value?.id) {
-      throw new Error('Usuário não autenticado.');
+  const fetchAll = async (userId: string) => {
+    try {
+      items.value = await projectService.getProjectsByUser(userId);
+    } catch (error) {
+      console.error('Erro ao buscar projetos:', error);
+      throw error;
     }
-
-    const projectData: Omit<Project, 'id'> = {
-      ...project,
-      userId: user.value?.id,
-      createdAt: serverTimestamp()
-    };
-
-    await addDoc(collection(db, 'projects'), projectData);
   };
 
-  const updateProject = async (projectId: string, updatedProject: Partial<Project>) => {
-    const updatedData: Partial<Project> = {
-      ...updatedProject,
-      updatedAt: serverTimestamp()
-    };
-
-    await updateDoc(doc(db, 'projects', projectId), updatedData);
+  const fetchOne = async (id: string) => {
+    try {
+      current.value = await projectService.getProjectById(id);
+      return current.value;
+    } catch (error) {
+      console.error('Erro ao buscar projeto:', error);
+      throw error;
+    }
   };
 
-  const deleteProject = async (projectId: string) => {
-    await deleteDoc(doc(db, 'projects', projectId));
+  const create = async (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const id = await projectService.createProject(data);
+      await fetchAll(data.userId);
+      return id;
+    } catch (error) {
+      console.error('Erro ao criar projeto:', error);
+      throw error;
+    }
   };
 
-  const stopListeningProjects = () => {
-    unsubscribe.value?.();
-    unsubscribe.value = null;
+  const update = async (id: string, data: Partial<Project>) => {
+    try {
+      await projectService.updateProject(id, data);
+      
+      if (current.value?.id === id) {
+        current.value = { ...current.value, ...data };
+      }
+      
+      const index = items.value.findIndex(item => item.id === id);
+      if (index !== -1) {
+        items.value[index] = { ...items.value[index], ...data };
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar projeto:', error);
+      throw error;
+    }
   };
 
-  const resetProjects = () => {
-    projects.value = [];
+  const archive = async (id: string) => {
+    try {
+      await projectService.archiveProject(id);
+      const index = items.value.findIndex(item => item.id === id);
+      if (index !== -1) {
+        items.value[index].active = false;
+      }
+    } catch (error) {
+      console.error('Erro ao arquivar projeto:', error);
+      throw error;
+    }
+  };
+
+  const remove = async (id: string) => {
+    try {
+      await projectService.deleteProject(id);
+      items.value = items.value.filter(item => item.id !== id);
+    } catch (error) {
+      console.error('Erro ao deletar projeto:', error);
+      throw error;
+    }
   };
 
   return {
-    projects,
-    fetchProjects,
-    addProject,
-    updateProject,
-    deleteProject,
-    getProjectById,
-    stopListeningProjects,
-    resetProjects
+    items,
+    current,
+    activeProjects,
+    getById,
+    fetchAll,
+    fetchOne,
+    create,
+    update,
+    archive,
+    remove,
   };
 });
