@@ -1,11 +1,9 @@
 <script setup lang="ts">
-const { sidebarWidth } = defineProps<{
-  sidebarWidth?: string
-}>();
+// AppContainer is a simple wrapper for centering content and providing padding
 </script>
 
 <template>
-  <main class="h-screen overflow-y-auto transition-all ease-in-out duration-200 p-6" :style="{ width: `calc(100% - ${sidebarWidth})` }">
+  <div class="max-w-7xl mx-auto w-full">
     <slot />
-  </main>
+  </div>
 </template>
