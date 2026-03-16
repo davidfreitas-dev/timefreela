@@ -99,7 +99,7 @@ onMounted(() => {
     </div>
 
     <section class="timer my-8">
-      <div class="content p-7 md:p-20 border border-neutral dark:border-neutral-dark rounded-3xl">
+      <div class="content p-7 md:p-20 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
         <h2 class="text-font dark:text-font-dark text-center text-4xl sm:text-7xl md:text-8xl font-bold mb-10">
           {{ elapsedFormatted }}
         </h2>

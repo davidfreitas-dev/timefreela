@@ -45,10 +45,10 @@ const updateValue = (event: Event) => {
       :disabled="disabled"
       rows="4"
       :class="[
-        'text-font dark:text-font-dark bg-transparent text-base w-full rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+        'text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark bg-accent/70 dark:bg-background-dark/70 text-base w-full rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
         error
           ? 'border border-danger focus:ring-danger'
-          : 'border border-neutral dark:border-neutral-dark focus:ring-primary dark:focus:ring-primary'
+          : 'focus:ring-primary dark:focus:ring-primary'
       ]"
       @input="updateValue"
       @keyup.enter="$emit('onKeyupEnter')"

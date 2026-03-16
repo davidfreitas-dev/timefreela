@@ -9,7 +9,7 @@ import { useLoading } from '@/composables/useLoading';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppBarChart from '@/components/ui/AppBarChart.vue';
-import type { Option } from '@/types';
+import type { Option } from '@/types'; // Import Option type
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -22,6 +22,7 @@ const { start } = timerStore;
 
 const { withLoading } = useLoading();
 
+// Add refs for year selection
 const availableYears = ref<Option[]>([]);
 const selectedYear = ref<Option | null>(null);
 
@@ -35,6 +36,7 @@ onMounted(async () => {
       await projectStore.fetchAll(user.value!.id);
       await reportStore.fetchReports();
 
+      // Fetch years and set initial selection
       const years = await reportStore.getYearsWithData();
       availableYears.value = years.map(year => ({
         label: year.toString(),
@@ -44,12 +46,14 @@ onMounted(async () => {
       const currentYear = new Date().getFullYear().toString();
       selectedYear.value = availableYears.value.find(y => y.value === currentYear) || 
                           availableYears.value[0] || 
-                          { label: currentYear, value: currentYear };
+                          { label: currentYear, value: currentYear }; // Fallback for empty years array
+                          
     }, 'Não foi possível carregar os dados. Tente novamente mais tarde.');  
   }
 });
 
 const sortedMonthly = computed(() => {
+  // Use selectedYear.value for filtering
   const year = selectedYear.value ? parseInt(selectedYear.value.value as string) : new Date().getFullYear();
 
   const monthNames = [
@@ -86,7 +90,8 @@ const sortedMonthly = computed(() => {
   const avgHours = totalHours / filledMonths;
 
   const avgHourPart = Math.floor(avgHours);
-  const avgMinutePart = Math.round((avgHours - avgHourPart) * 60);
+  // Corrected typo: avgPart -> avgHours
+  const avgMinutePart = Math.round((avgHours - avgHourPart) * 60); 
   const formattedAvgTime = `${avgHourPart}h ${avgMinutePart}min`;
   const formattedAvgRevenue = `R$ ${avgEarnings.toLocaleString('pt-BR', { 
     minimumFractionDigits: 2,

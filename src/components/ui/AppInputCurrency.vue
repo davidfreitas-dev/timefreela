@@ -68,8 +68,8 @@ watch(
         :placeholder="placeholder"
         :disabled="disabled"
         :class="[
-          'text-font dark:text-font-dark bg-transparent border text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 transition-all duration-200 disabled:cursor-not-allowed',
-          error ? 'border-danger focus:ring-danger' : 'border-neutral dark:border-neutral-dark focus:ring-primary dark:focus:ring-primary'
+          'text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark bg-accent/70 dark:bg-background-dark/70 text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+          error ? 'border border-danger focus:ring-danger' : 'focus:ring-primary dark:focus:ring-primary'
         ]"
         @input="updateValue"
         @keyup.enter="$emit('onKeyupEnter')"

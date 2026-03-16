@@ -18,10 +18,10 @@ const handleImageError = () => {
         v-if="showImage"
         :src="logoPath"
         alt="Time Freela logo"
-        class="h-6"
+        class="h-8"
         @error="handleImageError"
       >
-      <h3 v-if="isExpanded" class="text-font dark:text-font-dark text-xl font-extrabold ml-1">
+      <h3 v-if="isExpanded" class="text-font dark:text-font-dark text-2xl font-extrabold ml-1">
         Time<span class="text-primary ml-0.5">Freela</span>
       </h3>
     </div>

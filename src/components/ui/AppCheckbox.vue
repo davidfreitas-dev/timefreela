@@ -29,7 +29,7 @@ const model = computed({
         class="peer absolute inset-0 h-full w-full opacity-0 cursor-pointer"
       >
       <span
-        class="h-5.5 w-5.5 rounded border border-neutral dark:border-neutral-dark bg-transparent dark:bg-accent-dark transition 
+        class="h-5.5 w-5.5 rounded border border-neutral dark:border-neutral-dark bg-accent dark:bg-background-dark transition 
                peer-checked:bg-primary peer-checked:border-primary dark:peer-checked:bg-primary-dark dark:peer-checked:border-primary-dark"
       />
       <span

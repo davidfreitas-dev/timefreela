@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useLayoutStore } from '@/stores/layoutStore';
 import { ROUTES } from '@/constants/routes';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import AppDialog from '@/components/ui/AppDialog.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -13,8 +14,13 @@ const userStore = useUserStore();
 const layoutStore = useLayoutStore();
 
 const isMenuOpen = ref(false);
+const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
 
-const handleLogout = async () => {
+const handleLogout = () => {
+  dialogRef.value?.openModal();
+};
+
+const handleConfirmLogout = async () => {
   await authStore.logout();
   router.push(ROUTES.LOGIN);
 };
@@ -25,14 +31,14 @@ const userInitial = () => {
 </script>
 
 <template>
-  <header class="h-16 bg-white dark:bg-background-dark border-b border-neutral dark:border-neutral-dark flex items-center justify-between px-6 sticky top-0 z-30">
+  <header class="h-16 shadow-xs flex items-center justify-between px-6 sticky top-0 z-30">
     <div class="flex items-center">
       <button 
-        class="p-2 rounded-lg hover:bg-neutral/50 dark:hover:bg-neutral-dark/50 transition-colors focus:outline-none cursor-pointer text-secondary dark:text-secondary-dark"
+        class="flex p-3 rounded-full hover:bg-neutral/50 dark:hover:bg-neutral-dark/50 transition-colors focus:outline-none cursor-pointer text-secondary dark:text-secondary-dark"
         @click="layoutStore.toggleSidebar"
       >
         <AppIcon 
-          :name="layoutStore.isSidebarExpanded ? 'menu_open' : 'menu'" 
+          name="menu" 
           class="text-2xl"
         />
       </button>
@@ -44,7 +50,7 @@ const userInitial = () => {
       @mouseleave="isMenuOpen = false"
     >
       <button 
-        class="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral/50 dark:hover:bg-neutral-dark/50 transition-colors focus:outline-none"
+        class="flex items-center gap-3 p-2 rounded-lg cursor-pointer focus:outline-none"
       >
         <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-sm">
           {{ userInitial() }}
@@ -68,17 +74,24 @@ const userInitial = () => {
       >
         <div 
           v-if="isMenuOpen"
-          class="absolute right-0 mt-1 w-48 bg-white dark:bg-accent-dark border border-neutral dark:border-neutral-dark rounded-xl shadow-lg py-1 z-50 overflow-hidden"
+          class="absolute right-0 mt-1 w-40 bg-white dark:bg-accent-dark border border-neutral dark:border-neutral-dark rounded-xl shadow-lg py-1 z-50 overflow-hidden"
         >
           <button 
-            class="w-full text-left px-4 py-2 text-sm text-danger hover:bg-danger-accent/50 dark:hover:bg-danger-accent-dark/50 flex items-center gap-2 transition-colors font-medium"
+            class="w-full text-left px-4 py-2 text-sm text-danger flex items-center gap-2 transition-colors font-medium cursor-pointer"
             @click="handleLogout"
           >
             <AppIcon name="logout" class="text-lg" />
-            Finalizar Sessão
+            Sair
           </button>
         </div>
       </Transition>
     </div>
+
+    <AppDialog
+      ref="dialogRef"
+      header="Tem certeza que deseja sair?"
+      message="Essa ação irá encerrar sua sessão atual."
+      @confirm-action="handleConfirmLogout"
+    />
   </header>
 </template>

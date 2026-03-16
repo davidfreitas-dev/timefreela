@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <span class="material-icons-outlined" :class="$attrs.class">
+  <span class="material-symbols-outlined" :class="$attrs.class">
     {{ name }}
   </span>
 </template>

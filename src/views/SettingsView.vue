@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 import { required, email, helpers } from '@vuelidate/validators';
 import { useDark } from '@vueuse/core';
@@ -13,12 +12,9 @@ import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import AppButton from '@/components/ui/AppButton.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
 import AppSwitch from '@/components/ui/AppSwitch.vue';
 import AppModal from '@/components/ui/AppModal.vue';
-import AppDialog from '@/components/ui/AppDialog.vue';
 
-const router = useRouter();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const timerStore = useTimerStore();
@@ -120,17 +116,6 @@ const confirmPassword = async (event: Event) => {
   });
 };
 
-const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
-
-const handleLogout = () => {
-  dialogRef.value?.openModal();
-};
-
-const handleConfirmLogout = async () => {
-  await authStore.logout();
-  router.push({ name: 'Login' });
-};
-
 const isDark = useDark({
   selector: 'html', // Aplica a classe .dark na <html>
   attribute: 'class',
@@ -143,17 +128,13 @@ const isDark = useDark({
   <AppContainer>
     <div class="header flex justify-between items-center">
       <AppBreadcrumb title="Configurações" description="Gerencie suas configurações aqui." />
-      <AppButton class="h-fit" @click="handleLogout">
-        <span class="hidden md:block">Encerrar Sessão</span>
-        <AppIcon name="logout" class="md:ml-2" />
-      </AppButton>
     </div>
 
     <section class="account my-7">
       <h1 class="section-title text-font dark:text-font-dark text-2xl font-semibold mb-3">
         Minha Conta
       </h1>
-      <div class="p-7 border border-neutral dark:border-neutral-dark rounded-3xl">
+      <div class="p-7 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
         <form class="flex flex-col gap-5">
           <AppInput
             v-model="formData.name"
@@ -190,7 +171,7 @@ const isDark = useDark({
       <h1 class="section-title text-font dark:text-font-dark text-2xl font-semibold mb-3">
         Sistema
       </h1>
-      <div class="p-7 border border-neutral dark:border-neutral-dark rounded-3xl">
+      <div class="p-7 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
         <div class="flex justify-between items-center">
           <span class="text-font dark:text-font-dark font-semibold">Modo escuro</span>
           <AppSwitch v-model="isDark" />
@@ -224,12 +205,5 @@ const isDark = useDark({
         </div>
       </form>
     </AppModal>
-
-    <AppDialog
-      ref="dialogRef"
-      header="Tem certeza que deseja sair?"
-      message="Essa ação irá encerrar sua sessão atual."
-      @confirm-action="handleConfirmLogout"
-    />
   </AppContainer>
 </template>

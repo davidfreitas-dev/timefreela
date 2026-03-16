@@ -27,12 +27,12 @@ const menuItems: MenuItemData[] = [
 <template>
   <aside
     :class="[
-      'flex flex-col text-secondary dark:text-secondary-dark border-r border-neutral dark:border-neutral-dark overflow-hidden min-h-screen p-6 transition-all ease-in-out duration-200',
+      'flex flex-col text-secondary dark:text-secondary-dark dark:border-neutral-dark overflow-hidden min-h-screen p-6 transition-all ease-in-out duration-200',
       { 'px-2': !isSidebarExpanded },
       sidebarWidthClass
     ]"
   >
-    <div class="header flex flex-col gap-3 h-24">
+    <div class="header flex justify-center h-16">
       <AppLogo :is-expanded="isSidebarExpanded" />
     </div>
 

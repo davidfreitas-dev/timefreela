@@ -110,8 +110,8 @@ const confirmDelete = async () => {
       </AppButton>
     </div>
 
-    <div class="relative rounded-3xl border border-neutral dark:border-neutral-dark my-8">
-      <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
+      <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-6">
         <div class="w-full">
           <AppInputSearch
             v-model="search"

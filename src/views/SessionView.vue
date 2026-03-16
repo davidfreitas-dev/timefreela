@@ -180,7 +180,7 @@ onMounted(() => {
     </div>
 
     <section class="project my-7">
-      <div class="content p-7 border border-neutral dark:border-neutral-dark rounded-xl">
+      <div class="content p-7 bg-background dark:bg-accent-dark shadow-md rounded-xl">
         <form class="flex flex-col gap-5" @submit.prevent="saveSession">
           <AppSelect
             v-model="selectedProject"
