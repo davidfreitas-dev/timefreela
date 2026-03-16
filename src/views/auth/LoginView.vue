@@ -54,7 +54,7 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
 <template>
   <div class="flex md:items-center justify-center w-full h-screen">
     <div class="md:bg-background dark:md:bg-accent-dark md:shadow-lg md:rounded-xl md:px-8 px-4 py-4 w-full max-w-lg">
-      <div class="flex flex-col items-center my-3">
+      <div class="flex flex-col items-center my-5">
         <div class="flex items-center">
           <img
             :src="logoPath"
@@ -65,12 +65,12 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
             Time<span class="text-primary ml-0.5">Freela</span>
           </h3>
         </div>
-        <span class="font-sans text-sm text-secondary mt-1">
+        <span class="font-sans text-sm text-secondary/70 dark:text-secondary-dark/70 mt-1">
           Faça login para usar nossa plataforma
         </span>
       </div>
 
-      <form class="flex flex-col gap-5 p-3" @submit.prevent="handleLogin">
+      <form class="flex flex-col gap-4 p-3" @submit.prevent="handleLogin">
         <AppInput
           v-model="formData.email"
           type="email"

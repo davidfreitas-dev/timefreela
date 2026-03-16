@@ -131,11 +131,11 @@ const isDark = useDark({
     </div>
 
     <section class="account my-7">
-      <h1 class="section-title text-font dark:text-font-dark text-2xl font-semibold mb-3">
+      <h1 class="section-title text-xs font-bold uppercase tracking-widest text-secondary dark:text-secondary-dark mb-4">
         Minha Conta
       </h1>
-      <div class="p-7 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
-        <form class="flex flex-col gap-5">
+      <div class="p-6 md:p-8 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
+        <form class="flex flex-col gap-4">
           <AppInput
             v-model="formData.name"
             type="text"
@@ -154,7 +154,7 @@ const isDark = useDark({
             @blur="v$.email.$touch"
           />
 
-          <div class="flex justify-end">
+          <div class="flex justify-end mt-2">
             <AppButton
               class="w-fit"
               :is-loading="isSaving"
@@ -168,10 +168,10 @@ const isDark = useDark({
     </section>
 
     <section class="system my-7">
-      <h1 class="section-title text-font dark:text-font-dark text-2xl font-semibold mb-3">
+      <h1 class="section-title text-xs font-bold uppercase tracking-widest text-secondary dark:text-secondary-dark mb-4">
         Sistema
       </h1>
-      <div class="p-7 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
+      <div class="p-6 md:p-8 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
         <div class="flex justify-between items-center">
           <span class="text-font dark:text-font-dark font-semibold">Modo escuro</span>
           <AppSwitch v-model="isDark" />
@@ -184,7 +184,7 @@ const isDark = useDark({
       title="Confirme sua senha"
       align="center"
     >
-      <form class="flex flex-col gap-5">
+      <form class="flex flex-col gap-4">
         <AppInput
           v-model="currentPassword"
           type="password"

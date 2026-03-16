@@ -111,7 +111,7 @@ const confirmDelete = async () => {
     </div>
 
     <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
-      <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-6">
+      <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
         <div class="w-full">
           <AppInputSearch
             v-model="search"
@@ -140,43 +140,43 @@ const confirmDelete = async () => {
           :items="filteredProjects"
         >
           <template #row="{ item: project }">
-            <td class="px-6 py-4 w-[20%] max-w-[200px] truncate">
+            <td class="px-6 py-3 w-[20%] max-w-[200px] truncate">
               {{ project.title }}
             </td>
 
-            <td class="px-6 py-4 w-[25%] max-w-[250px] truncate">
+            <td class="px-6 py-3 w-[25%] max-w-[250px] truncate">
               {{ project.description || '-' }}
             </td>
 
-            <td class="px-6 py-4 w-[15%] max-w-[150px] truncate">
+            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate">
               {{ project.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
             </td>
 
-            <td class="px-6 py-4 w-[15%] max-w-[150px] truncate">
+            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate">
               {{ $filters.formatCurrencyBRL(project.billingAmount) }}
             </td>
 
-            <td class="px-6 py-4 w-[15%] max-w-[150px] truncate">
+            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate">
               {{ $filters.formatDuration(project.estimatedDuration) }}
             </td>
 
-            <td class="px-6 py-4 w-[5%] min-w-[50px]">
+            <td class="px-6 py-3 w-[5%] min-w-[50px]">
               <AppBadge :label="project.active ? 'Ativo' : 'Inativo'" :color="project.active ? 'success' : 'danger'" />
             </td>
 
-            <td class="px-6 py-4 w-[5%] min-w-[50px]">
+            <td class="px-6 py-3 w-[5%] min-w-[50px]">
               <div class="flex item-center gap-3">
                 <button
-                  class="p-2 h-10 w-10 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-full cursor-pointer"
+                  class="p-2 h-9 w-9 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-full cursor-pointer flex items-center justify-center"
                   @click="goToEditProject(project.id)"
                 >
-                  <AppIcon name="edit" />
+                  <AppIcon name="edit" size="sm" />
                 </button>
                 <button
-                  class="p-2 h-10 w-10 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer"
+                  class="p-2 h-9 w-9 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer flex items-center justify-center"
                   @click="handleDeleteProject(project.id)"
                 >
-                  <AppIcon name="delete" />
+                  <AppIcon name="delete" size="sm" />
                 </button>
               </div>
             </td>
