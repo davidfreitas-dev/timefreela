@@ -135,12 +135,13 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
         Faturamento por Projeto
       </h1>
       <div class="relative rounded-3xl bg-background dark:bg-accent-dark shadow-md pb-2">
-        <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-6 pt-6 border-b border-neutral dark:border-neutral-dark pb-6">
+        <div class="filters grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">          
+          <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />
+
           <AppInputDate
             v-model="dateInterval.start"
             placeholder="Data inicial"
             :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
-            @blur="v$.start.$touch()"
           />          
 
           <AppInputDate
@@ -151,10 +152,7 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
                 ? 'Data final não pode ser anterior à data inicial.'
                 : 'Data final é obrigatória.'
               : ''"
-            @blur="v$.end.$touch()"
-          />          
-
-          <AppInputSearch v-model="search" placeholder="Buscar por projeto" />          
+          />    
 
           <AppSelect v-model="selectedFilter" :options="filterOptions" />
         </div>

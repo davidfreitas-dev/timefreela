@@ -218,12 +218,13 @@ const deleteSession = async () => {
     </div>
 
     <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
-      <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+      <div class="filters grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+        <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />
+        
         <AppInputDate
           v-model="dateInterval.start"
           placeholder="Data inicial"
           :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
-          @blur="v$.start.$touch()"
         />
 
         <AppInputDate
@@ -234,10 +235,7 @@ const deleteSession = async () => {
               ? 'Data final não pode ser anterior à data inicial.'
               : 'Data final é obrigatória.'
             : ''"
-          @blur="v$.end.$touch()"
         />
-
-        <AppInputSearch v-model="search" placeholder="Buscar por projeto" />
 
         <AppSelect v-model="selectedFilter" :options="filterOptions" />
       </div>

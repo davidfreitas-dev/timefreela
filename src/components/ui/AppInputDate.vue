@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue';
+import { computed } from 'vue';
+import { VueDatePicker } from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import { useDark } from '@vueuse/core';
+import { ptBR } from 'date-fns/locale';
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: Date | null): void;
   (e: 'onKeyupEnter'): void;
+  (e: 'blur'): void;
 }>();
 
 const props = defineProps<{
@@ -14,113 +19,142 @@ const props = defineProps<{
   error?: string;
 }>();
 
-const MAX_DIGITS = 8;
-const rawValue = ref('');
-const formattedValue = ref('');
-
-// Formata para "dd/MM/yyyy"
-const formatDate = (value: string): string => {
-  const cleanValue = value.replace(/[^\d]/g, '').slice(0, MAX_DIGITS);
-  const day = cleanValue.slice(0, 2);
-  const month = cleanValue.slice(2, 4);
-  const year = cleanValue.slice(4, 8);
-  return [day, month, year].filter(Boolean).join('/');
-};
-
-// Converte "dd/MM/yyyy" para Date (ou null)
-const parseDate = (value: string): Date | null => {
-  const [day, month, year] = value.split('/');
-  if (day && month && year && day.length === 2 && month.length === 2 && year.length === 4) {
-    const date = new Date(Number(year), Number(month) - 1, Number(day));
-    return date.getDate() === Number(day) &&
-           date.getMonth() === Number(month) - 1 &&
-           date.getFullYear() === Number(year)
-      ? date
-      : null;
-  }
-  return null;
-};
-
-// Exibe a data formatada quando o modelValue muda
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (newValue instanceof Date && !isNaN(newValue.getTime())) {
-      const day = String(newValue.getDate()).padStart(2, '0');
-      const month = String(newValue.getMonth() + 1).padStart(2, '0');
-      const year = String(newValue.getFullYear());
-      rawValue.value = day + month + year;
-      formattedValue.value = formatDate(rawValue.value);
-    } else {
-      rawValue.value = '';
-      formattedValue.value = '';
-    }
-  },
-  { immediate: true }
-);
-
-onMounted(() => {
-  if (props.modelValue instanceof Date) {
-    const day = String(props.modelValue.getDate()).padStart(2, '0');
-    const month = String(props.modelValue.getMonth() + 1).padStart(2, '0');
-    const year = String(props.modelValue.getFullYear());
-    rawValue.value = day + month + year;
-    formattedValue.value = formatDate(rawValue.value);
-  }
-});
-
-// Quando digita
-const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  
-  let numericValue = target.value.replace(/[^\d]/g, '').slice(0, MAX_DIGITS);
-
-  const day = numericValue.slice(0, 2);
-  const month = numericValue.slice(2, 4);
-
-  if (day.length === 2 && Number(day) > 31) numericValue = '31' + numericValue.slice(2);
-  if (month.length === 2 && Number(month) > 12) numericValue = numericValue.slice(0, 2) + '12' + numericValue.slice(4);
-
-  rawValue.value = numericValue;
-  formattedValue.value = formatDate(numericValue);
-  emit('update:modelValue', parseDate(formattedValue.value));
-};
-
-const allowedKeys = [
-  'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'
-];
-
-const handleKeydown = (event: KeyboardEvent) => {
-  const isDigit = /^\d$/.test(event.key);
-  if (!isDigit && !allowedKeys.includes(event.key)) {
-    event.preventDefault();
-  }
-};
+const isDark = useDark();
 
 const hasError = computed(() => !!props.error);
+
+const dateValue = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value as Date | null),
+});
+
+const handleBlur = () => {
+  emit('blur');
+};
+
+const handleEnter = () => {
+  emit('onKeyupEnter');
+};
 </script>
 
 <template>
-  <div class="flex flex-col gap-1 relative">
+  <div class="flex flex-col gap-2 relative w-full" :class="{ 'has-error': hasError }">
     <label v-if="label" class="text-font dark:text-font-dark font-semibold">{{ label }}</label>
 
     <div class="relative">
-      <input
-        type="text"
-        :value="formattedValue"
+      <VueDatePicker
+        v-model="dateValue"
         :placeholder="placeholder || 'dd/MM/yyyy'"
         :disabled="disabled"
-        maxlength="10"
-        :class="[
-          'text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark bg-accent/70 dark:bg-background-dark/70 text-base w-full h-[52px] rounded-xl px-4 pr-12 focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
-          hasError ? 'border border-danger focus:ring-danger' : 'focus:ring-primary dark:focus:ring-primary'
-        ]"
-        @input="handleInput"
-        @keydown="handleKeydown"
-        @keyup.enter="emit('onKeyupEnter')"
-      >
+        :dark="isDark"
+        :format-locale="ptBR"
+        cancel-text="Cancelar"
+        select-text="Selecionar"
+        format="dd/MM/yyyy"
+        :auto-apply="true"
+        :enable-time-picker="false"
+        hide-input-icon
+        @blur="handleBlur"
+        @keydown.enter="handleEnter"
+      />
     </div>
 
     <span v-if="error" class="text-sm text-danger">{{ error }}</span>
   </div>
 </template>
+
+<style scoped>
+/* Configurações globais do componente */
+:deep(.dp__main) {
+  font-family: inherit;
+  --dp-font-size: 1rem;
+  --dp-border-radius: 12px; /* rounded-xl */
+  --dp-input-padding: 1rem;
+  --dp-input-height: 52px;
+}
+
+/* Variáveis para Tema Claro */
+:deep(.dp__theme_light) {
+  --dp-background-color: color-mix(in srgb, var(--color-accent), transparent 30%);
+  --dp-text-color: var(--color-font);
+  --dp-hover-color: var(--color-accent);
+  --dp-primary-color: var(--color-primary);
+  --dp-border-color: transparent;
+  --dp-border-color-focus: var(--color-primary);
+  --dp-menu-border-color: var(--color-neutral);
+}
+
+/* Variáveis para Tema Escuro */
+:deep(.dp__theme_dark) {
+  --dp-background-color: color-mix(in srgb, var(--color-background-dark), transparent 30%);
+  --dp-text-color: var(--color-font-dark);
+  --dp-hover-color: var(--color-accent-dark);
+  --dp-primary-color: var(--color-primary-dark);
+  --dp-border-color: transparent;
+  --dp-border-color-focus: var(--color-primary-dark);
+  --dp-menu-border-color: var(--color-neutral-dark);
+}
+
+/* Ajustes finos no input para bater 100% com o layout */
+:deep(.dp__input) {
+  border: none !important;
+  height: 52px !important;
+  transition: all 0.2s ease-in-out;
+}
+
+:deep(.dp__input:focus),
+:deep(.dp__input_focus) {
+  box-shadow: 0 0 0 2px var(--dp-border-color-focus) !important;
+  outline: none;
+}
+
+/* Estado de Erro */
+.has-error :deep(.dp__input) {
+  border: 1px solid var(--color-danger) !important;
+}
+
+.has-error :deep(.dp__input:focus),
+.has-error :deep(.dp__input_focus) {
+  box-shadow: 0 0 0 2px var(--color-danger) !important;
+}
+
+/* Esconder o ícone de calendário */
+:deep(.dp__input_icon) {
+  display: none !important;
+}
+
+:deep(.dp__input) {
+  padding-inline-start: 1rem !important;
+}
+
+/* Placeholder */
+:deep(.dp__input::placeholder) {
+  color: var(--color-disabled);
+  opacity: 1;
+}
+
+:deep(.dp__theme_dark .dp__input::placeholder) {
+  color: var(--color-disabled-dark);
+}
+
+/* Estilização do Menu (Dropdown) */
+:deep(.dp__menu) {
+  border: 1px solid var(--dp-menu-border-color) !important;
+  background-color: var(--color-background) !important;
+}
+
+:deep(.dp__theme_dark .dp__menu) {
+  background-color: var(--color-background-dark) !important;
+}
+
+/* Ajuste da seta do menu */
+:deep(.dp__arrow_top), :deep(.dp__arrow_bottom) {
+  border: 1px solid var(--dp-menu-border-color);
+  background-color: var(--color-background) !important;
+}
+
+:deep(.dp__theme_dark .dp__arrow_top), 
+:deep(.dp__theme_dark .dp__arrow_bottom) {
+  background-color: var(--color-background-dark) !important;
+}
+</style>
