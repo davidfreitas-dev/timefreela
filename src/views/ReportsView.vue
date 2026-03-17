@@ -15,6 +15,7 @@ import AppSelect from '@/components/ui/AppSelect.vue';
 import AppInputDate from '@/components/ui/AppInputDate.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppLoader from '@/components/ui/AppLoader.vue';
+import AppCard from '@/components/ui/AppCard.vue';
 
 const projectStore = useProjectStore();
 const reportStore = useReportStore();
@@ -110,23 +111,23 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
     <AppBreadcrumb title="Relatórios" description="Gerencie os relatórios aqui." />
 
     <div class="cards flex flex-col md:flex-row items-center w-full gap-5 my-8">
-      <div class="card w-full md:w-1/2 rounded-3xl bg-background dark:bg-accent-dark shadow-md p-6">
+      <AppCard class="w-full md:w-1/2">
         <span class="card-body text-secondary dark:text-secondary-dark text-sm">
           Horas Trabalhadas
         </span>
         <h1 class="card-title text-font dark:text-white text-5xl font-semibold font-mono tracking-tight mt-2">
           {{ $filters.formatDuration(reportStore.totalTime) }}
         </h1>
-      </div>
+      </AppCard>
 
-      <div class="card w-full md:w-1/2 rounded-3xl bg-background dark:bg-accent-dark shadow-md p-6">
+      <AppCard class="w-full md:w-1/2">
         <span class="card-body text-secondary dark:text-secondary-dark text-sm">
           Receita Total
         </span>
         <h1 class="card-title text-font dark:text-white text-5xl font-semibold font-mono tracking-tight mt-2">
           {{ $filters.formatCurrencyBRL(reportStore.totalAmount) }}
         </h1>
-      </div>
+      </AppCard>
     </div>
 
     <section class="earning">

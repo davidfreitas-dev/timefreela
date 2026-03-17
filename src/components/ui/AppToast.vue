@@ -10,13 +10,19 @@ const props = defineProps<{
 
 const isShowing = ref(false);
 const animationClass = ref('');
+const timeoutId = ref<ReturnType<typeof setTimeout> | null>(null);
 
 const showToast = () => {
+  if (timeoutId.value) {
+    clearTimeout(timeoutId.value);
+  }
+
   animationClass.value = 'animate__bounceInRight';
   isShowing.value = true;
 
-  setTimeout(() => {
+  timeoutId.value = setTimeout(() => {
     animationClass.value = 'animate__bounceOutRight';
+    timeoutId.value = null;
   }, 3000);
 };
 

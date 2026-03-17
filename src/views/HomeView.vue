@@ -9,7 +9,8 @@ import { useLoading } from '@/composables/useLoading';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppBarChart from '@/components/ui/AppBarChart.vue';
-import type { Option } from '@/types'; // Import Option type
+import AppStatCard from '@/components/ui/AppStatCard.vue';
+import type { Option } from '@/types';
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -127,41 +128,25 @@ const sortedMonthly = computed(() => {
     <AppBreadcrumb :title="`Olá, ${user?.name || 'Convidado'}! 👋`" description="É bom te ver de novo." />
   
     <div class="card-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 my-7">
-      <div class="card w-full rounded-3xl bg-background dark:bg-accent-dark shadow-md p-6">
-        <span class="card-body text-secondary dark:text-secondary-dark text-sm">
-          Horas Trabalhadas
-        </span>
-        <h1 class="card-title text-font dark:text-font-dark text-4xl font-bold font-mono mt-1">
-          {{ $filters.formatDuration(reportStore.currentMonthStats.totalSeconds) }}
-        </h1>
-      </div>
+      <AppStatCard
+        label="Horas Trabalhadas"
+        :value="$filters.formatDuration(reportStore.currentMonthStats.totalSeconds)"
+      />
 
-      <div class="card w-full rounded-3xl bg-background dark:bg-accent-dark shadow-md p-6">
-        <span class="card-body text-secondary dark:text-secondary-dark text-sm">
-          Faturamento Estimado
-        </span>
-        <h1 class="card-title text-font dark:text-font-dark text-4xl font-bold font-mono mt-1">
-          {{ $filters.formatCurrencyBRL(reportStore.currentMonthStats.estimated) }}
-        </h1>
-      </div>
+      <AppStatCard
+        label="Faturamento Estimado"
+        :value="$filters.formatCurrencyBRL(reportStore.currentMonthStats.estimated)"
+      />
 
-      <div class="card w-full rounded-3xl bg-background dark:bg-accent-dark shadow-md p-6">
-        <span class="card-body text-secondary dark:text-secondary-dark text-sm">
-          Receita Faturada
-        </span>
-        <h1 class="card-title text-font dark:text-font-dark text-4xl font-bold font-mono mt-1">
-          {{ $filters.formatCurrencyBRL(reportStore.currentMonthStats.billed) }}
-        </h1>
-      </div>
+      <AppStatCard
+        label="Receita Faturada"
+        :value="$filters.formatCurrencyBRL(reportStore.currentMonthStats.billed)"
+      />
 
-      <div class="card w-full rounded-3xl bg-background dark:bg-accent-dark shadow-md p-6">
-        <span class="card-body text-secondary dark:text-secondary-dark text-sm">
-          Receita Pendente
-        </span>
-        <h1 class="card-title text-font dark:text-font-dark text-4xl font-bold font-mono mt-1">
-          {{ $filters.formatCurrencyBRL(reportStore.currentMonthStats.toReceive) }}
-        </h1>
-      </div>
+      <AppStatCard
+        label="Receita Pendente"
+        :value="$filters.formatCurrencyBRL(reportStore.currentMonthStats.toReceive)"
+      />
     </div>
 
     <div class="rounded-3xl bg-background dark:bg-accent-dark shadow-md p-7">

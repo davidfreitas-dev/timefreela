@@ -17,7 +17,7 @@ const { isRunning } = storeToRefs(useTimerStore());
 
 useBeforeUnloadGuard(() => isRunning.value);
 
-const { toastData } = useToast();
+const { toast, toastData } = useToast();
 </script>
 
 <template>

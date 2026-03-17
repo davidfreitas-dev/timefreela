@@ -140,23 +140,23 @@ const confirmDelete = async () => {
           :items="filteredProjects"
         >
           <template #row="{ item: project }">
-            <td class="px-6 py-3 w-[20%] max-w-[200px] truncate">
+            <td class="px-6 py-3 w-[20%] max-w-[200px] truncate text-font dark:text-white">
               {{ project.title }}
             </td>
 
-            <td class="px-6 py-3 w-[25%] max-w-[250px] truncate">
+            <td class="px-6 py-3 w-[25%] max-w-[250px] truncate text-font dark:text-white">
               {{ project.description || '-' }}
             </td>
 
-            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate">
+            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate text-font dark:text-white">
               {{ project.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
             </td>
 
-            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate">
+            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate text-font dark:text-white font-mono">
               {{ $filters.formatCurrencyBRL(project.billingAmount) }}
             </td>
 
-            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate">
+            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate text-font dark:text-white font-mono">
               {{ $filters.formatDuration(project.estimatedDuration) }}
             </td>
 
