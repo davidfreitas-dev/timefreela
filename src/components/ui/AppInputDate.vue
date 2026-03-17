@@ -5,27 +5,49 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import { useDark } from '@vueuse/core';
 import { ptBR } from 'date-fns/locale';
 
+type InputMode = 'date' | 'datetime' | 'time';
+
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Date | null): void;
+  (e: 'update:modelValue', value: Date | string | null): void;
   (e: 'onKeyupEnter'): void;
   (e: 'blur'): void;
 }>();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   label?: string;
   placeholder?: string;
-  modelValue: Date | null;
+  modelValue: Date | string | null;
   disabled?: boolean;
   error?: string;
-}>();
+  timePicker?: boolean;
+  mode?: InputMode;
+}>(), {
+  mode: 'date'
+});
 
 const isDark = useDark();
 
 const hasError = computed(() => !!props.error);
 
+const inputMode = computed<InputMode>(() => {
+  if (props.mode) {
+    return props.mode;
+  }
+  return props.timePicker ? 'datetime' : 'date';
+});
+
+const isTimePicker = computed(() => inputMode.value === 'time');
+const isDatePicker = computed(() => inputMode.value === 'date' || inputMode.value === 'datetime');
+
 const dateValue = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value as Date | null),
+});
+
+const format = computed(() => {
+  if (inputMode.value === 'datetime') return 'dd/MM/yyyy HH:mm';
+  if (inputMode.value === 'time') return 'HH:mm';
+  return 'dd/MM/yyyy';
 });
 
 const handleBlur = () => {
@@ -44,15 +66,17 @@ const handleEnter = () => {
     <div class="relative">
       <VueDatePicker
         v-model="dateValue"
-        :placeholder="placeholder || 'dd/MM/yyyy'"
+        :placeholder="placeholder || format"
         :disabled="disabled"
         :dark="isDark"
         :format-locale="ptBR"
         cancel-text="Cancelar"
         select-text="Selecionar"
-        format="dd/MM/yyyy"
-        :auto-apply="true"
-        :enable-time-picker="false"
+        now-button-label="Agora"
+        :format="format"
+        :auto-apply="!isDatePicker"
+        :time-picker="isTimePicker"
+        :enable-time-picker="inputMode === 'datetime'"
         hide-input-icon
         @blur="handleBlur"
         @keydown.enter="handleEnter"

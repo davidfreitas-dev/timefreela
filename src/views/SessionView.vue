@@ -12,7 +12,6 @@ import { useToast } from '@/composables/useToast';
 import { type Option } from '@/types';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
-import AppInput from '@/components/ui/AppInput.vue';
 import AppInputDate from '@/components/ui/AppInputDate.vue';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
@@ -34,8 +33,8 @@ const isEditMode = computed(() => Boolean(sessionId.value));
 const formData = ref({
   projectId: '' as string,
   date: null as Date | null,
-  startTime: '',
-  endTime: '',
+  startTime: null as Date | null,
+  endTime: null as Date | null,
   isBilled: false
 });
 
@@ -81,30 +80,20 @@ const loadSessionData = async () => {
   const session = await sessionStore.fetchOne(sessionId.value);
 
   if (session && session.startTime && session.endTime) {
-    const start = new Date(String(session.startTime));
-    const end = new Date(String(session.endTime));
+    const sessionDate = new Date(String(session.startTime));
+    const startTime = new Date(String(session.startTime));
+    const endTime = new Date(String(session.endTime));
 
-    const toTimeString = (date: Date): string => {
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}`;
-    };
+    const dateOnly = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
 
     formData.value = {
       projectId: session.projectId ?? '',
-      date: start,
-      startTime: toTimeString(start),
-      endTime: toTimeString(end),
+      date: dateOnly,
+      startTime: startTime,
+      endTime: endTime,
       isBilled: session.isBilled ?? false
     };
   }
-};
-
-const buildDateTimeFromDate = (date: Date, timeStr: string): Date => {
-  const [hour, minute] = timeStr.split(':').map(Number);
-  const dt = new Date(date);
-  dt.setHours(hour, minute, 0, 0);
-  return dt;
 };
 
 const calculateDurationInSeconds = (start: Date, end: Date): number => {
@@ -119,8 +108,8 @@ const saveSession = async () => {
     return;
   }
 
-  if (!formData.value.date) {
-    showToast('error', 'Data inválida.');
+  if (!formData.value.date || !formData.value.startTime || !formData.value.endTime) {
+    showToast('error', 'Data, hora de início e hora de término são obrigatórios.');
     return;
   }
 
@@ -130,10 +119,13 @@ const saveSession = async () => {
   }
 
   const date = new Date(formData.value.date);
-  date.setHours(0, 0, 0, 0); 
+  date.setHours(0, 0, 0, 0);
+ 
+  const startTime = new Date(formData.value.startTime);
+  startTime.setHours(formData.value.startTime.getHours(), formData.value.startTime.getMinutes(), 0, 0);
 
-  const startTime = buildDateTimeFromDate(date, formData.value.startTime);
-  const endTime = buildDateTimeFromDate(date, formData.value.endTime);
+  const endTime = new Date(formData.value.endTime);
+  endTime.setHours(formData.value.endTime.getHours(), formData.value.endTime.getMinutes(), 0, 0);
 
   if (startTime >= endTime) {
     showToast('error', 'A hora de início deve ser menor que a hora de término.');
@@ -192,22 +184,21 @@ onMounted(() => {
           <AppInputDate
             v-model="formData.date"
             label="Data"
+            mode="date"
             :error="v$.date.$dirty && v$.date.$error ? 'A data é obrigatório' : ''"
           />
 
           <div class="grid grid-cols-2 gap-4">
-            <AppInput
+            <AppInputDate
               v-model="formData.startTime"
               label="Hora de Início"
-              placeholder="13:00"
-              type="time"
+              mode="time"
               :error="v$.startTime.$dirty && v$.startTime.$error ? 'O horário de início é obrigatório' : ''"
             />
-            <AppInput
+            <AppInputDate
               v-model="formData.endTime"
               label="Hora de Término"
-              placeholder="15:00"
-              type="time"
+              mode="time"
               :error="v$.endTime.$dirty && v$.endTime.$error ? 'O horário de término é obrigatório' : ''"
             />
           </div>
