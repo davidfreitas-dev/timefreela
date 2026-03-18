@@ -131,10 +131,10 @@ const isDark = useDark({
     </div>
 
     <section class="account my-7">
-      <h1 class="section-title text-xs font-bold uppercase tracking-widest text-secondary dark:text-secondary-dark mb-4">
-        Minha Conta
-      </h1>
       <div class="p-6 md:p-8 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
+        <h1 class="section-title text-lg font-bold text-secondary dark:text-secondary-dark mb-5">
+          Minha Conta
+        </h1>
         <form class="flex flex-col gap-4">
           <AppInput
             v-model="formData.name"
@@ -149,7 +149,7 @@ const isDark = useDark({
             v-model="formData.email"
             type="email"
             label="Endereço de e-mail"
-            placeholder="joaodasilva@email.com"
+            placeholder="usuario@email.com"
             :error="v$.email.$dirty && v$.email.$error ? 'Informe um endereço de e-mail válido' : ''"
             @blur="v$.email.$touch"
           />
@@ -168,10 +168,10 @@ const isDark = useDark({
     </section>
 
     <section class="system my-7">
-      <h1 class="section-title text-xs font-bold uppercase tracking-widest text-secondary dark:text-secondary-dark mb-4">
-        Sistema
-      </h1>
       <div class="p-6 md:p-8 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
+        <h1 class="section-title text-lg font-bold text-secondary dark:text-secondary-dark mb-4">
+          Sistema
+        </h1>
         <div class="flex justify-between items-center">
           <span class="text-font dark:text-font-dark font-semibold">Modo escuro</span>
           <AppSwitch v-model="isDark" />

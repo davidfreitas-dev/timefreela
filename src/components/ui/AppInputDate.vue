@@ -31,7 +31,7 @@ const emit = defineEmits<{
 
 const isDark = useDark();
 const hasError = computed(() => !!props.error);
-const formatStr = computed(() => props.mode === 'time' ? 'HH:mm' : 'DD/MM/YYYY');
+const formatStr = computed(() => props.mode === 'time' ? 'HH:mm' : 'dd/MM/yyyy');
 
 const isTimeValue = (val: unknown): val is TimeValue => 
   !!val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date) && 'hours' in val;
@@ -70,22 +70,6 @@ const dateValue = computed({
     emit('update:modelValue', val as Date | Date[] | null);
   },
 });
-
-const format = (date: Date | Date[] | TimeValue) => {
-  if (!date) return '';
-
-  const formatSingle = (d: Date | TimeValue) => {
-    const dateObj = isTimeValue(d) ? toFullDate(d) : (d as Date);
-    const parsed = dayjs(dateObj);
-    return parsed.isValid() ? parsed.format(formatStr.value) : '';
-  };
-
-  if (Array.isArray(date)) {
-    return date.map(formatSingle).filter(Boolean).join(' - ');
-  }
-  
-  return formatSingle(date);
-};
 </script>
 
 <template>
@@ -102,7 +86,7 @@ const format = (date: Date | Date[] | TimeValue) => {
       :range="mode === 'range'"
       auto-apply
       :is-24="true"
-      :format="format"
+      :formats="{ input: formatStr }"
       teleport="body"
       hide-input-icon
       @blur="emit('blur')"

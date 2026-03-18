@@ -221,7 +221,7 @@ onMounted(() => {
             :error="v$.active.$dirty && v$.active.$error ? 'O status do projeto é obrigatório' : ''"
           />
 
-          <div class="flex justify-end items-center gap-3">
+          <div class="flex justify-end items-center gap-3 mt-3">
             <AppButton
               type="submit"
               class="w-full md:w-fit"
