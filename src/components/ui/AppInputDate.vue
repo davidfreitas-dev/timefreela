@@ -84,9 +84,9 @@ const dateValue = computed({
       :locale="ptBR"
       :time-picker="mode === 'time'"
       :range="mode === 'range'"
-      auto-apply
       :is-24="true"
       :formats="{ input: formatStr }"
+      :action-row="{ selectBtnLabel: 'Selecionar', cancelBtnLabel: 'Cancelar' }"
       teleport="body"
       hide-input-icon
       @blur="emit('blur')"

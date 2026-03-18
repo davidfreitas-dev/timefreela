@@ -124,6 +124,38 @@ src/
 - **projects**: Configurações de faturamento e status.
 - **sessions**: Registros de tempo vinculados a projetos e usuários.
 
+### Estrutura Detalhada
+
+#### `users/{userId}`
+- `name`: **string**
+- `email`: **string**
+- `image`: **string** (URL)
+- `createdAt`: **timestamp**
+- `updatedAt`: **timestamp**
+
+#### `projects/{projectId}`
+- `userId`: **string** (referência ao dono)
+- `title`: **string** (mínimo 3 caracteres)
+- `description`: **string** (opcional)
+- `tags`: **list** (strings)
+- `billingType`: **string** (`'hourly'` | `'fixed'`)
+- `billingAmount`: **number** (valor por hora ou preço fixo)
+- `active`: **boolean**
+- `createdAt`: **timestamp**
+- `updatedAt`: **timestamp**
+
+#### `sessions/{sessionId}`
+- `userId`: **string** (referência ao dono)
+- `projectId`: **string** (vínculo obrigatório com projeto)
+- `duration`: **number** (tempo em segundos)
+- `isManual`: **boolean**
+- `isBilled`: **boolean** (controle de faturamento)
+- `date`: **timestamp** (data da sessão)
+- `startTime`: **timestamp**
+- `endTime`: **timestamp**
+- `createdAt`: **timestamp**
+- `updatedAt`: **timestamp**
+
 ---
 
 ## 7. Testes Manuais
@@ -135,7 +167,16 @@ Para garantir a qualidade da aplicação antes de cada release, siga o roteiro d
 
 ## 8. Deploy
 
-O projeto está configurado para deploy automático no **Firebase Hosting** via GitHub Actions sempre que houver merge na branch `main`.
+### Hosting (Frontend)
+O deploy do site é **automático**. Sempre que um merge é feito na branch `main`, o GitHub Actions realiza o build e envia para o Firebase Hosting.
+
+### Firestore (Regras e Índices)
+Diferente do Hosting, as regras de segurança e os índices **devem ser deployados manualmente** via CLI para garantir que alterações críticas no banco de dados sejam revisadas antes de entrar em produção:
+
+```bash
+# Deploy de regras e índices do Firestore
+firebase deploy --only firestore
+```
 
 ---
 
@@ -147,4 +188,7 @@ O projeto está configurado para deploy automático no **Firebase Hosting** via 
 | Faturada         | Sessão que já foi cobrada ou paga pelo cliente. |
 | Hourly Rate      | Valor cobrado por cada hora trabalhada. |
 | Fixed Price      | Valor total fechado para o projeto, independente das horas. |
+| Security Rules   | Lógica de segurança (firestore.rules) que valida o acesso aos dados. |
+| Firestore Indexes| Estruturas (firestore.indexes.json) que otimizam a velocidade de consultas complexas. |
+| NoSQL            | Banco de dados não-relacional baseado em documentos (Firestore). |
 | Timer Persistence| Capacidade do cronômetro continuar contando mesmo após fechar a aba. |

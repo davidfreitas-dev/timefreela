@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- FUNÇÕES AUXILIARES ---
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+    
+    function isUnchanged(field) {
+      return !(field in request.resource.data) || request.resource.data[field] == resource.data[field];
+    }
+
+    // --- REGRAS ---
+
+    // 👤 Usuários
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // 📁 Projetos
+    match /projects/{projectId} {
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       isValidProject();
+      
+      allow read, delete: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      allow update: if isAuthenticated() && 
+                       isOwner(resource.data.userId) &&
+                       isUnchanged('userId') &&
+                       isUnchanged('createdAt') &&
+                       isValidProject();
+      
+      function isValidProject() {
+        let data = request.resource.data;
+        let requiredFields = ['userId', 'title', 'active', 'createdAt', 'updatedAt'];
+        return data.keys().hasAll(requiredFields) &&
+               data.title is string && data.title.size() >= 3 &&
+               data.active is bool &&
+               data.createdAt is timestamp &&
+               data.updatedAt is timestamp;
+      }
+    }
+    
+    // ⏱️ Sessões
+    match /sessions/{sessionId} {
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       isValidSessionCreate();
+      
+      allow read, delete: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      allow update: if isAuthenticated() && 
+                       isOwner(resource.data.userId) &&
+                       isUnchanged('userId') &&
+                       isUnchanged('projectId') &&
+                       isUnchanged('createdAt') &&
+                       isValidSessionUpdate();
+
+      function isValidSessionCreate() {
+        let data = request.resource.data;
+        // VALIDAÇÃO DE VÍNCULO: O projeto deve existir e pertencer ao usuário logado
+        let project = get(/databases/$(database)/documents/projects/$(data.projectId)).data;
+        
+        return project.userId == request.auth.uid &&
+               data.projectId is string &&
+               data.duration is number && data.duration >= 0 &&
+               data.isBilled is bool &&
+               data.createdAt is timestamp;
+      }
+      
+      function isValidSessionUpdate() {
+        let data = request.resource.data;
+        return data.duration is number && data.duration >= 0 &&
+               data.isBilled is bool &&
+               data.updatedAt is timestamp;
+      }
+    }
+  }
+}
