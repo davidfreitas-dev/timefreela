@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, h, type VNode } from 'vue';
+import { ref, computed, onMounted, h, type VNode } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useLoading } from '@/composables/useLoading';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useUserStore } from '@/stores/userStore';
-import { helpers, required } from '@vuelidate/validators';
-import { useVuelidate } from '@vuelidate/core';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
@@ -37,7 +35,6 @@ const filterOptions = [
 ];
 
 const selectedFilter = ref(filterOptions[0]);
-
 const { isLoading, withLoading } = useLoading();
 
 onMounted(async () => {
@@ -46,7 +43,7 @@ onMounted(async () => {
       async () => {
         await Promise.all([
           sessionStore.fetchAll(user.value!.id),
-          projectStore.fetchAll(user.value!.id)
+          projectStore.fetchAll(user.value!.id),
         ]);
       },
       'Não foi possível carregar os dados. Tente novamente mais tarde.'
@@ -56,33 +53,10 @@ onMounted(async () => {
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
-const getProjectTitle = (projectId: string) => {
-  return projectStore.items.find(p => p.id === projectId)?.title || 'Projeto não encontrado';
-};
+const getProjectTitle = (projectId: string) =>
+  projectStore.items.find(p => p.id === projectId)?.title || 'Projeto não encontrado';
 
-const dateInterval = ref({
-  start: null as Date | null,
-  end: null as Date | null,
-});
-
-const isAfterStart = helpers.withParams(
-  { type: 'isAfterStart' },
-  (value: Date | null, vm) => {
-    if (!value || !vm.start) return true;
-    return value >= vm.start;
-  }
-);
-
-const rules = computed(() => ({
-  start: { required },
-  end: { required, isAfterStart }
-}));
-
-const v$ = useVuelidate(rules, dateInterval);
-
-watch(dateInterval, () => {
-  v$.value.$touch();
-}, { deep: true });
+const dateInterval = ref<Date[] | null>(null);
 
 const filteredSessions = computed(() => {
   if (!sessionStore.items?.length) return [];
@@ -96,12 +70,10 @@ const filteredSessions = computed(() => {
     })
     .filter(session => {
       if (!normalizedSearch.value) return true;
-      const title = getProjectTitle(session.projectId).toLowerCase();
-      return title.includes(normalizedSearch.value);
+      return getProjectTitle(session.projectId).toLowerCase().includes(normalizedSearch.value);
     })
     .filter(session => {
-      const start = dateInterval.value.start;
-      const end = dateInterval.value.end;
+      const [start, end] = dateInterval.value ?? [];
       if (!start || !end) return true;
       if (!session.date) return false;
       const sessionDate = new Date(session.date);
@@ -112,14 +84,15 @@ const filteredSessions = computed(() => {
 const selectedSessions = ref<string[]>([]);
 
 const allSelectableSessionIds = computed(() =>
-  filteredSessions.value
-    .filter(s => !s.isBilled)
-    .map(s => s.id)
+  filteredSessions.value.filter(s => !s.isBilled).map(s => s.id)
 );
 
 const isAllSelected = computed({
   get() {
-    return selectedSessions.value.length === allSelectableSessionIds.value.length && allSelectableSessionIds.value.length > 0;
+    return (
+      selectedSessions.value.length === allSelectableSessionIds.value.length &&
+      allSelectableSessionIds.value.length > 0
+    );
   },
   set(checked: boolean) {
     selectedSessions.value = checked ? [...allSelectableSessionIds.value] : [];
@@ -132,31 +105,23 @@ const toggleSelection = (id: string, value: boolean) => {
   if (value) {
     selectedSessions.value.push(id);
   } else {
-    selectedSessions.value = selectedSessions.value.filter(sessionId => sessionId !== id);
+    selectedSessions.value = selectedSessions.value.filter(s => s !== id);
   }
 };
 
 const markSelectedAsBilled = async () => {
   await withLoading(async () => {
     await sessionStore.markBilled(selectedSessions.value);
-    selectedSessions.value = []; // limpa a seleção após faturar
+    selectedSessions.value = [];
   }, 'Não foi possível faturar as sessões.');
 };
 
 const tableHead = computed<(string | VNode)[]>(() => {
   const baseHeaders: (string | VNode)[] = [
-    'Projeto',
-    'Data',
-    'Início',
-    'Término',
-    'Duração',
-    'Status',
-    'Ações',
+    'Projeto', 'Data', 'Início', 'Término', 'Duração', 'Status', 'Ações',
   ];
 
-  const shouldShowCheckboxColumn = allSelectableSessionIds.value.length > 0;
-
-  return shouldShowCheckboxColumn
+  return allSelectableSessionIds.value.length > 0
     ? [
       h(AppCheckbox, {
         modelValue: isAllSelected.value,
@@ -167,16 +132,10 @@ const tableHead = computed<(string | VNode)[]>(() => {
     : baseHeaders;
 });
 
-const goToCreateSession = () => {
-  router.push({ name: 'SessionCreate' });
-};
-
-const goToEditSession = (sessionId: string) => {
-  router.push({ name: 'SessionDetail', params: { id: sessionId } });
-};
+const goToCreateSession = () => router.push({ name: 'SessionCreate' });
+const goToEditSession = (id: string) => router.push({ name: 'SessionDetail', params: { id } });
 
 const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
-
 const sessionToDelete = ref<string | null>(null);
 
 const handleDeleteSession = (sessionId: string) => {
@@ -186,7 +145,6 @@ const handleDeleteSession = (sessionId: string) => {
 
 const deleteSession = async () => {
   if (!sessionToDelete.value) return;
-
   await withLoading(async () => {
     await sessionStore.remove(sessionToDelete.value!);
     sessionToDelete.value = null;
@@ -209,7 +167,6 @@ const deleteSession = async () => {
           <span class="hidden md:block">Faturar Selecionadas</span>
         </AppButton>
 
-        <!-- Botão de Nova Sessão -->
         <AppButton class="h-fit" @click="goToCreateSession">
           <AppIcon name="add" class="md:mr-2" />
           <span class="hidden md:block">Nova Sessão</span>
@@ -218,28 +175,18 @@ const deleteSession = async () => {
     </div>
 
     <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
-      <div class="filters grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+      <div class="filters grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
         <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />
-        
-        <AppInputDate
-          v-model="dateInterval.start"
-          placeholder="Data inicial"
-          :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
-        />
 
         <AppInputDate
-          v-model="dateInterval.end"
-          placeholder="Data final"
-          :error="v$.end.$dirty && v$.end.$error
-            ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
-              ? 'Data final não pode ser anterior à data inicial.'
-              : 'Data final é obrigatória.'
-            : ''"
+          v-model="dateInterval"
+          mode="range"
+          placeholder="Selecione um período"
         />
 
         <AppSelect v-model="selectedFilter" :options="filterOptions" />
       </div>
-      
+
       <AppLoader
         v-if="isLoading"
         color="primary"
@@ -266,32 +213,26 @@ const deleteSession = async () => {
             <td class="px-6 py-3 max-w-[250px] truncate text-font dark:text-white">
               {{ getProjectTitle(session.projectId) }}
             </td>
-
             <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white">
               {{ $filters.formatDate(session.date) }}
             </td>
-
             <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white font-mono">
               {{ $filters.formatTime(session.startTime) }}
             </td>
-
             <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white font-mono">
               {{ $filters.formatTime(session.endTime) }}
             </td>
-
             <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white font-mono">
               {{ $filters.formatDuration(session.duration) }}
             </td>
-
             <td class="px-6 py-3">
               <AppBadge
                 :label="session.isBilled ? 'Faturada' : 'Não Faturada'"
                 :color="session.isBilled ? 'success' : 'warning'"
               />
             </td>
-
             <td class="px-6 py-3">
-              <div class="flex item-center gap-3">
+              <div class="flex items-center gap-3">
                 <button
                   class="p-2 h-9 w-9 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-full cursor-pointer flex items-center justify-center"
                   @click="goToEditSession(session.id)"
@@ -309,7 +250,7 @@ const deleteSession = async () => {
           </template>
         </AppTable>
       </div>
-      
+
       <div v-if="!isLoading && !filteredSessions.length" class="text-secondary dark:text-gray-400 text-center my-10">
         Nenhuma sessão registrada.
       </div>

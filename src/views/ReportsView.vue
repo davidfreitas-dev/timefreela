@@ -2,8 +2,6 @@
 import { onMounted, computed, watch, ref } from 'vue';
 import { debounce } from 'vue-debounce';
 import { storeToRefs } from 'pinia';
-import { helpers, required } from '@vuelidate/validators';
-import { useVuelidate } from '@vuelidate/core';
 import { useLoading } from '@/composables/useLoading';
 import { useProjectStore } from '@/stores/projectStore';
 import { useReportStore } from '@/stores/reportStore';
@@ -24,25 +22,7 @@ const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 const { groups } = storeToRefs(reportStore);
 
-const dateInterval = ref({
-  start: null as Date | null,
-  end: null as Date | null,
-});
-
-const isAfterStart = helpers.withParams(
-  { type: 'isAfterStart' },
-  (value: Date | null, vm) => {
-    if (!value || !vm.start) return true;
-    return value >= vm.start;
-  }
-);
-
-const rules = computed(() => ({
-  start: { required },
-  end: { required, isAfterStart }
-}));
-
-const v$ = useVuelidate(rules, dateInterval);
+const dateInterval = ref<Date[] | null>(null);
 
 const search = ref('');
 
@@ -55,32 +35,29 @@ const filterOptions: { label: string; value: 'all' | 'billed' | 'unbilled' }[] =
 const selectedFilter = ref<{ label: string; value: 'all' | 'billed' | 'unbilled' }>(filterOptions[0]);
 
 const loadReports = async () => {
-  const startDate = dateInterval.value.start ?? undefined;
-  const endDate = dateInterval.value.end ?? undefined;
-  await reportStore.fetchReports(startDate, endDate, selectedFilter.value.value);
+  const [start, end] = dateInterval.value ?? [];
+  await reportStore.fetchReports(start ?? undefined, end ?? undefined, selectedFilter.value.value);
 };
 
 const debouncedLoadReports = debounce(loadReports, '500ms');
 
 watch(dateInterval, () => {
-  v$.value.$touch();
-  if (!v$.value.$invalid) {
+  const [start, end] = dateInterval.value ?? [];
+  if ((!start && !end) || (start && end)) {
     debouncedLoadReports();
   }
-}, { deep: true });
-
-watch(() => selectedFilter.value.value, async () => {
-  await loadReports();
 });
+
+watch(() => selectedFilter.value.value, () => loadReports());
 
 const { isLoading, withLoading } = useLoading();
 
-onMounted(async () => {  
+onMounted(async () => {
   if (user.value?.id) {
     await withLoading(async () => {
       await projectStore.fetchAll(user.value!.id);
       await reportStore.fetchReports();
-    }, 'Não foi possível carregar os dados. Tente novamente mais tarde.');  
+    }, 'Não foi possível carregar os dados. Tente novamente mais tarde.');
   }
 });
 
@@ -92,7 +69,7 @@ const revenueByProject = computed(() => {
     projectTitle: group.project.title,
     billingType: group.project.billingType,
     totalSeconds: group.subtotalSeconds,
-    totalAmount: group.subtotalValue
+    totalAmount: group.subtotalValue,
   }));
 });
 
@@ -135,24 +112,14 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
         Faturamento por Projeto
       </h1>
       <div class="relative rounded-3xl bg-background dark:bg-accent-dark shadow-md pb-2">
-        <div class="filters grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">          
+        <div class="filters grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
           <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />
 
           <AppInputDate
-            v-model="dateInterval.start"
-            placeholder="Data inicial"
-            :error="v$.start.$dirty && v$.start.$error ? 'Data inicial é obrigatória.' : ''"
-          />          
-
-          <AppInputDate
-            v-model="dateInterval.end"
-            placeholder="Data final"
-            :error="v$.end.$dirty && v$.end.$error
-              ? v$.end.$errors.find(e => e.$validator === 'isAfterStart')
-                ? 'Data final não pode ser anterior à data inicial.'
-                : 'Data final é obrigatória.'
-              : ''"
-          />    
+            v-model="dateInterval"
+            mode="range"
+            placeholder="Selecione um período"
+          />
 
           <AppSelect v-model="selectedFilter" :options="filterOptions" />
         </div>
@@ -173,22 +140,19 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
               <td class="px-6 py-3 w-[50%] max-w-[500px] truncate text-font dark:text-white">
                 {{ item.projectTitle }}
               </td>
-
               <td class="px-6 py-3 w-[15%] min-w-[150px] whitespace-nowrap text-font dark:text-white">
                 {{ item.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
               </td>
-
               <td class="px-6 py-3 w-[15%] min-w-[150px] whitespace-nowrap text-font dark:text-white font-mono">
                 {{ $filters.formatDuration(item.totalSeconds) }}
               </td>
-
               <td class="px-6 py-3 w-[20%] min-w-[150px] whitespace-nowrap text-font dark:text-white font-mono">
                 {{ $filters.formatCurrencyBRL(item.totalAmount) }}
               </td>
             </template>
           </AppTable>
         </div>
-        
+
         <div v-if="!isLoading && !filteredRevenue?.length" class="text-secondary dark:text-gray-400 text-center my-10">
           Nenhum dado encontrado.
         </div>

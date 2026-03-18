@@ -80,9 +80,9 @@ const loadSessionData = async () => {
   const session = await sessionStore.fetchOne(sessionId.value);
 
   if (session && session.startTime && session.endTime) {
-    const sessionDate = new Date(String(session.startTime));
-    const startTime = new Date(String(session.startTime));
-    const endTime = new Date(String(session.endTime));
+    const startTime = new Date(session.startTime);
+    const endTime = new Date(session.endTime);
+    const sessionDate = new Date(session.date || session.startTime);
 
     const dateOnly = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
 
@@ -118,14 +118,17 @@ const saveSession = async () => {
     return;
   }
 
-  const date = new Date(formData.value.date);
-  date.setHours(0, 0, 0, 0);
- 
-  const startTime = new Date(formData.value.startTime);
+  // Merge the selected date with the selected times
+  const baseDate = new Date(formData.value.date);
+  
+  const startTime = new Date(baseDate);
   startTime.setHours(formData.value.startTime.getHours(), formData.value.startTime.getMinutes(), 0, 0);
 
-  const endTime = new Date(formData.value.endTime);
+  const endTime = new Date(baseDate);
   endTime.setHours(formData.value.endTime.getHours(), formData.value.endTime.getMinutes(), 0, 0);
+
+  const date = new Date(baseDate);
+  date.setHours(0, 0, 0, 0);
 
   if (startTime >= endTime) {
     showToast('error', 'A hora de início deve ser menor que a hora de término.');

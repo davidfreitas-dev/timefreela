@@ -1,61 +1,90 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { VueDatePicker } from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
 import { useDark } from '@vueuse/core';
 import { ptBR } from 'date-fns/locale';
+import dayjs from '@/lib/dayjs';
+import '@vuepic/vue-datepicker/dist/main.css';
 
-type InputMode = 'date' | 'datetime' | 'time';
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: Date | string | null): void;
-  (e: 'onKeyupEnter'): void;
-  (e: 'blur'): void;
-}>();
+interface TimeValue {
+  hours: number;
+  minutes: number;
+  seconds?: number;
+}
 
 const props = withDefaults(defineProps<{
   label?: string;
   placeholder?: string;
-  modelValue: Date | string | null;
+  modelValue: Date | Date[] | null;
   disabled?: boolean;
   error?: string;
-  timePicker?: boolean;
-  mode?: InputMode;
+  mode?: 'date' | 'range' | 'time';
 }>(), {
-  mode: 'date'
+  mode: 'date',
 });
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: Date | Date[] | null): void;
+  (e: 'onKeyupEnter'): void;
+  (e: 'blur'): void;
+}>();
 
 const isDark = useDark();
-
 const hasError = computed(() => !!props.error);
+const formatStr = computed(() => props.mode === 'time' ? 'HH:mm' : 'DD/MM/YYYY');
 
-const inputMode = computed<InputMode>(() => {
-  if (props.mode) {
-    return props.mode;
-  }
-  return props.timePicker ? 'datetime' : 'date';
-});
+const isTimeValue = (val: unknown): val is TimeValue => 
+  !!val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date) && 'hours' in val;
 
-const isTimePicker = computed(() => inputMode.value === 'time');
-const isDatePicker = computed(() => inputMode.value === 'date' || inputMode.value === 'datetime');
-
-const dateValue = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value as Date | null),
-});
-
-const format = computed(() => {
-  if (inputMode.value === 'datetime') return 'dd/MM/yyyy HH:mm';
-  if (inputMode.value === 'time') return 'HH:mm';
-  return 'dd/MM/yyyy';
-});
-
-const handleBlur = () => {
-  emit('blur');
+const toFullDate = (time: TimeValue): Date => {
+  const base = props.modelValue instanceof Date ? props.modelValue : new Date();
+  const d = new Date(base);
+  d.setHours(time.hours, time.minutes, time.seconds ?? 0, 0);
+  return d;
 };
 
-const handleEnter = () => {
-  emit('onKeyupEnter');
+const dateValue = computed({
+  get: () => {
+    if (props.mode === 'time' && props.modelValue instanceof Date) {
+      return {
+        hours: props.modelValue.getHours(),
+        minutes: props.modelValue.getMinutes(),
+        seconds: props.modelValue.getSeconds(),
+      };
+    }
+    return props.modelValue;
+  },
+  set: (val) => {
+    if (!val) return emit('update:modelValue', null);
+
+    if (isTimeValue(val)) {
+      return emit('update:modelValue', toFullDate(val));
+    }
+
+    if (typeof val === 'string') {
+      const parsed = dayjs(val);
+      if (parsed.isValid()) emit('update:modelValue', parsed.toDate());
+      return;
+    }
+
+    emit('update:modelValue', val as Date | Date[] | null);
+  },
+});
+
+const format = (date: Date | Date[] | TimeValue) => {
+  if (!date) return '';
+
+  const formatSingle = (d: Date | TimeValue) => {
+    const dateObj = isTimeValue(d) ? toFullDate(d) : (d as Date);
+    const parsed = dayjs(dateObj);
+    return parsed.isValid() ? parsed.format(formatStr.value) : '';
+  };
+
+  if (Array.isArray(date)) {
+    return date.map(formatSingle).filter(Boolean).join(' - ');
+  }
+  
+  return formatSingle(date);
 };
 </script>
 
@@ -63,25 +92,22 @@ const handleEnter = () => {
   <div class="flex flex-col gap-2 relative w-full" :class="{ 'has-error': hasError }">
     <label v-if="label" class="text-font dark:text-font-dark font-semibold">{{ label }}</label>
 
-    <div class="relative">
-      <VueDatePicker
-        v-model="dateValue"
-        :placeholder="placeholder || format"
-        :disabled="disabled"
-        :dark="isDark"
-        :format-locale="ptBR"
-        cancel-text="Cancelar"
-        select-text="Selecionar"
-        now-button-label="Agora"
-        :format="format"
-        :auto-apply="!isDatePicker"
-        :time-picker="isTimePicker"
-        :enable-time-picker="inputMode === 'datetime'"
-        hide-input-icon
-        @blur="handleBlur"
-        @keydown.enter="handleEnter"
-      />
-    </div>
+    <VueDatePicker
+      v-model="dateValue"
+      :placeholder="placeholder || formatStr"
+      :disabled="disabled"
+      :dark="isDark"
+      :locale="ptBR"
+      :time-picker="mode === 'time'"
+      :range="mode === 'range'"
+      auto-apply
+      :is-24="true"
+      :format="format"
+      teleport="body"
+      hide-input-icon
+      @blur="emit('blur')"
+      @keydown.enter="emit('onKeyupEnter')"
+    />
 
     <span v-if="error" class="text-sm text-danger">{{ error }}</span>
   </div>
