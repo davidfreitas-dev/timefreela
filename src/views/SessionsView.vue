@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, h, type VNode } from 'vue';
+import { ref, computed, onMounted, h, watch, type VNode } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useLoading } from '@/composables/useLoading';
@@ -25,6 +25,7 @@ const projectStore = useProjectStore();
 const userStore = useUserStore();
 
 const { user } = storeToRefs(userStore);
+const { items: sessions, hasMore } = storeToRefs(sessionStore);
 
 const search = ref('');
 
@@ -36,13 +37,27 @@ const filterOptions = [
 
 const selectedFilter = ref(filterOptions[0]);
 const { isLoading, withLoading } = useLoading();
+const isLoadingMore = ref(false);
+
+const dateInterval = ref<Date[] | null>(null);
+
+const fetchSessions = async (resetLimit = false) => {
+  if (!user.value?.id) return;
+  
+  if (resetLimit) {
+    sessionStore.currentLimit = 100;
+  }
+
+  const [start, end] = dateInterval.value ?? [];
+  await sessionStore.fetchAll(user.value.id, undefined, start, end);
+};
 
 onMounted(async () => {
   if (user.value?.id) {
     await withLoading(
       async () => {
         await Promise.all([
-          sessionStore.fetchAll(user.value!.id),
+          fetchSessions(true),
           projectStore.fetchAll(user.value!.id),
         ]);
       },
@@ -51,17 +66,31 @@ onMounted(async () => {
   }
 });
 
+// Refetch sessions when date interval changes to filter on server-side
+watch(dateInterval, () => {
+  fetchSessions(true);
+});
+
+const loadMore = async () => {
+  if (!user.value?.id) return;
+  isLoadingMore.value = true;
+  try {
+    const [start, end] = dateInterval.value ?? [];
+    await sessionStore.loadMore(user.value.id, undefined, start, end);
+  } finally {
+    isLoadingMore.value = false;
+  }
+};
+
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
-const getProjectTitle = (projectId: string) =>
-  projectStore.items.find(p => p.id === projectId)?.title || 'Projeto não encontrado';
-
-const dateInterval = ref<Date[] | null>(null);
+const getProjectTitle = (session: any) =>
+  session.projectTitle || projectStore.items.find((p: any) => p.id === session.projectId)?.title || 'Projeto não encontrado';
 
 const filteredSessions = computed(() => {
-  if (!sessionStore.items?.length) return [];
+  if (!sessions.value?.length) return [];
 
-  return sessionStore.items
+  return sessions.value
     .filter(session => {
       const status = selectedFilter.value.value;
       if (status === 'billed') return session.isBilled;
@@ -70,15 +99,10 @@ const filteredSessions = computed(() => {
     })
     .filter(session => {
       if (!normalizedSearch.value) return true;
-      return getProjectTitle(session.projectId).toLowerCase().includes(normalizedSearch.value);
-    })
-    .filter(session => {
-      const [start, end] = dateInterval.value ?? [];
-      if (!start || !end) return true;
-      if (!session.date) return false;
-      const sessionDate = new Date(session.date);
-      return sessionDate >= start && sessionDate <= end;
+      const title = getProjectTitle(session);
+      return title.toLowerCase().includes(normalizedSearch.value);
     });
+    // O filtro de data foi movido para o servidor (fetchAll)
 });
 
 const selectedSessions = ref<string[]>([]);
@@ -211,7 +235,7 @@ const deleteSession = async () => {
             </template>
 
             <td class="px-6 py-3 max-w-[250px] truncate text-font dark:text-white">
-              {{ getProjectTitle(session.projectId) }}
+              {{ getProjectTitle(session) }}
             </td>
             <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white">
               {{ $filters.formatDate(session.date) }}
@@ -253,6 +277,16 @@ const deleteSession = async () => {
 
       <div v-if="!isLoading && !filteredSessions.length" class="text-secondary dark:text-gray-400 text-center my-10">
         Nenhuma sessão registrada.
+      </div>
+
+      <div v-if="hasMore && filteredSessions.length" class="flex justify-center pb-8 pt-4">
+        <AppButton
+          color="outline"
+          :is-loading="isLoadingMore"
+          @click="loadMore"
+        >
+          Carregar Mais
+        </AppButton>
       </div>
     </div>
 

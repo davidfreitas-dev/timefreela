@@ -1,6 +1,17 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, doc, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { 
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  collection, 
+  doc, 
+  query, 
+  where, 
+  orderBy, 
+  limit, 
+  Timestamp
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,7 +24,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// Inicializar o Firestore com persistência moderna e suporte a múltiplas abas
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
 
 export {
   app,

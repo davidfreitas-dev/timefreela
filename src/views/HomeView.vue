@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue';
+import { onMounted, computed, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -35,7 +35,13 @@ onMounted(async () => {
   if (user.value?.id) {
     await withLoading(async () => {
       await projectStore.fetchAll(user.value!.id);
-      await reportStore.fetchReports();
+      
+      const now = new Date();
+      const firstDayOfYear = new Date(now.getFullYear(), 0, 1);
+      const lastDayOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+      
+      // Carregar apenas o ano atual inicialmente para economizar leituras
+      await reportStore.fetchReports(firstDayOfYear, lastDayOfYear);
 
       // Fetch years and set initial selection
       const years = await reportStore.getYearsWithData();
@@ -44,12 +50,22 @@ onMounted(async () => {
         value: year.toString()
       }));
 
-      const currentYear = new Date().getFullYear().toString();
+      const currentYear = now.getFullYear().toString();
       selectedYear.value = availableYears.value.find(y => y.value === currentYear) || 
                           availableYears.value[0] || 
                           { label: currentYear, value: currentYear }; // Fallback for empty years array
                           
     }, 'Não foi possível carregar os dados. Tente novamente mais tarde.');  
+  }
+});
+
+// Watch for year change to fetch data for that specific year
+watch(selectedYear, async (newYear) => {
+  if (newYear && user.value?.id) {
+    const year = parseInt(newYear.value as string);
+    const firstDay = new Date(year, 0, 1);
+    const lastDay = new Date(year, 11, 31, 23, 59, 59);
+    await reportStore.fetchReports(firstDay, lastDay);
   }
 });
 

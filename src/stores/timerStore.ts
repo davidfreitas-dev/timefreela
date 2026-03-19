@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { useProjectStore } from './projectStore';
 import { sessionService } from '../services/sessionService';
 import dayjs from '../lib/dayjs';
 
 export const useTimerStore = defineStore('timer', () => {
+  const projectStore = useProjectStore();
   let intervalId: ReturnType<typeof setInterval> | null = null;
   
   const duration = ref(0);
@@ -103,9 +105,12 @@ export const useTimerStore = defineStore('timer', () => {
   const save = async (userId: string) => {
     if (!projectId.value || !startTime.value) return;
 
+    const project = projectStore.items.find(p => p.id === projectId.value);
+
     const sessionData = {
       userId,
       projectId: projectId.value,
+      projectTitle: project?.title || 'Projeto não encontrado',
       duration: duration.value,
       isManual: false,
       isBilled: false,

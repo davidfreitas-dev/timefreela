@@ -1,4 +1,4 @@
-import { where, Timestamp, type QueryConstraint } from 'firebase/firestore';
+import { where, Timestamp, type QueryConstraint, orderBy, limit } from 'firebase/firestore';
 import { firestoreClient } from '../api/firestore';
 import { COLLECTIONS } from '../constants';
 import type { Project, Session } from '../types';
@@ -77,7 +77,8 @@ export const reportService = {
     billedFilter: 'all' | 'billed' | 'unbilled' = 'all'
   ): Promise<Session[]> {
     const conditions = this.buildQueryConditions(userId, startDate, endDate, billedFilter);
-    const sessions = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, conditions);
+    // Para grandes quantidades de dados, considere adicionar um limite aqui ou paginação
+    const sessions = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, [...conditions, orderBy('date', 'desc')]);
     
     return sessions.map(data => ({
       ...data,
@@ -174,18 +175,30 @@ export const reportService = {
   },
 
   async getYearsWithData(userId: string): Promise<number[]> {
-    const conditions = [where('userId', '==', userId)];
-    const sessions = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, conditions);
+    // Abordagem otimizada: busca apenas a primeira e a última sessão para determinar o intervalo de anos
+    const oldestRef = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, [
+      where('userId', '==', userId),
+      orderBy('date', 'asc'),
+      limit(1)
+    ]);
 
-    const years = new Set<number>();
-    sessions.forEach(session => {
-      if (session.date) {
-        const date = session.date.toDate();
-        years.add(date.getFullYear());
-      }
-    });
+    const newestRef = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, [
+      where('userId', '==', userId),
+      orderBy('date', 'desc'),
+      limit(1)
+    ]);
 
-    return Array.from(years).sort((a, b) => b - a);
+    if (oldestRef.length === 0) return [new Date().getFullYear()];
+
+    const startYear = oldestRef[0].date.toDate().getFullYear();
+    const endYear = newestRef[0].date.toDate().getFullYear();
+    
+    const years = [];
+    for (let y = endYear; y >= startYear; y--) {
+      years.push(y);
+    }
+
+    return years;
   }
 };
 

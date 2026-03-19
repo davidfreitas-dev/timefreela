@@ -5,6 +5,7 @@ import {
   query,
   collection,
   onSnapshot,
+  limit,
   type Unsubscribe,
   type QueryConstraint
 } from 'firebase/firestore';
@@ -16,13 +17,14 @@ import type { Session, SessionFirestoreData } from '../types';
 export const sessionService = {
   listenToSessions(
     userId: string,
-    filters: { projectId?: string; startDate?: Date; endDate?: Date },
+    filters: { projectId?: string; startDate?: Date; endDate?: Date; limit?: number },
     onUpdate: (sessions: Session[]) => void,
     onError: (error: any) => void
   ): Unsubscribe {
     const constraints: QueryConstraint[] = [
       where('userId', '==', userId),
-      orderBy('date', 'desc')
+      orderBy('date', 'desc'),
+      limit(filters.limit || 100)
     ];
 
     if (filters.projectId) {

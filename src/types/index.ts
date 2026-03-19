@@ -33,6 +33,7 @@ export interface Session {
   id: string;
   userId: string;
   projectId: string;
+  projectTitle?: string;
   duration: number; // em segundos
   isManual: boolean;
   isBilled: boolean;
@@ -46,6 +47,7 @@ export interface Session {
 export interface SessionFirestoreData {
   userId: string;
   projectId: string;
+  projectTitle?: string;
   duration: number;
   isManual: boolean;
   isBilled: boolean;

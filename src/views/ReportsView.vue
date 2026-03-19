@@ -56,7 +56,13 @@ onMounted(async () => {
   if (user.value?.id) {
     await withLoading(async () => {
       await projectStore.fetchAll(user.value!.id);
-      await reportStore.fetchReports();
+      
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+      
+      dateInterval.value = [firstDay, lastDay];
+      await reportStore.fetchReports(firstDay, lastDay);
     }, 'Não foi possível carregar os dados. Tente novamente mais tarde.');
   }
 });

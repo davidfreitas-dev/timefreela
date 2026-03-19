@@ -35,7 +35,10 @@ export const useProjectStore = defineStore('projects', () => {
   const create = async (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       const id = await projectService.createProject(data);
-      await fetchAll(data.userId);
+      const newProject = await projectService.getProjectById(id);
+      if (newProject) {
+        items.value.unshift(newProject);
+      }
       return id;
     } catch (error) {
       console.error('Erro ao criar projeto:', error);

@@ -2,15 +2,19 @@ import { defineStore, storeToRefs } from 'pinia';
 import { ref, type Ref } from 'vue';
 import type { Unsubscribe } from 'firebase/firestore';
 import { useUserStore } from '@/stores/userStore';
+import { useProjectStore } from '@/stores/projectStore';
 import { sessionService } from '@/services/sessionService';
 import type { Session, NewSession, SessionFirestoreData } from '@/types';
 
 export const useSessionStore = defineStore('sessionStore', () => {
   const { user } = storeToRefs(useUserStore());
+  const projectStore = useProjectStore();
   
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
   const activeSession: Ref<NewSession | null> = ref(null);
   const items: Ref<Session[]> = ref([]);
+  const currentLimit = ref(100);
+  const hasMore = ref(false);
 
   const getUserId = (): string => {
     if (!user.value?.id) throw new Error('Usuário não autenticado.');
@@ -28,9 +32,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
     return new Promise<void>((resolve, reject) => {
       unsubscribe.value = sessionService.listenToSessions(
         userId,
-        { projectId, startDate, endDate },
+        { projectId, startDate, endDate, limit: currentLimit.value },
         (updatedSessions) => {
           items.value = updatedSessions;
+          // Se o número de itens for igual ao limite atual, assumimos que pode haver mais.
+          // Uma forma mais precisa seria buscar limit + 1, mas para uma UI simples de "Load More", isso costuma bastar.
+          hasMore.value = updatedSessions.length === currentLimit.value;
           resolve();
         },
         (error) => {
@@ -39,6 +46,16 @@ export const useSessionStore = defineStore('sessionStore', () => {
         }
       );
     });
+  };
+
+  const loadMore = async (
+    userId: string,
+    projectId?: string,
+    startDate?: Date,
+    endDate?: Date
+  ) => {
+    currentLimit.value += 100;
+    await fetchAll(userId, projectId, startDate, endDate);
   };
 
   const fetchOne = async (sessionId: string): Promise<Session | null> => {
@@ -58,9 +75,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
   };
 
   const create = async (session: NewSession): Promise<string> => {
+    const project = projectStore.items.find(p => p.id === session.projectId);
+    
     const sessionData = {
       ...session,
       userId: getUserId(),
+      projectTitle: project?.title || 'Projeto não encontrado',
     } as unknown as SessionFirestoreData;
 
     return sessionService.createSession(sessionData);
@@ -77,11 +97,13 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const finishSession = async () => {
     if (!activeSession.value) return;
 
+    const project = projectStore.items.find(p => p.id === activeSession.value?.projectId);
     const now = new Date();
 
     const sessionData = {
       ...activeSession.value,
       userId: getUserId(),
+      projectTitle: project?.title || 'Projeto não encontrado',
       endTime: now,
       date: now,
     } as unknown as SessionFirestoreData;
@@ -107,7 +129,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
   return {
     items,
     activeSession,
+    currentLimit,
+    hasMore,
     fetchAll,
+    loadMore,
     fetchOne,
     startSession,
     create,
