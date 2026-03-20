@@ -6,6 +6,7 @@ import { useDark } from '@vueuse/core';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useTimerStore } from '@/stores/timerStore';
+import { useReportStore } from '@/stores/reportStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
 import AppContainer from '@/components/layout/AppContainer.vue';
@@ -18,6 +19,8 @@ import AppModal from '@/components/ui/AppModal.vue';
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const timerStore = useTimerStore();
+const reportStore = useReportStore();
+const { showToast } = useToast();
 
 const formData = ref({
   name: '',
@@ -54,8 +57,6 @@ const v$ = useVuelidate(rules, formData);
 const needsReauth = computed(() => formData.value.email !== userStore.profile?.email);
 
 const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
-
-const { showToast } = useToast();
 
 const updateUserData = async () => {
   const id = userStore.profile?.id;
@@ -116,6 +117,15 @@ const confirmPassword = async (event: Event) => {
   });
 };
 
+const { isLoading: isExporting, withLoading: withExporting } = useLoading();
+
+const handleBackup = async () => {
+  await withExporting(async () => {
+    await reportStore.downloadJsonBackup();
+    showToast('success', 'Backup exportado com sucesso.');
+  });
+};
+
 const isDark = useDark({
   selector: 'html', // Aplica a classe .dark na <html>
   attribute: 'class',
@@ -164,6 +174,26 @@ const isDark = useDark({
             </AppButton>
           </div>
         </form>
+      </div>
+    </section>
+
+    <section class="backup my-7">
+      <div class="p-6 md:p-8 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
+        <h1 class="section-title text-lg font-bold text-secondary dark:text-secondary-dark mb-4">
+          Backup de Dados
+        </h1>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <p class="text-secondary dark:text-secondary-dark text-sm max-w-md">
+            Exporte todos os seus projetos e sessões em um único arquivo JSON. Isso permite que você tenha uma cópia de segurança dos seus dados.
+          </p>
+          <AppButton
+            variant="outline"
+            :is-loading="isExporting"
+            @click="handleBackup"
+          >
+            Exportar Backup (JSON)
+          </AppButton>
+        </div>
       </div>
     </section>
 

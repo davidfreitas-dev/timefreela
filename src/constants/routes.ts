@@ -9,6 +9,5 @@ export const ROUTES = {
   SESSION_DETAIL: '/sessions/:id',
   SESSION_CREATE: '/sessions/create',
   TIMER: '/timer',
-  REPORTS: '/reports',
   SETTINGS: '/settings',
 } as const;

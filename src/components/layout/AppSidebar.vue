@@ -19,7 +19,6 @@ const menuItems: MenuItemData[] = [
   { to: ROUTES.PROJECTS, icon: 'category', text: 'Projetos' },
   { to: ROUTES.SESSIONS, icon: 'history', text: 'Sessões' },
   { to: ROUTES.TIMER, icon: 'timer', text: 'Timer' },
-  { to: ROUTES.REPORTS, icon: 'bar_chart', text: 'Relatórios' },
   { to: ROUTES.SETTINGS, icon: 'settings', text: 'Configurações' }
 ];
 </script>

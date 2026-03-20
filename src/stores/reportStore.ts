@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from 'pinia';
 import { ref, computed } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
-import { reportService, type ReportDay, type ReportProjectGroup } from '@/services/reportService';
+import { reportService, type ReportDay, type ReportProjectGroup, type EnrichedSession } from '@/services/reportService';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import dayjs from 'dayjs';
@@ -14,6 +14,7 @@ export const useReportStore = defineStore('reportStore', () => {
   const { items: projects } = storeToRefs(projectStore);
   const reports = ref<ReportDay[]>([]);
   const groups = ref<ReportProjectGroup[]>([]);
+  const yearlyReports = ref<ReportDay[]>([]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value / 100);
@@ -117,6 +118,26 @@ export const useReportStore = defineStore('reportStore', () => {
     return result;
   });
 
+  const yearlySummary = computed(() => {
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const earnings = new Array(12).fill(0);
+    const time = new Array(12).fill(0);
+
+    yearlyReports.value.forEach(report => {
+      const date = dayjs(report.date);
+      const monthIndex = date.month();
+      
+      time[monthIndex] += report.totalSeconds / 3600; // converter para horas decimais
+      earnings[monthIndex] += report.totalAmount / 100; // converter centavos para reais
+    });
+
+    return {
+      labels: months,
+      earnings,
+      time
+    };
+  });
+
   const fetchReports = async (
     startDate?: Date,
     endDate?: Date,
@@ -138,6 +159,22 @@ export const useReportStore = defineStore('reportStore', () => {
     groups.value = data.groups;
   };
 
+  const fetchYearlyReports = async (year: number): Promise<void> => {
+    if (!user.value?.id) return;
+    
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31, 23, 59, 59);
+    
+    const data = await reportService.getReportsData(
+      user.value.id,
+      projects.value,
+      startDate,
+      endDate
+    );
+    
+    yearlyReports.value = data.reports;
+  };
+
   const getYearsWithData = async (): Promise<number[]> => {
     if (!user.value?.id) {
       throw new Error('Usuário não autenticado.');
@@ -147,7 +184,65 @@ export const useReportStore = defineStore('reportStore', () => {
   };
 
   const downloadCsv = async () => {
-    console.log('Download CSV not yet implemented');
+    // 1. Coleta todas as sessões em um array flat
+    const allSessions: EnrichedSession[] = [];
+    reports.value.forEach(day => {
+      day.sessions.forEach(session => {
+        allSessions.push(session);
+      });
+    });
+
+    if (allSessions.length === 0) return;
+
+    // 2. Define o cabeçalho (Excel pt-BR prefere ponto e vírgula)
+    const header = [
+      'Data',
+      'Projeto',
+      'Inicio',
+      'Fim',
+      'Duracao (HH:mm)',
+      'Duracao (Segundos)',
+      'Valor (BRL)',
+      'Status',
+      'Tipo de Cobranca',
+      'Valor Unitario'
+    ].join(';');
+
+    // 3. Formata as linhas
+    const rows = allSessions.map(s => {
+      const amount = reportService.calculateSessionAmount(s) / 100;
+      const unitValue = s.billingAmount / 100;
+      const billingType = s.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo';
+      const status = s.isBilled ? 'Faturado' : 'Pendente';
+      
+      return [
+        dayjs(s.date).format('DD/MM/YYYY'),
+        `"${(s.projectTitle || '').replace(/"/g, '""')}"`,
+        s.startTime ? dayjs(s.startTime).format('HH:mm') : '-',
+        s.endTime ? dayjs(s.endTime).format('HH:mm') : '-',
+        formatDuration(s.duration),
+        s.duration,
+        amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        status,
+        billingType,
+        unitValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      ].join(';');
+    });
+
+    // 4. Cria o conteúdo do arquivo com BOM para UTF-8 (Excel reconhece acentos)
+    const csvContent = [header, ...rows].join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    // 5. Aciona o download
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio_timefreela_${dayjs().format('YYYY-MM-DD')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const downloadPdf = async () => {
@@ -264,17 +359,54 @@ export const useReportStore = defineStore('reportStore', () => {
     doc.save(`relatorio_timefreela_${dayjs().format('YYYY-MM-DD')}.pdf`);
   };
 
+  const downloadJsonBackup = async () => {
+    if (!user.value?.id) return;
+
+    // 1. Buscar todas as sessões brutas
+    const allSessions = await reportService.getRawSessions(user.value.id);
+    
+    // 2. Preparar o objeto de backup
+    const backupData = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      user: {
+        id: user.value.id,
+        name: user.value.name,
+        email: user.value.email
+      },
+      projects: projects.value,
+      sessions: allSessions
+    };
+
+    // 3. Criar blob e download
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `timefreela_backup_${dayjs().format('YYYY-MM-DD')}.json`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return {
     reports,
     groups,
+    yearlyReports,
     fetchReports,
+    fetchYearlyReports,
     getYearsWithData,
     downloadCsv,
     downloadPdf,
+    downloadJsonBackup,
     totalTime,
     totalAmount,
     currentMonthStats,
     yearStats,
-    monthlySummary
+    monthlySummary,
+    yearlySummary
   };
 });
