@@ -6,6 +6,7 @@ import { useLoading } from '@/composables/useLoading';
 import { useProjectStore } from '@/stores/projectStore';
 import { useReportStore } from '@/stores/reportStore';
 import { useUserStore } from '@/stores/userStore';
+import { useExport } from '@/composables/useExport';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppInputSearch from '@/components/ui/AppInputSearch.vue';
@@ -14,10 +15,13 @@ import AppInputDate from '@/components/ui/AppInputDate.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppLoader from '@/components/ui/AppLoader.vue';
 import AppCard from '@/components/ui/AppCard.vue';
+import AppButton from '@/components/ui/AppButton.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
 
 const projectStore = useProjectStore();
 const reportStore = useReportStore();
 const userStore = useUserStore();
+const { exportPdf, isExporting } = useExport();
 
 const { user } = storeToRefs(userStore);
 const { groups } = storeToRefs(reportStore);
@@ -91,7 +95,23 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
 
 <template>
   <AppContainer>
-    <AppBreadcrumb title="Relatórios" description="Gerencie os relatórios aqui." />
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <AppBreadcrumb title="Relatórios" description="Gerencie os relatórios aqui." />
+      
+      <div class="flex items-center gap-2">
+        <AppButton
+          variant="outline"
+          :loading="isExporting"
+          class="!rounded-xl"
+          @click="exportPdf"
+        >
+          <template #left>
+            <AppIcon name="DocumentArrowDownIcon" class="w-5 h-5" />
+          </template>
+          Exportar PDF
+        </AppButton>
+      </div>
+    </div>
 
     <div class="cards flex flex-col md:flex-row items-center w-full gap-5 my-8">
       <AppCard class="w-full md:w-1/2">
