@@ -4,12 +4,12 @@ import type { Unsubscribe } from 'firebase/firestore';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { sessionService } from '@/services/sessionService';
-import type { Session, NewSession, SessionFirestoreData } from '@/types';
+import type { Session, NewSession, SessionFirestoreData, Project } from '@/types';
 
 export const useSessionStore = defineStore('sessionStore', () => {
   const { user } = storeToRefs(useUserStore());
   const projectStore = useProjectStore();
-  
+
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
   const activeSession: Ref<NewSession | null> = ref(null);
   const items: Ref<Session[]> = ref([]);
@@ -76,12 +76,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
   const create = async (session: NewSession): Promise<string> => {
     const project = projectStore.items.find(p => p.id === session.projectId);
-    
-    const sessionData = {
+
+    const sessionData: SessionFirestoreData = {
       ...session,
       userId: getUserId(),
       projectTitle: project?.title || 'Projeto não encontrado',
-    } as unknown as SessionFirestoreData;
+    };
 
     return sessionService.createSession(sessionData);
   };
@@ -100,13 +100,13 @@ export const useSessionStore = defineStore('sessionStore', () => {
     const project = projectStore.items.find(p => p.id === activeSession.value?.projectId);
     const now = new Date();
 
-    const sessionData = {
+    const sessionData: SessionFirestoreData = {
       ...activeSession.value,
       userId: getUserId(),
       projectTitle: project?.title || 'Projeto não encontrado',
       endTime: now,
       date: now,
-    } as unknown as SessionFirestoreData;
+    };
 
     await sessionService.createSession(sessionData);
 
@@ -126,6 +126,18 @@ export const useSessionStore = defineStore('sessionStore', () => {
     items.value = [];
   };
 
+  const restoreSessions = async (userId: string, sessionsToRestore: Session[], projects: Project[]) => {
+    try {
+      // Stop listening to prevent conflicts during restore
+      stopListeningSessions();
+      await sessionService.restore(userId, sessionsToRestore, projects);
+      // No need to fetch here, the page will be reloaded by the composable
+    } catch (error) {
+      console.error('Erro ao restaurar sessões:', error);
+      throw error;
+    }
+  };
+
   return {
     items,
     activeSession,
@@ -141,7 +153,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
     finishSession,
     markBilled,
     stopListeningSessions,
-    resetSessions
+    resetSessions,
+    restoreSessions,
   };
 }, {
   persist: {

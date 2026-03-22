@@ -1,15 +1,7 @@
-import { where, Timestamp, type QueryConstraint, orderBy, limit } from 'firebase/firestore';
+import { where, Timestamp, type QueryConstraint, orderBy, limit, FieldValue } from 'firebase/firestore';
 import { firestoreClient } from '../api/firestore';
 import { COLLECTIONS } from '../constants';
-import type { Project, Session } from '../types';
-
-interface SessionFirestore extends Omit<Session, 'date' | 'startTime' | 'endTime' | 'createdAt' | 'updatedAt'> {
-  date: Timestamp;
-  startTime: Timestamp;
-  endTime: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
+import type { Project, Session, SessionFirestoreData } from '../types';
 
 export interface EnrichedSession extends Session {
   projectTitle: string;
@@ -31,6 +23,30 @@ export interface ReportProjectGroup {
   subtotalSeconds: number;
   subtotalValue: number;
 }
+
+const toDate = (value: FieldValue | Timestamp | Date | string | null | undefined): Date | null => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (value instanceof Timestamp) return value.toDate();
+  if (typeof value === 'string') {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  return null;
+};
+
+const mapSession = (id: string, data: SessionFirestoreData): Session => {
+  const { createdAt, updatedAt, startTime, endTime, date, ...rest } = data;
+  return {
+    id,
+    ...rest,
+    createdAt: toDate(createdAt),
+    updatedAt: toDate(updatedAt),
+    startTime: toDate(startTime),
+    endTime: toDate(endTime),
+    date: toDate(date)
+  };
+};
 
 export const reportService = {
   calculateSessionAmount(session: Pick<EnrichedSession, 'duration' | 'billingType' | 'billingAmount' | 'estimatedDuration'>): number {
@@ -77,17 +93,13 @@ export const reportService = {
     billedFilter: 'all' | 'billed' | 'unbilled' = 'all'
   ): Promise<Session[]> {
     const conditions = this.buildQueryConditions(userId, startDate, endDate, billedFilter);
-    // Para grandes quantidades de dados, considere adicionar um limite aqui ou paginação
-    const sessions = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, [...conditions, orderBy('date', 'desc')]);
+    const sessionsData = await firestoreClient.getDocs<SessionFirestoreData>(COLLECTIONS.SESSIONS, [...conditions, orderBy('date', 'desc')]);
     
-    return sessions.map(data => ({
-      ...data,
-      date: data.date?.toDate() || null,
-      createdAt: data.createdAt?.toDate() || null,
-      updatedAt: data.updatedAt?.toDate() || null,
-      startTime: data.startTime?.toDate() || null,
-      endTime: data.endTime?.toDate() || null,
-    })) as Session[];
+    return sessionsData.map(data => {
+      // firestoreClient.getDocs injeta o ID mas ele não está explicitamente no SessionFirestoreData
+      const { id, ...rest } = data as { id: string } & SessionFirestoreData;
+      return mapSession(id, rest);
+    });
   },
 
   enrichSessions(
@@ -175,14 +187,13 @@ export const reportService = {
   },
 
   async getYearsWithData(userId: string): Promise<number[]> {
-    // Abordagem otimizada: busca apenas a primeira e a última sessão para determinar o intervalo de anos
-    const oldestRef = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, [
+    const oldestRef = await firestoreClient.getDocs<SessionFirestoreData>(COLLECTIONS.SESSIONS, [
       where('userId', '==', userId),
       orderBy('date', 'asc'),
       limit(1)
     ]);
 
-    const newestRef = await firestoreClient.getDocs<SessionFirestore>(COLLECTIONS.SESSIONS, [
+    const newestRef = await firestoreClient.getDocs<SessionFirestoreData>(COLLECTIONS.SESSIONS, [
       where('userId', '==', userId),
       orderBy('date', 'desc'),
       limit(1)
@@ -190,8 +201,11 @@ export const reportService = {
 
     if (oldestRef.length === 0) return [new Date().getFullYear()];
 
-    const startYear = oldestRef[0].date.toDate().getFullYear();
-    const endYear = newestRef[0].date.toDate().getFullYear();
+    const startDate = toDate(oldestRef[0].date);
+    const endDate = toDate(newestRef[0].date);
+    
+    const startYear = startDate ? startDate.getFullYear() : new Date().getFullYear();
+    const endYear = endDate ? endDate.getFullYear() : new Date().getFullYear();
     
     const years = [];
     for (let y = endYear; y >= startYear; y--) {
@@ -201,4 +215,3 @@ export const reportService = {
     return years;
   }
 };
-

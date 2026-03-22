@@ -87,6 +87,16 @@ export const useProjectStore = defineStore('projects', () => {
     }
   };
 
+  const restoreProjects = async (userId: string, projectsToRestore: Project[]) => {
+    try {
+      await projectService.restore(userId, projectsToRestore);
+      await fetchAll(userId);
+    } catch (error) {
+      console.error('Erro ao restaurar projetos:', error);
+      throw error;
+    }
+  };
+
   return {
     items,
     current,
@@ -98,5 +108,6 @@ export const useProjectStore = defineStore('projects', () => {
     update,
     archive,
     remove,
+    restoreProjects,
   };
 });

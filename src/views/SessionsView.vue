@@ -19,6 +19,8 @@ import AppTable from '@/components/ui/AppTable.vue';
 import AppLoader from '@/components/ui/AppLoader.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 
+import type { Session } from '@/types';
+
 const router = useRouter();
 const sessionStore = useSessionStore();
 const projectStore = useProjectStore();
@@ -84,8 +86,8 @@ const loadMore = async () => {
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
-const getProjectTitle = (session: any) =>
-  session.projectTitle || projectStore.items.find((p: any) => p.id === session.projectId)?.title || 'Projeto não encontrado';
+const getProjectTitle = (session: Session) =>
+  session.projectTitle || projectStore.items.find((p) => p.id === session.projectId)?.title || 'Projeto não encontrado';
 
 const filteredSessions = computed(() => {
   if (!sessions.value?.length) return [];

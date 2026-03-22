@@ -25,8 +25,8 @@ export interface Project {
   billingAmount: number;
   estimatedDuration?: number;
   active: boolean;
-  createdAt: Timestamp | Date;
-  updatedAt: Timestamp | Date;
+  createdAt: Timestamp | Date | FieldValue;
+  updatedAt: Timestamp | Date | FieldValue;
 }
 
 export interface Session {
@@ -51,11 +51,11 @@ export interface SessionFirestoreData {
   duration: number;
   isManual: boolean;
   isBilled: boolean;
-  date: Date | FieldValue | null;
-  endTime: Date | FieldValue | null;
-  startTime: Date | FieldValue | null;
-  createdAt?: Date | FieldValue | null;
-  updatedAt?: Date | FieldValue | null;
+  date: Date | Timestamp | FieldValue | null;
+  endTime: Date | Timestamp | FieldValue | null;
+  startTime: Date | Timestamp | FieldValue | null;
+  createdAt?: Date | Timestamp | FieldValue | null;
+  updatedAt?: Date | Timestamp | FieldValue | null;
 }
 
 export type NewSession = Omit<SessionFirestoreData, 'userId' | 'createdAt'>;

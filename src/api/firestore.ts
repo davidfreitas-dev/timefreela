@@ -108,20 +108,40 @@ export const firestoreClient = {
 
   async batchWrite(operations: BatchOperation[]): Promise<void> {
     try {
+      const BATCH_LIMIT = 500;
+      for (let i = 0; i < operations.length; i += BATCH_LIMIT) {
+        const chunk = operations.slice(i, i + BATCH_LIMIT);
+        const batch = writeBatch(db);
+        
+        chunk.forEach(op => {
+          const docRef = doc(db, op.path, op.id);
+          switch (op.type) {
+          case 'set':
+            batch.set(docRef, op.data as WithFieldValue<DocumentData>);
+            break;
+          case 'update':
+            batch.update(docRef, op.data as UpdateData<DocumentData>);
+            break;
+          case 'delete':
+            batch.delete(docRef);
+            break;
+          }
+        });
+        
+        await batch.commit();
+      }
+    } catch (error) {
+      throw handleFirestoreError(error);
+    }
+  },
+
+  async batchCreate<T extends DocumentData>(path: string, data: T[]): Promise<void> {
+    try {
       const batch = writeBatch(db);
-      operations.forEach(op => {
-        const docRef = doc(db, op.path, op.id);
-        switch (op.type) {
-        case 'set':
-          batch.set(docRef, op.data as WithFieldValue<DocumentData>);
-          break;
-        case 'update':
-          batch.update(docRef, op.data as UpdateData<DocumentData>);
-          break;
-        case 'delete':
-          batch.delete(docRef);
-          break;
-        }
+      const colRef = collection(db, path);
+      data.forEach(item => {
+        const docRef = doc(colRef);
+        batch.set(docRef, item as WithFieldValue<DocumentData>);
       });
       await batch.commit();
     } catch (error) {

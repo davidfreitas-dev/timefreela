@@ -1,7 +1,36 @@
 import { where, orderBy, Timestamp } from 'firebase/firestore';
-import { firestoreClient } from '../api/firestore';
+import { firestoreClient, type BatchOperation } from '../api/firestore';
 import { COLLECTIONS } from '../constants';
 import type { Project } from '../types';
+
+type TimestampValue = Timestamp | Date | string | { seconds: number; nanoseconds?: number } | null | undefined;
+
+const toTimestamp = (value: TimestampValue, fallback: Timestamp = Timestamp.now()): Timestamp => {
+  if (!value) return fallback;
+  if (value instanceof Timestamp) return value;
+  if (value instanceof Date) return Timestamp.fromDate(value);
+  if (typeof value === 'string') {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? fallback : Timestamp.fromDate(date);
+  }
+  if (typeof value === 'object' && 'seconds' in value) {
+    return new Timestamp(value.seconds, value.nanoseconds || 0);
+  }
+  return fallback;
+};
+
+const mapProjectData = (p: Partial<Project>, userId: string, now: Timestamp) => ({
+  userId,
+  title: String(p.title || 'Sem título').trim().padEnd(3, '.'),
+  active: p.active !== undefined ? Boolean(p.active) : true,
+  createdAt: toTimestamp(p.createdAt, now),
+  updatedAt: toTimestamp(p.updatedAt, now),
+  description: String(p.description || ''),
+  tags: Array.isArray(p.tags) ? p.tags : [],
+  billingType: p.billingType || 'fixed',
+  billingAmount: Number(p.billingAmount || 0),
+  estimatedDuration: p.estimatedDuration ? Number(p.estimatedDuration) : null,
+});
 
 export const projectService = {
   async getProjectsByUser(userId: string): Promise<Project[]> {
@@ -39,5 +68,37 @@ export const projectService = {
 
   async deleteProject(id: string): Promise<void> {
     return firestoreClient.deleteDoc(COLLECTIONS.PROJECTS, id);
+  },
+
+  async restore(userId: string, projectsToRestore: Partial<Project>[]): Promise<void> {
+    // 1. Limpeza: Deleta projetos existentes do usuário
+    const existingProjects = await this.getProjectsByUser(userId);
+    if (existingProjects.length > 0) {
+      const deleteOps: BatchOperation[] = existingProjects.map(p => ({
+        type: 'delete',
+        path: COLLECTIONS.PROJECTS,
+        id: p.id,
+      }));
+      await firestoreClient.batchWrite(deleteOps);
+      // Delay necessário para propagação dos índices no Firestore
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    // 2. Restauração: Cria novos projetos a partir do backup
+    if (projectsToRestore.length > 0) {
+      const now = Timestamp.now();
+      const createOps: BatchOperation[] = projectsToRestore
+        .filter(p => p.id) // Garante que o ID existe
+        .map(p => ({
+          type: 'set',
+          path: COLLECTIONS.PROJECTS,
+          id: String(p.id),
+          data: mapProjectData(p, userId, now),
+        }));
+
+      if (createOps.length > 0) {
+        await firestoreClient.batchWrite(createOps);
+      }
+    }
   }
 };
