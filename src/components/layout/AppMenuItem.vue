@@ -12,7 +12,9 @@ const props = defineProps<{
 
 const route = useRoute();
 
-const isActive = computed(() => route.path === props.to);
+const isActive = computed(() => {
+  return route.path === props.to || route.path.startsWith(`${props.to}/`);
+});
 
 const menuItemStyle = computed(() =>
   isActive.value

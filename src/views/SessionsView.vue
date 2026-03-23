@@ -104,7 +104,7 @@ const filteredSessions = computed(() => {
       const title = getProjectTitle(session);
       return title.toLowerCase().includes(normalizedSearch.value);
     });
-    // O filtro de data foi movido para o servidor (fetchAll)
+  // O filtro de data foi movido para o servidor (fetchAll)
 });
 
 const selectedSessions = ref<string[]>([]);
@@ -201,7 +201,7 @@ const deleteSession = async () => {
     </div>
 
     <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
-      <div class="filters grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+      <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
         <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />
 
         <AppInputDate

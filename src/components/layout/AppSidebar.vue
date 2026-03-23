@@ -50,9 +50,10 @@ const menuItems: MenuItemData[] = [
 
     <div class="menu">
       <AppMenuItem
-        :to="menuItems[menuItems.length - 1]?.to"
-        :icon="menuItems[menuItems.length - 1]?.icon"
-        :text="menuItems[menuItems.length - 1]?.text"
+        v-if="menuItems.length > 0"
+        :to="menuItems[menuItems.length - 1].to"
+        :icon="menuItems[menuItems.length - 1].icon"
+        :text="menuItems[menuItems.length - 1].text"
         :is-expanded="isSidebarExpanded"
       />
     </div>

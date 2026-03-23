@@ -118,6 +118,28 @@ export const useReportStore = defineStore('reportStore', () => {
     return result;
   });
 
+  const yearlyMonthlySummary = computed(() => {
+    const result: Record<string, { totalEarnings: number; totalTime: number }> = {};
+
+    yearlyReports.value.forEach(report => {
+      const month = report.date.slice(0, 7);
+      if (!result[month]) {
+        result[month] = {
+          totalEarnings: 0,
+          totalTime: 0
+        };
+      }
+
+      result[month].totalTime += report.totalSeconds;
+
+      for (const session of report.sessions) {
+        result[month].totalEarnings += reportService.calculateSessionAmount(session);
+      }
+    });
+
+    return result;
+  });
+
   const yearlySummary = computed(() => {
     const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const earnings = new Array(12).fill(0);
@@ -392,6 +414,12 @@ export const useReportStore = defineStore('reportStore', () => {
     URL.revokeObjectURL(url);
   };
 
+  const reset = () => {
+    reports.value = [];
+    groups.value = [];
+    yearlyReports.value = [];
+  };
+
   return {
     reports,
     groups,
@@ -407,6 +435,9 @@ export const useReportStore = defineStore('reportStore', () => {
     currentMonthStats,
     yearStats,
     monthlySummary,
-    yearlySummary
+    yearlyMonthlySummary,
+    yearlySummary,
+    reset,
+    calculateSessionAmount: reportService.calculateSessionAmount,
   };
 });

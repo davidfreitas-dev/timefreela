@@ -4,6 +4,10 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
 import { useUserStore } from './userStore';
+import { useProjectStore } from './projectStore';
+import { useSessionStore } from './sessionStore';
+import { useTimerStore } from './timerStore';
+import { useReportStore } from './reportStore';
 import { Timestamp } from 'firebase/firestore';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -13,6 +17,18 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!firebaseUser.value);
 
   const userStore = useUserStore();
+  const projectStore = useProjectStore();
+  const sessionStore = useSessionStore();
+  const timerStore = useTimerStore();
+  const reportStore = useReportStore();
+
+  const resetAllStores = () => {
+    userStore.reset();
+    projectStore.reset();
+    sessionStore.reset();
+    timerStore.reset();
+    reportStore.reset();
+  };
 
   const init = () => {
     authService.onAuthChange(async (user) => {
@@ -24,7 +40,7 @@ export const useAuthStore = defineStore('auth', () => {
           console.error('Error fetching user profile during init:', error);
         }
       } else {
-        userStore.profile = null;
+        resetAllStores();
       }
       isAuthChecked.value = true;
     });
@@ -60,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await authService.signOut();
       firebaseUser.value = null;
-      userStore.profile = null;
+      resetAllStores();
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
@@ -77,11 +93,41 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const updatePassword = async (password: string) => {
+    try {
+      await authService.updatePassword(password);
+    } catch (error) {
+      console.error('Error updating password:', error);
+      throw error;
+    }
+  };
+
   const reauthenticateUser = async (password: string) => {
     try {
       await authService.reauthenticate(password);
     } catch (error) {
       console.error('Error during reauthentication:', error);
+      throw error;
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      if (!firebaseUser.value) throw new Error('Usuário não autenticado');
+      
+      const uid = firebaseUser.value.uid;
+      
+      // 1. Delete Firestore data first (while authenticated)
+      await userService.deleteUserData(uid);
+      
+      // 2. Delete Auth account
+      await authService.deleteAccount();
+      
+      // 3. Clear local state
+      firebaseUser.value = null;
+      resetAllStores();
+    } catch (error) {
+      console.error('Error during account deletion:', error);
       throw error;
     }
   };
@@ -95,6 +141,8 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     updateUserInfo,
+    updatePassword,
     reauthenticateUser,
+    deleteAccount,
   };
 });

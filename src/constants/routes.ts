@@ -10,4 +10,5 @@ export const ROUTES = {
   SESSION_CREATE: '/sessions/create',
   TIMER: '/timer',
   SETTINGS: '/settings',
+  PROFILE: '/profile',
 } as const;

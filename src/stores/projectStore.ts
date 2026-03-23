@@ -97,6 +97,11 @@ export const useProjectStore = defineStore('projects', () => {
     }
   };
 
+  const reset = () => {
+    items.value = [];
+    current.value = null;
+  };
+
   return {
     items,
     current,
@@ -109,5 +114,6 @@ export const useProjectStore = defineStore('projects', () => {
     archive,
     remove,
     restoreProjects,
+    reset,
   };
 });

@@ -95,7 +95,7 @@ export const reportService = {
     billedFilter: 'all' | 'billed' | 'unbilled' = 'all'
   ): Promise<Session[]> {
     const conditions = this.buildQueryConditions(userId, startDate, endDate, billedFilter);
-    const sessionsData = await firestoreClient.getDocs<SessionFirestoreData>(COLLECTIONS.SESSIONS, [...conditions, orderBy('date', 'desc')]);
+    const sessionsData = await firestoreClient.getDocs<SessionFirestoreData>(COLLECTIONS.SESSIONS, [...conditions, orderBy('date', 'asc')]);
     
     return sessionsData.map(data => {
       // firestoreClient.getDocs injeta o ID mas ele não está explicitamente no SessionFirestoreData

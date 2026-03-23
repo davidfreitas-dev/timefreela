@@ -20,6 +20,15 @@ import AppSelect from '@/components/ui/AppSelect.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppLoader from '@/components/ui/AppLoader.vue';
 import type { Option } from '@/types';
+import type { BillingType } from '@/constants/billing';
+
+interface RevenueByProject {
+  projectId: string;
+  projectTitle: string;
+  billingType: BillingType;
+  totalSeconds: number;
+  totalAmount: number;
+}
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -50,8 +59,11 @@ const selectedFilter = ref<{ label: string; value: 'all' | 'billed' | 'unbilled'
 
 // Unified data loading
 const loadReports = async () => {
-  const [start, end] = dateInterval.value ?? [];
-  await reportStore.fetchReports(start ?? undefined, end ?? undefined, selectedFilter.value.value);
+  await withLoading(async () => {
+    const [start, end] = dateInterval.value ?? [];
+    // Buscamos os relatórios para o período selecionado
+    await reportStore.fetchReports(start ?? undefined, end ?? undefined, 'all');
+  }, 'Não foi possível carregar os relatórios. Tente novamente mais tarde.');
 };
 const debouncedLoadReports = debounce(loadReports, '500ms');
 
@@ -110,10 +122,13 @@ watch(dateInterval, () => {
     debouncedLoadReports();
   }
 }, { deep: true });
-watch(() => selectedFilter.value.value, () => loadReports());
+
+// O watcher do selectedFilter agora não precisa recarregar do banco, 
+// pois filtramos localmente na revenueByProject
+watch(() => selectedFilter.value.value, () => {});
 
 
-// Chart computed logic (UNTouched from original HomeView)
+// Chart computed logic
 const sortedMonthly = computed(() => {
   const year = dateInterval.value ? dateInterval.value[0].getFullYear() : new Date().getFullYear();
   const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -147,16 +162,31 @@ const sortedMonthly = computed(() => {
 });
 
 
-// Table computed logic (from ReportsView)
+// Table computed logic (Updated to filter locally)
 const revenueByProject = computed(() => {
   if (!groups.value?.length) return [];
-  return groups.value.map(group => ({
-    projectId: group.project.id,
-    projectTitle: group.project.title,
-    billingType: group.project.billingType,
-    totalSeconds: group.subtotalSeconds,
-    totalAmount: group.subtotalValue,
-  }));
+  const filter = selectedFilter.value.value;
+
+  return groups.value.map(group => {
+    // Filtrar sessões baseado no status de faturamento selecionado
+    const sessions = filter === 'all' 
+      ? group.sessions 
+      : group.sessions.filter(s => filter === 'billed' ? s.isBilled : !s.isBilled);
+
+    // Se não houver sessões para este filtro, ignorar o projeto
+    if (sessions.length === 0 && filter !== 'all') return null;
+
+    const totalSeconds = sessions.reduce((sum, s) => sum + s.duration, 0);
+    const totalAmount = sessions.reduce((sum, s) => sum + reportStore.calculateSessionAmount(s), 0);
+
+    return {
+      projectId: group.project.id,
+      projectTitle: group.project.title,
+      billingType: group.project.billingType,
+      totalSeconds,
+      totalAmount,
+    };
+  }).filter(item => item !== null) as RevenueByProject[];
 });
 
 const filteredRevenue = computed(() => {
@@ -177,8 +207,8 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
       
       <div class="flex items-center gap-2">
         <AppButton
-          variant="outline"
-          :loading="isExporting"
+          color="outline"
+          :is-loading="isExporting"
           class="rounded-xl"
           @click="exportCsv"
         >
@@ -188,8 +218,8 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           Exportar CSV
         </AppButton>
         <AppButton
-          variant="outline"
-          :loading="isExporting"
+          color="outline"
+          :is-loading="isExporting"
           class="rounded-xl"
           @click="exportPdf"
         >

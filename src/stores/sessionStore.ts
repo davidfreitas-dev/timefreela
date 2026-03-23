@@ -122,8 +122,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
     unsubscribe.value = null;
   };
 
-  const resetSessions = () => {
+  const reset = () => {
+    stopListeningSessions();
     items.value = [];
+    activeSession.value = null;
+    currentLimit.value = 100;
+    hasMore.value = false;
   };
 
   const restoreSessions = async (userId: string, sessionsToRestore: Session[], projects: Project[]) => {
@@ -153,7 +157,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     finishSession,
     markBilled,
     stopListeningSessions,
-    resetSessions,
+    reset,
     restoreSessions,
   };
 }, {

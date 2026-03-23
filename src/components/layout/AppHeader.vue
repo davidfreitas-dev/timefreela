@@ -76,8 +76,19 @@ const userInitial = () => {
           v-if="isMenuOpen"
           class="absolute right-0 mt-1 w-40 bg-white dark:bg-accent-dark border border-neutral dark:border-neutral-dark rounded-xl shadow-lg py-1 z-50 overflow-hidden"
         >
+          <router-link
+            :to="ROUTES.PROFILE"
+            class="w-full text-left px-4 py-2 text-sm text-secondary dark:text-secondary-dark flex items-center gap-2 transition-colors font-medium cursor-pointer hover:text-primary dark:hover:text-primary-dark"
+            @click="isMenuOpen = false"
+          >
+            <AppIcon name="person" class="text-lg" />
+            Meu Perfil
+          </router-link>
+          
+          <div class="h-px bg-neutral dark:bg-neutral-dark my-1" />
+
           <button 
-            class="w-full text-left px-4 py-2 text-sm text-danger flex items-center gap-2 transition-colors font-medium cursor-pointer"
+            class="w-full text-left px-4 py-2 text-sm text-danger flex items-center gap-2 transition-colors font-medium cursor-pointer hover:text-danger-hover dark:hover:text-danger-hover-dark"
             @click="handleLogout"
           >
             <AppIcon name="logout" class="text-lg" />

@@ -5,6 +5,7 @@ import {
   onAuthStateChanged,
   updateEmail,
   updateProfile,
+  updatePassword as firebaseUpdatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
   type UserCredential,
@@ -52,5 +53,17 @@ export const authService = {
     if (data.email && data.email !== user.email) {
       await updateEmail(user, data.email);
     }
+  },
+
+  async updatePassword(password: string): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Usuário não autenticado');
+    await firebaseUpdatePassword(user, password);
+  },
+
+  async deleteAccount(): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Usuário não autenticado');
+    await user.delete();
   }
 };
