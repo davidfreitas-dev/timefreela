@@ -192,7 +192,7 @@ const confirmDelete = async () => {
     <AppDialog
       ref="dialogRef"
       header="Tem certeza que deseja deletar este projeto?"
-      message="Se confirmada essa ação não poderá ser desfeita."
+      message="Ao confirmar, todas as sessões associadas a este projeto também serão excluídas permanentemente. Esta ação não poderá ser desfeita."
       @confirm-action="confirmDelete"
     />
   </AppContainer>

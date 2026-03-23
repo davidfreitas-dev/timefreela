@@ -1,9 +1,9 @@
-import { where, orderBy, Timestamp } from 'firebase/firestore';
+import { where, orderBy, Timestamp, FieldValue } from 'firebase/firestore';
 import { firestoreClient, type BatchOperation } from '../api/firestore';
 import { COLLECTIONS } from '../constants';
-import type { Project } from '../types';
+import type { Project, Session } from '../types';
 
-type TimestampValue = Timestamp | Date | string | { seconds: number; nanoseconds?: number } | null | undefined;
+type TimestampValue = Timestamp | FieldValue | Date | string | { seconds: number; nanoseconds?: number } | null | undefined;
 
 const toTimestamp = (value: TimestampValue, fallback: Timestamp = Timestamp.now()): Timestamp => {
   if (!value) return fallback;
@@ -67,7 +67,23 @@ export const projectService = {
   },
 
   async deleteProject(id: string): Promise<void> {
-    return firestoreClient.deleteDoc(COLLECTIONS.PROJECTS, id);
+    // 1. Get all sessions for this project
+    const sessions = await firestoreClient.getDocs<Session>(COLLECTIONS.SESSIONS, [
+      where('projectId', '==', id)
+    ]);
+
+    // 2. Prepare batch delete operations
+    const operations: BatchOperation[] = [
+      { type: 'delete', path: COLLECTIONS.PROJECTS, id },
+      ...sessions.map(s => ({
+        type: 'delete',
+        path: COLLECTIONS.SESSIONS,
+        id: s.id
+      } as BatchOperation))
+    ];
+
+    // 3. Execute batch delete
+    return firestoreClient.batchWrite(operations);
   },
 
   async restore(userId: string, projectsToRestore: Partial<Project>[]): Promise<void> {

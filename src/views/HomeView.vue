@@ -221,7 +221,7 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
     <section class="earning">
       <div class="relative rounded-3xl bg-background dark:bg-accent-dark shadow-md pb-2">
         <h1 class="section-title text-lg font-bold text-secondary dark:text-secondary-dark px-5 pt-5">
-          Faturamento por Projeto
+          Faturamento
         </h1>
         <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
           <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />

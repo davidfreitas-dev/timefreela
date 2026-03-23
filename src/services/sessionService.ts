@@ -18,9 +18,9 @@ import type { Session, SessionFirestoreData, Project } from '../types';
 /**
  * Helpers para conversão de tipos do Firestore
  */
-type TimestampValue = Timestamp | Date | string | { seconds: number; nanoseconds?: number } | null | undefined;
+type TimestampValue = Timestamp | FieldValue | Date | string | { seconds: number; nanoseconds?: number } | null | undefined;
 
-const toDate = (value: FieldValue | Timestamp | Date | string | null | undefined): Date | null => {
+const toDate = (value: TimestampValue): Date | null => {
   if (!value) return null;
   if (value instanceof Date) return value;
   if (value instanceof Timestamp) return value.toDate();

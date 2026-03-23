@@ -24,7 +24,9 @@ export interface ReportProjectGroup {
   subtotalValue: number;
 }
 
-const toDate = (value: FieldValue | Timestamp | Date | string | null | undefined): Date | null => {
+type TimestampValue = Timestamp | FieldValue | Date | string | { seconds: number; nanoseconds?: number } | null | undefined;
+
+const toDate = (value: TimestampValue): Date | null => {
   if (!value) return null;
   if (value instanceof Date) return value;
   if (value instanceof Timestamp) return value.toDate();
