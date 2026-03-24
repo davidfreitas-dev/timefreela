@@ -5,19 +5,19 @@ export function useExport() {
   const reportStore = useReportStore();
   const isExporting = ref(false);
 
-  const exportCsv = async () => {
+  const exportCsv = async (search?: string, billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
     isExporting.value = true;
     try {
-      await reportStore.downloadCsv();
+      await reportStore.downloadCsv(search, billedFilter);
     } finally {
       isExporting.value = false;
     }
   };
 
-  const exportPdf = async () => {
+  const exportPdf = async (search?: string, billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
     isExporting.value = true;
     try {
-      await reportStore.downloadPdf();
+      await reportStore.downloadPdf(search, billedFilter);
     } finally {
       isExporting.value = false;
     }

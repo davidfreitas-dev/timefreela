@@ -205,11 +205,22 @@ export const useReportStore = defineStore('reportStore', () => {
     return reportService.getYearsWithData(user.value.id);
   };
 
-  const downloadCsv = async () => {
-    // 1. Coleta todas as sessões em um array flat
+  const downloadCsv = async (search?: string, billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
+    // 1. Coleta todas as sessões em um array flat, aplicando filtros
     const allSessions: EnrichedSession[] = [];
     reports.value.forEach(day => {
       day.sessions.forEach(session => {
+        // Filtro de faturamento
+        if (billedFilter !== 'all') {
+          const isBilled = billedFilter === 'billed';
+          if (session.isBilled !== isBilled) return;
+        }
+
+        // Filtro de busca (projeto)
+        if (search && !session.projectTitle.toLowerCase().includes(search.toLowerCase())) {
+          return;
+        }
+
         allSessions.push(session);
       });
     });
@@ -267,7 +278,7 @@ export const useReportStore = defineStore('reportStore', () => {
     URL.revokeObjectURL(url);
   };
 
-  const downloadPdf = async () => {
+  const downloadPdf = async (search?: string, billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
     if (!user.value) return;
 
     interface JsPDFWithAutoTable extends jsPDF {
@@ -279,6 +290,34 @@ export const useReportStore = defineStore('reportStore', () => {
     const doc = new jsPDF() as JsPDFWithAutoTable;
     const pageWidth = doc.internal.pageSize.getWidth();
     const primaryColor: [number, number, number] = [3, 141, 231];
+
+    // Aplicar filtros aos grupos e sessões
+    const filteredGroups = groups.value.map(group => {
+      // Filtro de faturamento nas sessões do grupo
+      const sessions = billedFilter === 'all'
+        ? group.sessions
+        : group.sessions.filter(s => billedFilter === 'billed' ? s.isBilled : !s.isBilled);
+      
+      if (sessions.length === 0 && billedFilter !== 'all') return null;
+
+      // Filtro de busca (projeto)
+      if (search && !group.project.title.toLowerCase().includes(search.toLowerCase())) {
+        return null;
+      }
+
+      return {
+        ...group,
+        sessions,
+        subtotalSeconds: sessions.reduce((sum, s) => sum + s.duration, 0),
+        subtotalValue: sessions.reduce((sum, s) => sum + reportService.calculateSessionAmount(s), 0)
+      };
+    }).filter(g => g !== null) as ReportProjectGroup[];
+
+    if (filteredGroups.length === 0) return;
+
+    // Recalcular totais para o resumo baseado nos filtros
+    const totalTimeValue = filteredGroups.reduce((sum, g) => sum + g.subtotalSeconds, 0);
+    const totalAmountValue = filteredGroups.reduce((sum, g) => sum + g.subtotalValue, 0);
 
     // 1. Cabeçalho
     doc.setFontSize(22);
@@ -309,8 +348,8 @@ export const useReportStore = defineStore('reportStore', () => {
     doc.text('Resumo do Período', 14, 55);
 
     const summaryData = [
-      ['Total de Horas', formatDuration(totalTime.value)],
-      ['Receita Total', formatCurrency(totalAmount.value)],
+      ['Total de Horas', formatDuration(totalTimeValue)],
+      ['Receita Total', formatCurrency(totalAmountValue)],
     ];
 
     autoTable(doc, {
@@ -325,7 +364,7 @@ export const useReportStore = defineStore('reportStore', () => {
     let currentY = doc.lastAutoTable.finalY + 15;
 
     // 3. Detalhamento por Projeto
-    groups.value.forEach((group) => {
+    filteredGroups.forEach((group) => {
       // Verificar se cabe na página
       if (currentY > 240) {
         doc.addPage();

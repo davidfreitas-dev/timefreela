@@ -210,7 +210,7 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           color="outline"
           :is-loading="isExporting"
           class="rounded-xl"
-          @click="exportCsv"
+          @click="exportCsv(search, selectedFilter.value)"
         >
           <template #left>
             <AppIcon name="TableCellsIcon" class="w-5 h-5" />
@@ -221,7 +221,7 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           color="outline"
           :is-loading="isExporting"
           class="rounded-xl"
-          @click="exportPdf"
+          @click="exportPdf(search, selectedFilter.value)"
         >
           <template #left>
             <AppIcon name="DocumentArrowDownIcon" class="w-5 h-5" />
