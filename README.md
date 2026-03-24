@@ -20,12 +20,15 @@
 TimeFreela é um web app criado para **programadores freelancers** que desejam **cronometrar, organizar e documentar seus trabalhos com precisão e profissionalismo**, oferecendo também controle financeiro por projeto.
 
 ### Funcionalidades Implementadas
-- **Autenticação**: Login e Registro via Firebase Auth.
+- **Autenticação**: Login e Registro via Firebase Auth com tratamento de erros amigável.
 - **Gestão de Projetos**: Controle de valor/hora ou preço fixo.
-- **Timer em Tempo Real**: Rastreamento de sessões com persistência (mesmo ao fechar o navegador).
-- **Sessões**: Histórico detalhado e registro manual de horas.
-- **Financeiro**: Cálculo automático de valores pendentes e faturados.
-- **Relatórios**: Visualização gráfica com Chart.js e exportação em PDF (jsPDF).
+- **Timer em Tempo Real**: Rastreamento de sessões com persistência e guarda de segurança (aviso ao fechar a aba com timer ativo).
+- **Sessões**: Histórico detalhado, registro manual de horas e edição de registros.
+- **Financeiro**: Cálculo automático de valores com filtros por status (Faturado/Pendente).
+- **Relatórios & Gráficos**: Visualização mensal via Chart.js, filtros por período e exportação em PDF (jsPDF) e CSV.
+- **Backup & Restauração**: Exportação e importação completa de dados em formato JSON.
+- **Perfil & Segurança**: Edição de dados pessoais, alteração de senha e exclusão permanente de conta.
+- **Interface**: Suporte nativo a **Modo Escuro (Dark Mode)** e design responsivo com Tailwind CSS v4.
 
 ---
 
@@ -89,12 +92,12 @@ TimeFreela é um web app criado para **programadores freelancers** que desejam *
 
 - `/login` – Acesso à conta
 - `/register` – Criação de perfil
-- `/dashboard` – Resumo geral e métricas
+- `/dashboard` – Resumo geral, gráficos, filtros e exportações (PDF/CSV)
 - `/projects` – Listagem e gestão de projetos
-- `/sessions` – Histórico de todas as sessões trabalhadas
+- `/sessions` – Histórico e registro manual de horas
 - `/timer` – Interface principal de controle de tempo
-- `/reports` – Gráficos e exportação de PDF
-- `/settings` – Perfil do usuário
+- `/profile` – Gestão de perfil, alteração de senha e exclusão de conta
+- `/settings` – Backup/Restauração (JSON) e preferências de sistema (Dark Mode)
 
 ---
 
@@ -147,9 +150,12 @@ src/
 #### `sessions/{sessionId}`
 - `userId`: **string** (referência ao dono)
 - `projectId`: **string** (vínculo obrigatório com projeto)
+- `projectTitle`: **string** (nome do projeto no momento do registro)
 - `duration`: **number** (tempo em segundos)
 - `isManual`: **boolean**
 - `isBilled`: **boolean** (controle de faturamento)
+- `billingType`: **string** (`'hourly'` | `'fixed'`)
+- `billingAmount`: **number** (valor por hora ou preço fixo no momento do registro)
 - `date`: **timestamp** (data da sessão)
 - `startTime`: **timestamp**
 - `endTime`: **timestamp**

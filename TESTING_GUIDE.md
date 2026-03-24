@@ -58,6 +58,19 @@ Este documento descreve o passo a passo para testar manualmente as principais fu
   4. Altere o status para "Inativo" e salve.
 - **Resultado Esperado:** O projeto deve refletir as mudanças na listagem.
 
+### 2.3 Integridade de Faturamento (Histórico)
+- **Caminho:** `/projects` e `/timer`
+- **Passos:**
+  1. Crie um projeto com valor/hora de `R$ 100,00`.
+  2. Inicie o cronômetro para este projeto e salve uma sessão de `1 hora`.
+  3. Verifique no Dashboard que o faturamento estimado é `R$ 100,00`.
+  4. Vá em editar o projeto e altere o valor/hora para `R$ 200,00`.
+  5. Inicie o cronômetro novamente e salve uma nova sessão de `1 hora`.
+- **Resultado Esperado:** 
+  - O faturamento estimado total deve ser `R$ 300,00` (100 da primeira + 200 da segunda).
+  - A primeira sessão deve manter o valor original (`R$ 100,00`) e a segunda deve assumir o novo valor (`R$ 200,00`).
+  - Ao exportar o PDF/CSV, os valores individuais de cada sessão devem refletir o preço vigente no momento da criação.
+
 ---
 
 ## 3. Gestão de Sessões e Cronômetro
