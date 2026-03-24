@@ -81,13 +81,27 @@ export const useSessionStore = defineStore('sessionStore', () => {
       ...session,
       userId: getUserId(),
       projectTitle: project?.title || 'Projeto não encontrado',
+      billingType: project?.billingType,
+      billingAmount: project?.billingAmount,
     };
 
     return sessionService.createSession(sessionData);
   };
 
   const update = async (sessionId: string, updatedData: Partial<Session>): Promise<void> => {
-    await sessionService.updateSession(sessionId, updatedData as Partial<SessionFirestoreData>);
+    const dataToUpdate: Partial<SessionFirestoreData> = { ...updatedData } as Partial<SessionFirestoreData>;
+
+    // If projectId is being changed, we should also update projectTitle and billing info
+    if (updatedData.projectId) {
+      const project = projectStore.items.find(p => p.id === updatedData.projectId);
+      if (project) {
+        dataToUpdate.projectTitle = project.title;
+        dataToUpdate.billingType = project.billingType;
+        dataToUpdate.billingAmount = project.billingAmount;
+      }
+    }
+
+    await sessionService.updateSession(sessionId, dataToUpdate);
   };
 
   const remove = async (sessionId: string): Promise<void> => {
@@ -104,6 +118,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
       ...activeSession.value,
       userId: getUserId(),
       projectTitle: project?.title || 'Projeto não encontrado',
+      billingType: project?.billingType,
+      billingAmount: project?.billingAmount,
       endTime: now,
       date: now,
     };

@@ -114,6 +114,8 @@ export const useTimerStore = defineStore('timer', () => {
       duration: duration.value,
       isManual: false,
       isBilled: false,
+      billingType: project?.billingType,
+      billingAmount: project?.billingAmount,
       startTime: startTime.value,
       endTime: new Date(),
       date: startTime.value,

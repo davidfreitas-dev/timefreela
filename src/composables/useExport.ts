@@ -5,7 +5,7 @@ export function useExport() {
   const reportStore = useReportStore();
   const isExporting = ref(false);
 
-  const exportCsv = async (search?: string, billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
+  const exportCsv = async (search: string = '', billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
     isExporting.value = true;
     try {
       await reportStore.downloadCsv(search, billedFilter);
@@ -14,7 +14,7 @@ export function useExport() {
     }
   };
 
-  const exportPdf = async (search?: string, billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
+  const exportPdf = async (search: string = '', billedFilter: 'all' | 'billed' | 'unbilled' = 'all') => {
     isExporting.value = true;
     try {
       await reportStore.downloadPdf(search, billedFilter);

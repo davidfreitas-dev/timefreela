@@ -37,6 +37,8 @@ export interface Session {
   duration: number; // em segundos
   isManual: boolean;
   isBilled: boolean;
+  billingType?: BillingType;
+  billingAmount?: number;
   date: Date | null;
   startTime: Date | null;
   endTime: Date | null;
@@ -51,6 +53,8 @@ export interface SessionFirestoreData {
   duration: number;
   isManual: boolean;
   isBilled: boolean;
+  billingType?: BillingType;
+  billingAmount?: number;
   date: Date | Timestamp | FieldValue | null;
   endTime: Date | Timestamp | FieldValue | null;
   startTime: Date | Timestamp | FieldValue | null;

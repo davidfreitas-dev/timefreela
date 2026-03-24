@@ -14,45 +14,52 @@ export function useBilling(sessions: Ref<Session[]> | Session[], project: Ref<Pr
     return sessionsRef.value.reduce((acc, session) => acc + session.duration, 0);
   });
 
-  const billedSeconds = computed(() => {
-    return sessionsRef.value
-      .filter(s => s.isBilled)
-      .reduce((acc, s) => acc + s.duration, 0);
-  });
-
-  const pendingSeconds = computed(() => {
-    return sessionsRef.value
-      .filter(s => !s.isBilled)
-      .reduce((acc, s) => acc + s.duration, 0);
-  });
-
-  const calculateValue = (seconds: number) => {
+  const getSessionValue = (session: Session) => {
     const p = projectRef.value;
-    if (!p) return 0;
     
-    if (p.billingType === BillingType.HOURLY) {
-      const hourlyRateInReais = p.billingAmount / 100;
-      return (seconds / 3600) * hourlyRateInReais;
+    // Prioritize session billing data
+    const billingType = session.billingType || p?.billingType;
+    const billingAmount = session.billingAmount !== undefined ? session.billingAmount : p?.billingAmount;
+
+    if (billingType === undefined || billingAmount === undefined) return 0;
+
+    if (billingType === BillingType.HOURLY) {
+      const hourlyRateInReais = billingAmount / 100;
+      return (session.duration / 3600) * hourlyRateInReais;
     }
-    
-    if (p.billingType === BillingType.FIXED) {
+
+    if (billingType === BillingType.FIXED) {
       if (totalSeconds.value === 0) return 0;
-      const totalAmountInReais = p.billingAmount / 100;
-      return (seconds / totalSeconds.value) * totalAmountInReais;
+      const totalAmountInReais = billingAmount / 100;
+      return (session.duration / totalSeconds.value) * totalAmountInReais;
     }
-    
+
     return 0;
+  };
+
+  const calculateTotalValue = (targetSessions: Session[]) => {
+    return targetSessions.reduce((acc, session) => acc + getSessionValue(session), 0);
   };
 
   const estimatedValueRaw = computed(() => {
     const p = projectRef.value;
-    if (!p) return 0;
+    if (!p) return calculateTotalValue(sessionsRef.value);
+    
+    // For FIXED projects, we might want to show the full fixed amount as "estimated"
     if (p.billingType === BillingType.FIXED) return p.billingAmount / 100;
-    return calculateValue(totalSeconds.value);
+    
+    return calculateTotalValue(sessionsRef.value);
   });
 
-  const billedValueRaw = computed(() => calculateValue(billedSeconds.value));
-  const pendingValueRaw = computed(() => calculateValue(pendingSeconds.value));
+  const billedValueRaw = computed(() => {
+    const billedSessions = sessionsRef.value.filter(s => s.isBilled);
+    return calculateTotalValue(billedSessions);
+  });
+
+  const pendingValueRaw = computed(() => {
+    const pendingSessions = sessionsRef.value.filter(s => !s.isBilled);
+    return calculateTotalValue(pendingSessions);
+  });
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', {

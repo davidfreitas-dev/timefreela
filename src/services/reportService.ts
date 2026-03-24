@@ -1,11 +1,11 @@
 import { where, Timestamp, type QueryConstraint, orderBy, limit, FieldValue } from 'firebase/firestore';
 import { firestoreClient } from '../api/firestore';
-import { COLLECTIONS } from '../constants';
+import { COLLECTIONS, BillingType } from '../constants';
 import type { Project, Session, SessionFirestoreData } from '../types';
 
 export interface EnrichedSession extends Session {
   projectTitle: string;
-  billingType: 'hourly' | 'fixed';
+  billingType: BillingType;
   billingAmount: number;
   estimatedDuration?: number;
 }
@@ -51,14 +51,19 @@ const mapSession = (id: string, data: SessionFirestoreData): Session => {
 };
 
 export const reportService = {
-  calculateSessionAmount(session: Pick<EnrichedSession, 'duration' | 'billingType' | 'billingAmount' | 'estimatedDuration'>): number {
-    if (session.billingType === 'hourly') {
-      return (session.duration / 3600) * session.billingAmount;
+  calculateSessionAmount(session: EnrichedSession, totalProjectSeconds?: number): number {
+    const amount = session.billingAmount;
+    
+    if (session.billingType === BillingType.HOURLY) {
+      return (session.duration / 3600) * amount;
     } else {
-      const estimatedHours = (session.estimatedDuration || 0) / 3600;
-      if (estimatedHours > 0) {
-        const sessionHours = session.duration / 3600;
-        return (session.billingAmount / estimatedHours) * sessionHours;
+      // For fixed projects, we distribute the total amount based on worked hours
+      // We prefer using the actual total worked hours if available, 
+      // otherwise fallback to estimatedDuration or just 0 if neither is present.
+      const divisor = totalProjectSeconds || session.estimatedDuration || 0;
+      
+      if (divisor > 0) {
+        return (amount / (divisor / 3600)) * (session.duration / 3600);
       }
       return 0;
     }
@@ -98,7 +103,6 @@ export const reportService = {
     const sessionsData = await firestoreClient.getDocs<SessionFirestoreData>(COLLECTIONS.SESSIONS, [...conditions, orderBy('date', 'asc')]);
     
     return sessionsData.map(data => {
-      // firestoreClient.getDocs injeta o ID mas ele não está explicitamente no SessionFirestoreData
       const { id, ...rest } = data as { id: string } & SessionFirestoreData;
       return mapSession(id, rest);
     });
@@ -113,9 +117,9 @@ export const reportService = {
 
       return {
         ...session,
-        projectTitle: project?.title || '',
-        billingType: (project?.billingType as 'hourly' | 'fixed') || 'hourly',
-        billingAmount: project?.billingAmount || 0,
+        projectTitle: session.projectTitle || project?.title || '',
+        billingType: (session.billingType || project?.billingType || BillingType.HOURLY) as BillingType,
+        billingAmount: session.billingAmount !== undefined ? session.billingAmount : (project?.billingAmount || 0),
         estimatedDuration: project?.estimatedDuration
       };
     });
@@ -123,6 +127,12 @@ export const reportService = {
 
   groupSessionsByDate(sessions: EnrichedSession[]): Record<string, ReportDay> {
     const grouped: Record<string, ReportDay> = {};
+
+    // Group by project first to calculate total worked seconds per project for fixed price distribution
+    const projectTotals: Record<string, number> = {};
+    for (const session of sessions) {
+      projectTotals[session.projectId] = (projectTotals[session.projectId] || 0) + session.duration;
+    }
 
     for (const session of sessions) {
       const dateKey = session.date instanceof Date 
@@ -139,7 +149,7 @@ export const reportService = {
       }
 
       grouped[dateKey].totalSeconds += session.duration;
-      grouped[dateKey].totalAmount += this.calculateSessionAmount(session);
+      grouped[dateKey].totalAmount += this.calculateSessionAmount(session, projectTotals[session.projectId]);
       grouped[dateKey].sessions.push(session);
     }
 
@@ -148,6 +158,12 @@ export const reportService = {
 
   groupSessionsByProject(sessions: EnrichedSession[], projects: Project[]): ReportProjectGroup[] {
     const grouped: Record<string, ReportProjectGroup> = {};
+    
+    // Calculate total worked seconds per project
+    const projectTotals: Record<string, number> = {};
+    for (const session of sessions) {
+      projectTotals[session.projectId] = (projectTotals[session.projectId] || 0) + session.duration;
+    }
 
     for (const session of sessions) {
       if (!grouped[session.projectId]) {
@@ -164,7 +180,7 @@ export const reportService = {
 
       grouped[session.projectId].sessions.push(session);
       grouped[session.projectId].subtotalSeconds += session.duration;
-      grouped[session.projectId].subtotalValue += this.calculateSessionAmount(session);
+      grouped[session.projectId].subtotalValue += this.calculateSessionAmount(session, projectTotals[session.projectId]);
     }
 
     return Object.values(grouped).sort((a, b) => b.subtotalValue - a.subtotalValue);

@@ -200,9 +200,9 @@ const deleteSession = async () => {
       </div>
     </div>
 
-    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
+    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md pb-2 my-8">
       <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
-        <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />
+        <AppInputSearch v-model="search" placeholder="Pesquisar por projeto" />
 
         <AppInputDate
           v-model="dateInterval"

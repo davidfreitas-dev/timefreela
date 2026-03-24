@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppIcon from '@/components/ui/AppIcon.vue';
+
 const props = defineProps<{
   modelValue: string;
   placeholder?: string;
@@ -16,6 +18,7 @@ const updateValue = (event: Event) => {
 
 <template>
   <div class="flex items-center gap-3 h-[52px] w-full p-4 bg-accent/70 dark:bg-background-dark/70 focus-within:border-none rounded-xl focus-within:ring-2 ring-primary dark:ring-primary">
+    <AppIcon name="search" class="w-5 h-5 text-disabled dark:text-disabled-dark" />
     <input
       type="text"
       class="flex-1 bg-transparent text-base text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark outline-none"

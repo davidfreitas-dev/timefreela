@@ -36,6 +36,18 @@ const reportStore = useReportStore();
 const timerStore = useTimerStore();
 const { exportPdf, exportCsv, isExporting } = useExport();
 
+const handleExportCsv = () => {
+  const searchTerm = search.value || '';
+  const filter = selectedFilter.value?.value || 'all';
+  exportCsv(searchTerm, filter);
+};
+
+const handleExportPdf = () => {
+  const searchTerm = search.value || '';
+  const filter = selectedFilter.value?.value || 'all';
+  exportPdf(searchTerm, filter);
+};
+
 const { user } = storeToRefs(userStore);
 const { isRunning } = storeToRefs(timerStore);
 const { start } = timerStore;
@@ -210,10 +222,10 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           color="outline"
           :is-loading="isExporting"
           class="rounded-xl"
-          @click="exportCsv(search, selectedFilter.value)"
+          @click="handleExportCsv"
         >
           <template #left>
-            <AppIcon name="TableCellsIcon" class="w-5 h-5" />
+            <AppIcon name="table_chart" class="w-5 h-5" />
           </template>
           Exportar CSV
         </AppButton>
@@ -221,10 +233,10 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           color="outline"
           :is-loading="isExporting"
           class="rounded-xl"
-          @click="exportPdf(search, selectedFilter.value)"
+          @click="handleExportPdf"
         >
           <template #left>
-            <AppIcon name="DocumentArrowDownIcon" class="w-5 h-5" />
+            <AppIcon name="download" class="w-5 h-5" />
           </template>
           Exportar PDF
         </AppButton>
@@ -254,7 +266,7 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           Faturamento
         </h1>
         <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
-          <AppInputSearch v-model="search" placeholder="Pesquisar projeto" />
+          <AppInputSearch v-model="search" placeholder="Pesquisar por projeto" />
           <AppInputDate
             v-model="dateInterval"
             mode="range"

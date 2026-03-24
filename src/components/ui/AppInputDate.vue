@@ -154,11 +154,12 @@ const dateValue = computed({
 
 /* Esconder o ícone de calendário */
 :deep(.dp__input_icon) {
-  display: none !important;
+  /* display: none !important; */
+  padding-inline-start: 1.15rem !important;
 }
 
 :deep(.dp__input) {
-  padding-inline-start: 1rem !important;
+  padding-inline-start: 2.75rem !important;
 }
 
 /* Placeholder */
