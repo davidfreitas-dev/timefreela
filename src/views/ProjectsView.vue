@@ -15,6 +15,7 @@ import AppBadge from '@/components/ui/AppBadge.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppLoader from '@/components/ui/AppLoader.vue';
+import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 
 const search = ref('');
 
@@ -110,7 +111,7 @@ const confirmDelete = async () => {
       </AppButton>
     </div>
 
-    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
+    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md pb-2 my-8">
       <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
         <div class="w-full">
           <AppInputSearch
@@ -184,9 +185,10 @@ const confirmDelete = async () => {
         </AppTable>
       </div>
 
-      <div v-if="!isLoading && !filteredProjects.length" class="text-secondary dark:text-secondary-dark text-center my-10">
-        Nenhum projeto encontrado.
-      </div>
+      <AppEmptyState
+        v-if="!isLoading && !filteredProjects.length"
+        message="Nenhum projeto encontrado."
+      />
     </div>
 
     <AppDialog

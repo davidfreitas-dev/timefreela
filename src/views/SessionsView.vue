@@ -18,6 +18,7 @@ import AppBadge from '@/components/ui/AppBadge.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppLoader from '@/components/ui/AppLoader.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
+import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 
 import type { Session } from '@/types';
 
@@ -277,9 +278,10 @@ const deleteSession = async () => {
         </AppTable>
       </div>
 
-      <div v-if="!isLoading && !filteredSessions.length" class="text-secondary dark:text-gray-400 text-center my-10">
-        Nenhuma sessão registrada.
-      </div>
+      <AppEmptyState
+        v-if="!isLoading && !filteredSessions.length"
+        message="Nenhuma sessão registrada."
+      />
 
       <div v-if="hasMore && filteredSessions.length" class="flex justify-center pb-8 pt-4">
         <AppButton

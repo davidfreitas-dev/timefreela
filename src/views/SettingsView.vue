@@ -134,7 +134,9 @@ const onRestoreConfirmed = async () => {
           Sistema
         </h1>
         <div class="flex justify-between items-center">
-          <span class="text-font dark:text-font-dark font-semibold">Modo escuro</span>
+          <p class="text-secondary dark:text-secondary-dark text-sm max-w-md">
+            Modo escuro
+          </p>
           <AppSwitch v-model="isDark" />
         </div>
       </div>

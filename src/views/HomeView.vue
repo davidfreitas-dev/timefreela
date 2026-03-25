@@ -19,6 +19,7 @@ import AppInputDate from '@/components/ui/AppInputDate.vue';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppLoader from '@/components/ui/AppLoader.vue';
+import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 import type { Option } from '@/types';
 import type { BillingType } from '@/constants/billing';
 
@@ -300,9 +301,10 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           </AppTable>
         </div>
 
-        <div v-else class="text-secondary dark:text-gray-400 text-center my-10">
-          Nenhum dado encontrado para os filtros selecionados.
-        </div>
+        <AppEmptyState
+          v-else
+          message="Nenhum dado encontrado para os filtros selecionados."
+        />
       </div>
     </section>
   </AppContainer>
