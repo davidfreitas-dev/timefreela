@@ -66,10 +66,11 @@ export const projectService = {
     return this.updateProject(id, { active: false });
   },
 
-  async deleteProject(id: string): Promise<void> {
-    // 1. Get all sessions for this project
+  async deleteProject(id: string, userId: string): Promise<void> {
+    // 1. Get all sessions for this project that belong to this user
     const sessions = await firestoreClient.getDocs<Session>(COLLECTIONS.SESSIONS, [
-      where('projectId', '==', id)
+      where('projectId', '==', id),
+      where('userId', '==', userId)
     ]);
 
     // 2. Prepare batch delete operations

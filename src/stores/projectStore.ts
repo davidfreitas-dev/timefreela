@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { projectService } from '../services/projectService';
+import { useUserStore } from './userStore';
 import type { Project } from '../types';
 
 export const useProjectStore = defineStore('projects', () => {
   const items = ref<Project[]>([]);
   const current = ref<Project | null>(null);
+  const userStore = useUserStore();
 
   const activeProjects = computed(() => items.value.filter((p) => p.active));
   
@@ -78,8 +80,12 @@ export const useProjectStore = defineStore('projects', () => {
   };
 
   const remove = async (id: string) => {
+    if (!userStore.user?.id) {
+      throw new Error('Usuário não autenticado');
+    }
+
     try {
-      await projectService.deleteProject(id);
+      await projectService.deleteProject(id, userStore.user.id);
       items.value = items.value.filter(item => item.id !== id);
     } catch (error) {
       console.error('Erro ao deletar projeto:', error);
