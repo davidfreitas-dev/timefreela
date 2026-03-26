@@ -55,6 +55,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const sendPasswordResetEmail = async (email: string) => {
+    try {
+      await authService.sendPasswordResetEmail(email);
+    } catch (error) {
+      console.error('Error during password reset email:', error);
+      throw error;
+    }
+  };
+
   const register = async (email: string, password: string, name: string) => {
     try {
       const credential = await authService.registerWithEmail(email, password);
@@ -138,6 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     init,
     login,
+    sendPasswordResetEmail,
     register,
     logout,
     updateUserInfo,

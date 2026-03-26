@@ -1,6 +1,7 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateEmail,
@@ -21,6 +22,10 @@ export const authService = {
 
   async registerWithEmail(email: string, password: string): Promise<UserCredential> {
     return createUserWithEmailAndPassword(auth, email, password);
+  },
+
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    return firebaseSendPasswordResetEmail(auth, email);
   },
 
   async signOut(): Promise<void> {

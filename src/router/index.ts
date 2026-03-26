@@ -22,6 +22,12 @@ const routes = [
     meta: { requiresAuth: false },
   },
   {
+    path: ROUTES.FORGOT_PASSWORD,
+    name: 'ForgotPassword',
+    component: () => import('../views/auth/ForgotPasswordView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
     path: ROUTES.DASHBOARD,
     name: 'Dashboard',
     component: () => import('../views/HomeView.vue'),
@@ -109,10 +115,11 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   const { isAuthenticated } = authStore;
+  const guestRoutes = [ROUTES.LOGIN, ROUTES.REGISTER, ROUTES.FORGOT_PASSWORD];
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next(ROUTES.LOGIN);
-  } else if ((to.path === ROUTES.LOGIN || to.path === ROUTES.REGISTER) && isAuthenticated) {
+  } else if (guestRoutes.includes(to.path as any) && isAuthenticated) {
     next(ROUTES.DASHBOARD);
   } else {
     next();
