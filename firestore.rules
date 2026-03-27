@@ -62,8 +62,9 @@ service cloud.firestore {
 
       function isValidSessionCreate() {
         let data = request.resource.data;
-        // ✅ Removido o get() — validação de vínculo fica no código da aplicação
+        // ✅ Validação de vínculo: O projeto deve existir e pertencer ao usuário
         return data.projectId is string && 
+               get(/databases/$(database)/documents/projects/$(data.projectId)).data.userId == request.auth.uid &&
                data.duration is number && data.duration >= 0 &&
                data.isBilled is bool &&
                data.createdAt is timestamp;

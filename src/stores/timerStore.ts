@@ -148,5 +148,7 @@ export const useTimerStore = defineStore('timer', () => {
     save,
   };
 }, {
-  persist: true
+  persist: {
+    storage: sessionStorage,
+  }
 });

@@ -179,7 +179,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
 }, {
   persist: {
     key: 'sessionStore',
-    storage: localStorage,
+    storage: sessionStorage,
     serializer: {
       serialize: (state) => {
         return JSON.stringify({
