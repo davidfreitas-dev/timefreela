@@ -47,6 +47,20 @@ const toastIcon = computed(() => {
   }
 });
 
+const toastTitle = computed(() => {
+  switch (props.toastData.type) {
+  case 'success':
+    return 'Sucesso';
+  case 'error':
+    return 'Erro';
+  case 'warning':
+    return 'Atenção';
+  case 'info':
+  default:
+    return 'Informação';
+  }
+});
+
 defineExpose({ showToast });
 </script>
 
@@ -56,32 +70,50 @@ defineExpose({ showToast });
     id="toast"
     role="alert"
     :class="[
-      'fixed z-50 top-5 right-6 flex items-center p-4 mb-4 w-full max-w-xs text-white rounded-lg shadow-md animate__animated',
+      'fixed z-50 top-5 right-6 flex items-start p-4 mb-4 w-full max-w-sm rounded-lg shadow-lg border-l-6 animate__animated',
       animationClass,
       {
-        'bg-success dark:bg-success-dark': toastData.type === 'success',
-        'bg-danger dark:bg-danger-dark': toastData.type === 'error',
-        'bg-warning dark:bg-warning-dark': toastData.type === 'info'
+        'bg-success-accent border-success text-font': toastData.type === 'success',
+        'bg-danger-accent border-danger text-font': toastData.type === 'error',
+        'bg-warning-accent border-warning text-font': toastData.type === 'warning',
+        'bg-primary-accent border-primary text-font': toastData.type === 'info',
+        'dark:bg-success-accent-dark dark:border-success-dark dark:text-font-dark': toastData.type === 'success',
+        'dark:bg-danger-accent-dark dark:border-danger-dark dark:text-font-dark': toastData.type === 'error',
+        'dark:bg-warning-accent-dark dark:border-warning-dark dark:text-font-dark': toastData.type === 'warning',
+        'dark:bg-primary-accent-dark dark:border-primary-dark dark:text-font-dark': toastData.type === 'info'
       }
     ]"
     @animationend="handleAnimationEnd"
   >
     <div
-      class="inline-flex flex-shrink-0 justify-center items-center w-9 h-9 rounded-lg"
+      class="inline-flex flex-shrink-0 justify-center items-center w-8 h-8 rounded-full"
       :class="{
-        'bg-success-hover dark:bg-success-hover-dark': props.toastData.type === 'success',
-        'bg-danger-hover dark:bg-danger-hover-dark': props.toastData.type === 'error',
-        'bg-warning-hover dark:bg-warning-hover-dark': props.toastData.type === 'warning',
-        'bg-primary-hover dark:bg-primary-hover-dark': props.toastData.type === 'info'
+        'bg-success text-white': props.toastData.type === 'success',
+        'bg-danger text-white': props.toastData.type === 'error',
+        'bg-warning text-white': props.toastData.type === 'warning',
+        'bg-primary text-white': props.toastData.type === 'info',
       }"
     >
-      <AppIcon :name="toastIcon" class="text-white" />
-      <span class="sr-only">Icon</span>
+      <AppIcon :name="toastIcon" size="sm" />
     </div>
 
-    <div class="ml-3 text-sm font-normal">
-      {{ props.toastData.message }}
+    <div class="ml-3 flex-1">
+      <div class="text-sm font-bold mb-1">
+        {{ toastTitle }}
+      </div>
+      <div class="text-xs font-normal opacity-90">
+        {{ props.toastData.message }}
+      </div>
     </div>
+
+    <button
+      type="button"
+      class="ml-auto -mx-1.5 -my-1.5 p-1.5 inline-flex h-8 w-8 text-secondary transition-colors cursor-pointer"
+      @click="isShowing = false"
+    >
+      <span class="sr-only">Fechar</span>
+      <AppIcon name="close" size="sm" />
+    </button>
   </div>
 </template>
 
