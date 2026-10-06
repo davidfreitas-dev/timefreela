@@ -2,7 +2,8 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
-import { required, email, helpers, minLength, sameAs } from '@vuelidate/validators';
+import { required, email, sameAs } from '@vuelidate/validators';
+import { fullName, strongPassword } from '@/utils/validators';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useTimerStore } from '@/stores/timerStore';
@@ -39,15 +40,6 @@ onMounted(() => {
     formData.value.email = userStore.profile.email;
   }
 });
-
-const fullName = helpers.withMessage(
-  'Digite nome e sobrenome',
-  (value: string) => {
-    if (typeof value !== 'string') return false;
-    const parts = value.trim().split(/\s+/);
-    return parts.length >= 2;
-  }
-);
 
 const rules = computed(() => ({
   name: { required, fullName },
@@ -117,7 +109,7 @@ const deletePasswordRules = computed(() => ({
 
 const passwordChangeRules = computed(() => ({
   currentPassword: { required },
-  newPassword: { required, minLength: minLength(6) },
+  newPassword: { required, strongPassword },
   confirmPassword: { required, sameAs: sameAs(passwordData.value.newPassword) }
 }));
 
@@ -225,7 +217,7 @@ const handleDeleteAccount = async (event: Event) => {
             type="text"
             label="Nome e sobrenome"
             placeholder="João da Silva"
-            :error="v$.name.$dirty && v$.name.$error ? 'O nome e sobrenome são obrigatórios' : ''"
+            :error="v$.name.$dirty && v$.name.$error ? (v$.name.$errors[0]?.$message as string) : ''"
             @blur="v$.name.$touch"
           />
 
@@ -343,7 +335,7 @@ const handleDeleteAccount = async (event: Event) => {
           type="password"
           label="Nova senha"
           placeholder="Mínimo 6 caracteres"
-          :error="vPasswordChange$.newPassword.$dirty && vPasswordChange$.newPassword.$error ? 'A nova senha deve ter no mínimo 6 caracteres' : ''"
+          :error="vPasswordChange$.newPassword.$dirty && vPasswordChange$.newPassword.$error ? (vPasswordChange$.newPassword.$errors[0]?.$message as string) : ''"
           @blur="vPasswordChange$.newPassword.$touch"
         />
 

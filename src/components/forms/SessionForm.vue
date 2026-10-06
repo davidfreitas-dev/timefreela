@@ -6,7 +6,7 @@ import { required } from '@vuelidate/validators';
 import type { Session, Project, Option } from '@/types';
 
 import AppInputDate from '@/components/ui/AppInputDate.vue';
-import AppListbox from '@/components/ui/AppListbox.vue';
+import AppCombobox from '@/components/ui/AppCombobox.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
@@ -148,7 +148,7 @@ const submitForm = () => {
       {{ errorMessage }}
     </div>
 
-    <AppListbox
+    <AppCombobox
       v-model="selectedProject"
       :options="projectOptions"
       label="Projeto"

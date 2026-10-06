@@ -2,7 +2,8 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
-import { required, email, minLength, sameAs, helpers } from '@vuelidate/validators';
+import { required, email, sameAs } from '@vuelidate/validators';
+import { fullName, strongPassword } from '@/utils/validators';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
 import { useLoading } from '@/composables/useLoading';
@@ -24,19 +25,10 @@ const formData = ref({
   confirmPassword: ''
 });
 
-const fullName = helpers.withMessage(
-  'Digite nome e sobrenome',
-  (value: string) => {
-    if (typeof value !== 'string') return false;
-    const parts = value.trim().split(/\s+/);
-    return parts.length >= 2;
-  }
-);
-
 const rules = computed(() => ({
   name: { required, fullName },
   email: { required, email },
-  password: { required, minLength: minLength(6) },
+  password: { required, strongPassword },
   confirmPassword: { required, sameAsPassword: sameAs(formData.value.password) }
 }));
 
@@ -93,7 +85,7 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
           type="text"
           label="Nome e sobrenome"
           placeholder="João da Silva"
-          :error="v$.name.$dirty && v$.name.$error ? 'O nome e sobrenome são obrigatórios' : ''"
+          :error="v$.name.$dirty && v$.name.$error ? (v$.name.$errors[0]?.$message as string) : ''"
           :disabled="isLoading"
           @blur="v$.name.$touch"
         />
@@ -113,7 +105,7 @@ const logoPath = new URL('@/assets/logo.png', import.meta.url).href;
           type="password"
           label="Senha"
           placeholder="********"
-          :error="v$.password.$dirty && v$.password.$error ? 'A senha deve ter no mínimo 6 caracteres' : ''"
+          :error="v$.password.$dirty && v$.password.$error ? (v$.password.$errors[0]?.$message as string) : ''"
           :disabled="isLoading"
           @blur="v$.password.$touch"
         />

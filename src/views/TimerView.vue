@@ -10,7 +10,7 @@ import { useToast } from '@/composables/useToast';
 import { type Option } from '@/types';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
-import AppListbox from '@/components/ui/AppListbox.vue';
+import AppCombobox from '@/components/ui/AppCombobox.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
@@ -105,7 +105,7 @@ onMounted(() => {
         </h2>
 
         <div class="flex flex-col gap-5">
-          <AppListbox
+          <AppCombobox
             v-model="selectedProject"
             :options="projectOptions"
             label="Projeto"

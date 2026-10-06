@@ -257,17 +257,18 @@ const deleteSession = async () => {
       </div>
     </div>
 
-    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md pb-2 my-8">
+    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
       <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark px-8 pt-8 pb-6">
-        <AppInputSearch v-model="search" placeholder="Pesquisar por projeto" />
+        <AppInputSearch v-model="search" label="Buscar Projeto" placeholder="Pesquisar por projeto" />
 
         <AppInputDate
           v-model="dateInterval"
+          label="Período"
           mode="range"
           placeholder="Selecione um período"
         />
 
-        <AppListbox v-model="selectedFilter" :options="filterOptions" />
+        <AppListbox v-model="selectedFilter" label="Status" :options="filterOptions" />
       </div>
 
       <AppDotsLoader

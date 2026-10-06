@@ -161,11 +161,12 @@ const confirmDelete = async () => {
       </AppButton>
     </div>
 
-    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md pb-2 my-8">
+    <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
       <div class="filters grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-b border-neutral dark:border-neutral-dark px-8 pt-8 pb-6">
         <div class="w-full">
           <AppInputSearch
             v-model="search"
+            label="Buscar Projeto"
             placeholder="Buscar por título"
           />
         </div>
@@ -173,6 +174,7 @@ const confirmDelete = async () => {
         <div class="w-full">
           <AppListbox
             v-model="selectedFilter"
+            label="Status"
             :options="filterOptions"
           />
         </div>
