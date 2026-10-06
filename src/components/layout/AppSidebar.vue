@@ -1,61 +1,62 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
 import AppLogo from '@/components/layout/AppLogo.vue';
 import AppMenuItem from '@/components/layout/AppMenuItem.vue';
+import AppThemeSwitcher from '@/components/layout/AppThemeSwitcher.vue';
 import { ROUTES } from '@/constants/routes';
-import { useLayoutStore } from '@/stores/layoutStore';
 
 interface MenuItemData {
-  to: string;
-  icon: string;
-  text: string;
+ to: string;
+ icon: string;
+ text: string;
+ group?: string;
 }
 
-const layoutStore = useLayoutStore();
-const { isSidebarExpanded, sidebarWidthClass } = storeToRefs(layoutStore);
+defineProps<{
+ isExpanded: boolean;
+}>();
 
 const menuItems: MenuItemData[] = [
-  { to: ROUTES.DASHBOARD, icon: 'dashboard', text: 'Dashboard' },
-  { to: ROUTES.PROJECTS, icon: 'category', text: 'Projetos' },
-  { to: ROUTES.SESSIONS, icon: 'history', text: 'Sessões' },
-  { to: ROUTES.TIMER, icon: 'timer', text: 'Timer' },
-  { to: ROUTES.SETTINGS, icon: 'settings', text: 'Configurações' }
+  { to: ROUTES.DASHBOARD, icon: 'dashboard', text: 'Painel' },
+  { to: ROUTES.PROJECTS, icon: 'folder', text: 'Projetos', group: 'Gestão' },
+  { to: ROUTES.SESSIONS, icon: 'schedule', text: 'Sessões', group: 'Gestão' },
+  { to: ROUTES.TIMER, icon: 'timer', text: 'Timer', group: 'Ferramentas' },
+  { to: ROUTES.SETTINGS, icon: 'settings', text: 'Configurações', group: 'Sistema' }
 ];
 </script>
 
 <template>
   <aside
     :class="[
-      'flex flex-col text-secondary dark:text-secondary-dark dark:border-neutral-dark overflow-hidden min-h-screen p-6 transition-all ease-in-out duration-200',
-      { 'px-2': !isSidebarExpanded },
-      sidebarWidthClass
+      'fixed left-0 top-0 h-full bg-background dark:bg-accent-dark border-r border-neutral/50 dark:border-neutral-dark/50 z-50 flex flex-col overflow-x-hidden transition-all duration-300',
+      isExpanded ? 'w-[240px]' : 'w-[65px]'
     ]"
   >
-    <div class="header flex justify-center h-16">
-      <AppLogo :is-expanded="isSidebarExpanded" />
+    <div :class="['py-7 flex items-center gap-2', isExpanded ? 'px-6' : 'px-0 justify-center']">
+      <AppLogo :is-expanded="isExpanded" />
     </div>
 
-    <div class="menu space-y-4">
-      <AppMenuItem
-        v-for="item in menuItems.slice(0, -1)"
-        :key="item.to"
-        :to="item.to"
-        :icon="item.icon"
-        :text="item.text"
-        :is-expanded="isSidebarExpanded"
-      />
-    </div>
+    <nav :class="['flex-1 mt-4 space-y-1 overflow-y-auto overflow-x-hidden', isExpanded ? 'px-4' : 'px-2']">
+      <template v-for="(item, index) in menuItems" :key="item.to">
+        <div
+          v-if="item.group && item.group !== menuItems[index - 1]?.group"
+          :class="['mt-6 flex items-center transition-all duration-300', isExpanded ? 'px-4 py-2' : 'justify-center py-2']"
+        >
+          <span v-if="isExpanded" class="font-bold text-disabled dark:text-disabled-dark uppercase tracking-wider text-[11px] truncate">
+            {{ item.group }}
+          </span>
+          <div v-else class="h-[1px] w-6 bg-neutral dark:bg-neutral-dark" />
+        </div>
+        <AppMenuItem
+          :to="item.to"
+          :icon="item.icon"
+          :text="item.text"
+          :is-expanded="isExpanded"
+        />
+      </template>
+    </nav>
 
-    <div class="flex-1" />
-
-    <div class="menu">
-      <AppMenuItem
-        v-if="menuItems.length > 0"
-        :to="menuItems[menuItems.length - 1].to"
-        :icon="menuItems[menuItems.length - 1].icon"
-        :text="menuItems[menuItems.length - 1].text"
-        :is-expanded="isSidebarExpanded"
-      />
+    <div class="mt-auto pt-4">
+      <AppThemeSwitcher :is-expanded="isExpanded" />
     </div>
   </aside>
 </template>

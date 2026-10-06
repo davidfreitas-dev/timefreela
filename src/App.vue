@@ -3,6 +3,7 @@ import { RouterView, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/authStore';
 import { useTimerStore } from '@/stores/timerStore';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { useBeforeUnloadGuard } from '@/composables/useBeforeUnloadGuard';
 import { useToast } from '@/composables/useToast';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
@@ -14,6 +15,7 @@ const route = useRoute();
 
 const { isAuthenticated } = storeToRefs(useAuthStore());
 const { isRunning } = storeToRefs(useTimerStore());
+const { isSidebarExpanded } = storeToRefs(useLayoutStore());
 
 useBeforeUnloadGuard(() => isRunning.value);
 
@@ -22,9 +24,14 @@ const { toast, toastData } = useToast();
 
 <template>
   <div class="app flex h-screen bg-background dark:bg-accent-dark overflow-hidden">
-    <AppSidebar v-if="isAuthenticated" />
+    <AppSidebar v-if="isAuthenticated" :is-expanded="isSidebarExpanded" />
     
-    <div class="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
+    <div 
+      :class="[
+        'flex flex-col flex-1 min-w-0 h-full overflow-hidden transition-all duration-300',
+        isAuthenticated ? (isSidebarExpanded ? 'ml-60' : 'ml-16.25') : ''
+      ]"
+    >
       <AppHeader v-if="isAuthenticated" />
       
       <main 

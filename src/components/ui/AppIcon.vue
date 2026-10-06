@@ -29,7 +29,12 @@ import {
   Home,
   TriangleAlert,
   Info,
-  Menu
+  Menu,
+  Folder,
+  Clock,
+  Palette,
+  Sun,
+  Moon
 } from '@lucide/vue';
 
 defineOptions({ 
@@ -72,7 +77,12 @@ const iconMap: Record<string, Component> = {
   'home': Home,
   'warning': TriangleAlert,
   'info': Info,
-  'menu': Menu
+  'menu': Menu,
+  'folder': Folder,
+  'schedule': Clock,
+  'palette': Palette,
+  'light_mode': Sun,
+  'dark_mode': Moon
 };
 
 const iconComponent = computed<Component>(() => {

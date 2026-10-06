@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useDark } from '@vueuse/core';
+
 import { useTimerStore } from '@/stores/timerStore';
 import { useReportStore } from '@/stores/reportStore';
 import { useLoading } from '@/composables/useLoading';
@@ -10,7 +10,7 @@ import type { BackupData } from '@/composables/useImport';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppButton from '@/components/ui/AppButton.vue';
-import AppSwitch from '@/components/ui/AppSwitch.vue';
+
 import AppDialog from '@/components/ui/AppDialog.vue';
 
 const timerStore = useTimerStore();
@@ -33,12 +33,7 @@ const handleBackup = async () => {
   });
 };
 
-const isDark = useDark({
-  selector: 'html', // Aplica a classe .dark na <html>
-  attribute: 'class',
-  valueDark: 'dark',
-  valueLight: '',
-});
+
 
 // --- Import Logic ---
 const importDialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
@@ -128,19 +123,7 @@ const onRestoreConfirmed = async () => {
       </div>
     </section>
 
-    <section class="system my-7">
-      <div class="p-6 md:p-8 bg-background dark:bg-accent-dark shadow-md rounded-3xl">
-        <h1 class="section-title text-lg font-bold text-secondary dark:text-secondary-dark mb-4">
-          Sistema
-        </h1>
-        <div class="flex justify-between items-center">
-          <p class="text-secondary dark:text-secondary-dark text-sm max-w-md">
-            Modo escuro
-          </p>
-          <AppSwitch v-model="isDark" />
-        </div>
-      </div>
-    </section>
+
 
     <AppDialog
       ref="importDialogRef"
