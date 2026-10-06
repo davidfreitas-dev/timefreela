@@ -13,8 +13,6 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
   const activeSession: Ref<NewSession | null> = ref(null);
   const items: Ref<Session[]> = ref([]);
-  const currentLimit = ref(100);
-  const hasMore = ref(false);
 
   const getUserId = (): string => {
     if (!user.value?.id) throw new Error('Usuário não autenticado.');
@@ -32,12 +30,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
     return new Promise<void>((resolve, reject) => {
       unsubscribe.value = sessionService.listenToSessions(
         userId,
-        { projectId, startDate, endDate, limit: currentLimit.value },
+        { projectId, startDate, endDate },
         (updatedSessions) => {
           items.value = updatedSessions;
-          // Se o número de itens for igual ao limite atual, assumimos que pode haver mais.
-          // Uma forma mais precisa seria buscar limit + 1, mas para uma UI simples de "Load More", isso costuma bastar.
-          hasMore.value = updatedSessions.length === currentLimit.value;
           resolve();
         },
         (error) => {
@@ -46,16 +41,6 @@ export const useSessionStore = defineStore('sessionStore', () => {
         }
       );
     });
-  };
-
-  const loadMore = async (
-    userId: string,
-    projectId?: string,
-    startDate?: Date,
-    endDate?: Date
-  ) => {
-    currentLimit.value += 100;
-    await fetchAll(userId, projectId, startDate, endDate);
   };
 
   const fetchOne = async (sessionId: string): Promise<Session | null> => {
@@ -142,8 +127,6 @@ export const useSessionStore = defineStore('sessionStore', () => {
     stopListeningSessions();
     items.value = [];
     activeSession.value = null;
-    currentLimit.value = 100;
-    hasMore.value = false;
   };
 
   const restoreSessions = async (userId: string, sessionsToRestore: Session[], projects: Project[]) => {
@@ -161,10 +144,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   return {
     items,
     activeSession,
-    currentLimit,
-    hasMore,
     fetchAll,
-    loadMore,
     fetchOne,
     startSession,
     create,

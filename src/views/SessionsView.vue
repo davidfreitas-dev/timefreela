@@ -23,6 +23,7 @@ import AppDotsLoader from '@/components/ui/AppDotsLoader.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 import AppModal from '@/components/ui/AppModal.vue';
+import AppPagination from '@/components/ui/AppPagination.vue';
 import SessionForm, { type SessionPayload } from '@/components/forms/SessionForm.vue';
 
 const sessionStore = useSessionStore();
@@ -30,7 +31,7 @@ const projectStore = useProjectStore();
 const userStore = useUserStore();
 
 const { user } = storeToRefs(userStore);
-const { items: sessions, hasMore } = storeToRefs(sessionStore);
+const { items: sessions } = storeToRefs(sessionStore);
 const { showToast } = useToast();
 
 const search = ref('');
@@ -43,9 +44,15 @@ const filterOptions = [
 
 const selectedFilter = ref(filterOptions[0]);
 const { isLoading, withLoading } = useLoading();
-const isLoadingMore = ref(false);
 
-const dateInterval = ref<Date[] | null>(null);
+const today = new Date();
+const thirtyDaysAgo = new Date();
+thirtyDaysAgo.setDate(today.getDate() - 30);
+
+const dateInterval = ref<Date[] | null>([thirtyDaysAgo, today]);
+
+const currentPage = ref(1);
+const itemsPerPage = ref(15);
 
 const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
 const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
@@ -55,12 +62,8 @@ const selectedSession = ref<Session | null>(null);
 const isFormLoading = ref(false);
 const sessionToDelete = ref<string | null>(null);
 
-const fetchSessions = async (resetLimit = false) => {
+const fetchSessions = async () => {
   if (!user.value?.id) return;
-  
-  if (resetLimit) {
-    sessionStore.currentLimit = 100;
-  }
 
   const [start, end] = dateInterval.value ?? [];
   await sessionStore.fetchAll(user.value.id, undefined, start, end);
@@ -71,7 +74,7 @@ onMounted(async () => {
     await withLoading(
       async () => {
         await Promise.all([
-          fetchSessions(true),
+          fetchSessions(),
           projectStore.fetchAll(user.value!.id),
         ]);
       },
@@ -82,19 +85,13 @@ onMounted(async () => {
 
 // Refetch sessions when date interval changes to filter on server-side
 watch(dateInterval, () => {
-  fetchSessions(true);
+  currentPage.value = 1;
+  fetchSessions();
 });
 
-const loadMore = async () => {
-  if (!user.value?.id) return;
-  isLoadingMore.value = true;
-  try {
-    const [start, end] = dateInterval.value ?? [];
-    await sessionStore.loadMore(user.value.id, undefined, start, end);
-  } finally {
-    isLoadingMore.value = false;
-  }
-};
+watch([search, selectedFilter], () => {
+  currentPage.value = 1;
+});
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
@@ -116,6 +113,12 @@ const filteredSessions = computed(() => {
       const title = getProjectTitle(session);
       return title.toLowerCase().includes(normalizedSearch.value);
     });
+});
+
+const paginatedSessions = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return filteredSessions.value.slice(start, end);
 });
 
 const selectedSessions = ref<string[]>([]);
@@ -210,10 +213,7 @@ const handleSaveSession = async (payload: SessionPayload) => {
     }
     
     modalRef.value?.closeModal();
-    // fetchSessions automatically updates when data changes if we use listeners?
-    // fetchAll replaces current limit? Wait, store.create adds locally. We don't necessarily need fetchSessions.
-    // fetchSessions(true) would reset limit and refetch. Better to be safe.
-    await fetchSessions(true);
+    await fetchSessions();
   } catch (error) {
     showToast('error', 'Erro ao salvar a sessão. Tente novamente.');
   } finally {
@@ -279,9 +279,9 @@ const deleteSession = async () => {
 
       <div class="rounded-2xl overflow-auto">
         <AppTable
-          v-if="!isLoading && filteredSessions.length"
+          v-if="!isLoading && paginatedSessions.length"
           :headers="tableHead"
-          :items="filteredSessions"
+          :items="paginatedSessions"
         >
           <template #row="{ item: session }">
             <template v-if="allSelectableSessionIds.length > 0">
@@ -335,19 +335,20 @@ const deleteSession = async () => {
         </AppTable>
       </div>
 
-      <AppEmptyState
-        v-if="!isLoading && !filteredSessions.length"
-        message="Nenhuma sessão registrada."
-      />
+      <div v-if="!isLoading && !filteredSessions.length" class="pb-8">
+        <AppEmptyState
+          icon="inbox"
+          title="Nenhuma sessão por aqui"
+          message="Não encontramos nenhum registro de tempo de acordo com os filtros selecionados. Que tal iniciar um novo?"
+        />
+      </div>
 
-      <div v-if="hasMore && filteredSessions.length" class="flex justify-center pb-8 pt-4">
-        <AppButton
-          color="outline"
-          :is-loading="isLoadingMore"
-          @click="loadMore"
-        >
-          Carregar Mais
-        </AppButton>
+      <div v-if="filteredSessions.length > itemsPerPage" class="pb-8 pt-4">
+        <AppPagination
+          v-model:current-page="currentPage"
+          :total-items="filteredSessions.length"
+          :items-per-page="itemsPerPage"
+        />
       </div>
     </div>
 

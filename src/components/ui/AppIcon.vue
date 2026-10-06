@@ -34,7 +34,9 @@ import {
   Clock,
   Palette,
   Sun,
-  Moon
+  Moon,
+  Inbox,
+  SearchX
 } from '@lucide/vue';
 
 defineOptions({ 
@@ -82,7 +84,9 @@ const iconMap: Record<string, Component> = {
   'schedule': Clock,
   'palette': Palette,
   'light_mode': Sun,
-  'dark_mode': Moon
+  'dark_mode': Moon,
+  'inbox': Inbox,
+  'search_off': SearchX
 };
 
 const iconComponent = computed<Component>(() => {

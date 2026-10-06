@@ -67,9 +67,12 @@ export const sessionService = {
   ): Unsubscribe {
     const constraints: QueryConstraint[] = [
       where('userId', '==', userId),
-      orderBy('date', 'desc'),
-      limit(filters.limit || 100)
+      orderBy('date', 'desc')
     ];
+
+    if (filters.limit) {
+      constraints.push(limit(filters.limit));
+    }
 
     if (filters.projectId) {
       constraints.push(where('projectId', '==', filters.projectId));
