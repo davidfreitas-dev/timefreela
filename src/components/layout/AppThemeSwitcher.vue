@@ -21,13 +21,13 @@ const setTheme = (dark: boolean) => {
 <template>
   <div :class="['mb-4 mx-auto transition-all duration-300', isExpanded ? 'w-full px-3' : 'w-12 px-0']">
     <div
-      class="flex p-1 rounded-xl bg-neutral dark:bg-neutral-dark transition-all duration-300"
+      class="flex p-1 rounded-2xl bg-neutral dark:bg-neutral-dark transition-all duration-300"
       :class="isExpanded ? 'flex-row items-center' : 'flex-col items-center space-y-1'"
     >
       <!-- Light Button -->
       <button
         type="button"
-        class="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all duration-200 cursor-pointer"
+        class="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-all duration-200 cursor-pointer"
         :class="[
           isExpanded ? 'w-full px-3' : 'w-full px-0',
           !isDark 
@@ -43,7 +43,7 @@ const setTheme = (dark: boolean) => {
       <!-- Dark Button -->
       <button
         type="button"
-        class="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all duration-200 cursor-pointer"
+        class="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-all duration-200 cursor-pointer"
         :class="[
           isExpanded ? 'w-full px-3' : 'w-full px-0',
           isDark 

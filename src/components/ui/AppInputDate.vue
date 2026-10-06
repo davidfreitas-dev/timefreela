@@ -106,7 +106,7 @@ const dateValue = computed({
 .dp__main {
   font-family: inherit;
   --dp-font-size: 14px;
-  --dp-border-radius: 0.5rem; /* rounded-lg */
+  --dp-border-radius: 0.75rem; /* rounded-xl */
   --dp-input-padding: 1rem;
   --dp-input-height: 44px;
 }

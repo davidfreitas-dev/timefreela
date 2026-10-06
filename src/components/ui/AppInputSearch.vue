@@ -31,7 +31,7 @@ const updateValue = (event: Event) => {
         :placeholder="placeholder || ''"
         :disabled="disabled"
         :class="[
-          'text-font dark:text-font-dark bg-neutral dark:bg-neutral-dark text-[14px] w-full h-11 rounded-lg pl-4 pr-10 focus:outline-none focus:ring-1 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
+          'text-font dark:text-font-dark bg-neutral dark:bg-neutral-dark text-[14px] w-full h-11 rounded-xl pl-4 pr-10 focus:outline-none focus:ring-1 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
           'border border-disabled dark:border-disabled-dark focus:ring-primary focus:border-primary '
         ]"
         :aria-label="label"

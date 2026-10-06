@@ -44,9 +44,9 @@ const classes = computed(() => {
 
       // Border Radius
       'rounded-full': actualVariant === 'rounded' || circle,
-      'rounded-xl': actualVariant !== 'rounded' && !circle && (size === 'large' || size === 'full'),
-      'rounded-lg': actualVariant !== 'rounded' && !circle && size === 'medium',
-      'rounded-md': actualVariant !== 'rounded' && !circle && size === 'small',
+      'rounded-2xl': actualVariant !== 'rounded' && !circle && (size === 'large' || size === 'full'),
+      'rounded-xl': actualVariant !== 'rounded' && !circle && size === 'medium',
+      'rounded-lg': actualVariant !== 'rounded' && !circle && size === 'small',
 
       // Primary Variants
       'bg-primary text-white hover:bg-primary-hover disabled:hover:bg-primary':

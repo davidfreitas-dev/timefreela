@@ -202,7 +202,7 @@ const deleteSession = async () => {
     </div>
 
     <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md pb-2 my-8">
-      <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark p-5">
+      <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark px-8 pt-8 pb-6">
         <AppInputSearch v-model="search" placeholder="Pesquisar por projeto" />
 
         <AppInputDate
@@ -261,7 +261,7 @@ const deleteSession = async () => {
             <td class="px-6 py-3">
               <div class="flex items-center gap-3">
                 <button
-                  class="p-2 h-9 w-9 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-full cursor-pointer flex items-center justify-center"
+                  class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center"
                   @click="goToEditSession(session.id)"
                 >
                   <AppIcon name="edit" size="sm" />

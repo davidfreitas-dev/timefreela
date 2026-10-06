@@ -44,7 +44,7 @@ defineProps<{
   </div>
 </template>
 
-<style socped>
+<style scoped>
 .scrollbar::-webkit-scrollbar {
   height: 8px;
   background-color: transparent;
@@ -57,5 +57,15 @@ defineProps<{
 
 .dark .scrollbar::-webkit-scrollbar-thumb {
   background-color: #3a3a3a; 
+}
+
+:deep(th:first-child),
+:deep(td:first-child) {
+  padding-left: 2rem !important; /* pl-8 */
+}
+
+:deep(th:last-child),
+:deep(td:last-child) {
+  padding-right: 2rem !important; /* pr-8 */
 }
 </style>

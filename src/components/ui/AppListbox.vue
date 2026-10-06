@@ -44,7 +44,7 @@ watch(selectedOption, (newValue) => {
       <div class="relative w-full">
         <ListboxButton
           :class="[
-            'flex items-center gap-3 h-[44px] w-full px-4 py-2 bg-neutral dark:bg-neutral-dark rounded-lg text-[14px] text-left placeholder:text-secondary focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
+            'flex items-center gap-3 h-[44px] w-full px-4 py-2 bg-neutral dark:bg-neutral-dark rounded-xl text-[14px] text-left placeholder:text-secondary focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
             error
               ? 'border border-danger focus:ring-danger focus:border-danger'
               : 'border border-disabled dark:border-disabled-dark dark:text-font-dark dark:placeholder:text-secondary focus:ring-primary focus:border-primary'
@@ -66,7 +66,7 @@ watch(selectedOption, (newValue) => {
           leave-to-class="opacity-0"
         >
           <ListboxOptions
-            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-lg bg-neutral dark:bg-neutral-dark text-[14px] shadow-lg focus:outline-none border border-disabled dark:border-disabled-dark z-30 scrollbar"
+            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-neutral dark:bg-neutral-dark text-[14px] shadow-lg focus:outline-none border border-disabled dark:border-disabled-dark z-30 scrollbar"
           >
             <ListboxOption
               v-for="option in props.options"

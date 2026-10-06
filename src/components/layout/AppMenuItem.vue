@@ -35,7 +35,7 @@ const iconClasses = computed(() =>
   <router-link
     :to="to"
     :class="[
-      'flex items-center rounded-lg transition-all group py-3 text-sm font-medium',
+      'flex items-center rounded-xl transition-all group py-3 text-sm font-medium',
       isExpanded ? 'px-4 justify-start' : 'px-0 justify-center w-12 mx-auto',
       linkClasses
     ]"
