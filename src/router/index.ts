@@ -89,6 +89,12 @@ const routes = [
     component: () => import('../views/ProfileView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: ROUTES.DESIGN_SYSTEM,
+    name: 'DesignSystem',
+    component: () => import('../views/DesignSystemView.vue'),
+    meta: { requiresAuth: false },
+  },
 ];
 
 const router = createRouter({
@@ -115,11 +121,11 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   const { isAuthenticated } = authStore;
-  const guestRoutes = [ROUTES.LOGIN, ROUTES.REGISTER, ROUTES.FORGOT_PASSWORD];
+  const guestRoutes: string[] = [ROUTES.LOGIN, ROUTES.REGISTER, ROUTES.FORGOT_PASSWORD];
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next(ROUTES.LOGIN);
-  } else if (guestRoutes.includes(to.path as any) && isAuthenticated) {
+  } else if (guestRoutes.includes(to.path) && isAuthenticated) {
     next(ROUTES.DASHBOARD);
   } else {
     next();

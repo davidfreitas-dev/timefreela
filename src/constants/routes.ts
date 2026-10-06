@@ -12,4 +12,5 @@ export const ROUTES = {
   TIMER: '/timer',
   SETTINGS: '/settings',
   PROFILE: '/profile',
+  DESIGN_SYSTEM: '/design-system',
 } as const;
