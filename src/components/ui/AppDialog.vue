@@ -43,7 +43,7 @@ defineExpose({ openModal });
   >
     <Dialog
       as="div"
-      class="relative z-10"
+      class="relative z-60"
       @close="closeModal"
     >
       <TransitionChild

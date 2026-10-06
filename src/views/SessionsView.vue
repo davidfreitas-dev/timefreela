@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, watch, type VNode } from 'vue';
-import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useLoading } from '@/composables/useLoading';
+import { useToast } from '@/composables/useToast';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useUserStore } from '@/stores/userStore';
+
+import type { Session } from '@/types';
+
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
@@ -19,16 +22,16 @@ import AppTable from '@/components/ui/AppTable.vue';
 import AppDotsLoader from '@/components/ui/AppDotsLoader.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
+import AppModal from '@/components/ui/AppModal.vue';
+import SessionForm, { type SessionPayload } from '@/components/forms/SessionForm.vue';
 
-import type { Session } from '@/types';
-
-const router = useRouter();
 const sessionStore = useSessionStore();
 const projectStore = useProjectStore();
 const userStore = useUserStore();
 
 const { user } = storeToRefs(userStore);
 const { items: sessions, hasMore } = storeToRefs(sessionStore);
+const { showToast } = useToast();
 
 const search = ref('');
 
@@ -43,6 +46,14 @@ const { isLoading, withLoading } = useLoading();
 const isLoadingMore = ref(false);
 
 const dateInterval = ref<Date[] | null>(null);
+
+const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
+const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
+
+const editingSessionId = ref<string | null>(null);
+const selectedSession = ref<Session | null>(null);
+const isFormLoading = ref(false);
+const sessionToDelete = ref<string | null>(null);
 
 const fetchSessions = async (resetLimit = false) => {
   if (!user.value?.id) return;
@@ -105,7 +116,6 @@ const filteredSessions = computed(() => {
       const title = getProjectTitle(session);
       return title.toLowerCase().includes(normalizedSearch.value);
     });
-  // O filtro de data foi movido para o servidor (fetchAll)
 });
 
 const selectedSessions = ref<string[]>([]);
@@ -159,11 +169,57 @@ const tableHead = computed<(string | VNode)[]>(() => {
     : baseHeaders;
 });
 
-const goToCreateSession = () => router.push({ name: 'SessionCreate' });
-const goToEditSession = (id: string) => router.push({ name: 'SessionDetail', params: { id } });
+const openCreateModal = () => {
+  editingSessionId.value = null;
+  selectedSession.value = null;
+  modalRef.value?.openModal();
+};
 
-const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
-const sessionToDelete = ref<string | null>(null);
+const openEditModal = async (sessionId: string) => {
+  editingSessionId.value = sessionId;
+  isFormLoading.value = true;
+  modalRef.value?.openModal();
+  
+  try {
+    const session = await sessionStore.fetchOne(sessionId);
+    selectedSession.value = session;
+  } catch (error) {
+    showToast('error', 'Erro ao carregar os dados da sessão.');
+    modalRef.value?.closeModal();
+  } finally {
+    isFormLoading.value = false;
+  }
+};
+
+const handleSaveSession = async (payload: SessionPayload) => {
+  if (!user.value?.id) {
+    showToast('error', 'Usuário não autenticado');
+    return;
+  }
+
+  isFormLoading.value = true;
+  try {
+    const data = { ...payload, userId: user.value.id };
+    
+    if (editingSessionId.value) {
+      await sessionStore.update(editingSessionId.value, data);
+      showToast('success', 'Sessão atualizada com sucesso.');
+    } else {
+      await sessionStore.create(data);
+      showToast('success', 'Sessão cadastrada com sucesso.');
+    }
+    
+    modalRef.value?.closeModal();
+    // fetchSessions automatically updates when data changes if we use listeners?
+    // fetchAll replaces current limit? Wait, store.create adds locally. We don't necessarily need fetchSessions.
+    // fetchSessions(true) would reset limit and refetch. Better to be safe.
+    await fetchSessions(true);
+  } catch (error) {
+    showToast('error', 'Erro ao salvar a sessão. Tente novamente.');
+  } finally {
+    isFormLoading.value = false;
+  }
+};
 
 const handleDeleteSession = (sessionId: string) => {
   sessionToDelete.value = sessionId;
@@ -194,7 +250,7 @@ const deleteSession = async () => {
           <span class="hidden md:block">Faturar Selecionadas</span>
         </AppButton>
 
-        <AppButton @click="goToCreateSession">
+        <AppButton @click="openCreateModal">
           <AppIcon name="add" />
           <span class="hidden md:block">Nova Sessão</span>
         </AppButton>
@@ -262,7 +318,7 @@ const deleteSession = async () => {
               <div class="flex items-center gap-3">
                 <button
                   class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center"
-                  @click="goToEditSession(session.id)"
+                  @click="openEditModal(session.id)"
                 >
                   <AppIcon name="edit" size="sm" />
                 </button>
@@ -294,6 +350,19 @@ const deleteSession = async () => {
       </div>
     </div>
 
+    <AppModal
+      ref="modalRef"
+      :title="editingSessionId ? 'Editar Sessão' : 'Nova Sessão'"
+    >
+      <SessionForm
+        :initial-data="selectedSession"
+        :projects="projectStore.items"
+        :is-loading="isFormLoading"
+        @save="handleSaveSession"
+        @cancel="modalRef?.closeModal()"
+      />
+    </AppModal>
+
     <AppDialog
       ref="dialogRef"
       header="Tem certeza que deseja deletar esta sessão?"
@@ -302,3 +371,4 @@ const deleteSession = async () => {
     />
   </AppContainer>
 </template>
+

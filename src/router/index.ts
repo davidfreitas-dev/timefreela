@@ -40,35 +40,9 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: ROUTES.PROJECT_CREATE,
-    name: 'ProjectCreate',
-    component: () => import('../views/ProjectView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: ROUTES.PROJECT_DETAIL,
-    name: 'ProjectDetail',
-    component: () => import('../views/ProjectView.vue'),
-    props: true,
-    meta: { requiresAuth: true },
-  },
-  {
     path: ROUTES.SESSIONS,
     name: 'Sessions',
     component: () => import('../views/SessionsView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: ROUTES.SESSION_CREATE,
-    name: 'SessionCreate',
-    component: () => import('../views/SessionView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: ROUTES.SESSION_DETAIL,
-    name: 'SessionDetail',
-    component: () => import('../views/SessionView.vue'),
-    props: true,
     meta: { requiresAuth: true },
   },
   {

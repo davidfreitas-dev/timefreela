@@ -54,7 +54,7 @@ const alignmentClass = computed(() => {
   >
     <Dialog
       as="div"
-      class="relative z-10"
+      class="relative z-60"
       @close="closeModal"
     >
       <TransitionChild
@@ -84,13 +84,13 @@ const alignmentClass = computed(() => {
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-lg bg-white dark:bg-background-dark text-left shadow-xl transition-all sm:my-8 w-[95%] md:w-[75%] lg:w-[65%]"
+              class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-background-dark text-left shadow-xl transition-all sm:my-8 w-[95%] md:w-[75%] lg:w-[65%]"
             >
               <div class="p-6">
                 <div class="sm:flex sm:items-start">
                   <div class="w-full">
                     <div class="modal-header flex justify-between items-center mb-5">
-                      <DialogTitle as="h3" class="text-2xl font-semibold leading-6 text-font dark:text-font-dark">
+                      <DialogTitle as="h3" class="text-xl font-bold uppercase leading-6 text-font dark:text-font-dark">
                         {{ title }}
                       </DialogTitle>
                       

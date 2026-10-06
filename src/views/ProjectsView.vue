@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useLoading } from '@/composables/useLoading';
+import { useToast } from '@/composables/useToast';
 import { useProjectStore } from '@/stores/projectStore';
 import { useUserStore } from '@/stores/userStore';
+
+import type { Project } from '@/types';
+
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
@@ -16,6 +19,8 @@ import AppTable from '@/components/ui/AppTable.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppDotsLoader from '@/components/ui/AppDotsLoader.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
+import AppModal from '@/components/ui/AppModal.vue';
+import ProjectForm, { type ProjectPayload } from '@/components/forms/ProjectForm.vue';
 
 const search = ref('');
 
@@ -41,13 +46,24 @@ const projectStore = useProjectStore();
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 const { isLoading, withLoading } = useLoading();
+const { showToast } = useToast();
+
+const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
+const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
+
+const editingProjectId = ref<string | null>(null);
+const selectedProject = ref<Project | null>(null);
+const isFormLoading = ref(false);
+const projectToDelete = ref<string | null>(null);
+
+const fetchProjects = async () => {
+  if (user.value?.id) {
+    await projectStore.fetchAll(user.value.id);
+  }
+};
 
 onMounted(async () => {  
-  if (user.value?.id) {
-    await withLoading(async () => {
-      await projectStore.fetchAll(user.value!.id);
-    }, 'Não foi possível carregar os projetos. Tente novamente mais tarde.');
-  }
+  await withLoading(fetchProjects, 'Não foi possível carregar os projetos. Tente novamente mais tarde.');
 });
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
@@ -68,19 +84,53 @@ const filteredProjects = computed(() => {
     });
 });
 
-const router = useRouter();
-
-const goToCreateProject = () => {
-  router.push({ name: 'ProjectCreate' });
+const openCreateModal = () => {
+  editingProjectId.value = null;
+  selectedProject.value = null;
+  modalRef.value?.openModal();
 };
 
-const goToEditProject = (projectId: string) => {
-  router.push({ name: 'ProjectDetail', params: { id: projectId } });
+const openEditModal = async (projectId: string) => {
+  editingProjectId.value = projectId;
+  isFormLoading.value = true;
+  modalRef.value?.openModal();
+  
+  try {
+    selectedProject.value = await projectStore.fetchOne(projectId);
+  } catch (error) {
+    showToast('error', 'Erro ao carregar os dados do projeto.');
+    modalRef.value?.closeModal();
+  } finally {
+    isFormLoading.value = false;
+  }
 };
 
-const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
+const handleSaveProject = async (payload: ProjectPayload) => {
+  if (!user.value?.id) {
+    showToast('error', 'Usuário não autenticado');
+    return;
+  }
 
-const projectToDelete = ref<string | null>(null);
+  isFormLoading.value = true;
+  try {
+    const data = { ...payload, userId: user.value.id };
+    
+    if (editingProjectId.value) {
+      await projectStore.update(editingProjectId.value, data);
+      showToast('success', 'Projeto atualizado com sucesso.');
+    } else {
+      await projectStore.create(data);
+      showToast('success', 'Projeto cadastrado com sucesso.');
+    }
+    
+    modalRef.value?.closeModal();
+    await fetchProjects();
+  } catch (error) {
+    showToast('error', 'Erro ao salvar o projeto. Tente novamente.');
+  } finally {
+    isFormLoading.value = false;
+  }
+};
 
 const handleDeleteProject = (projectId: string) => {
   projectToDelete.value = projectId;
@@ -103,7 +153,7 @@ const confirmDelete = async () => {
     <div class="header flex justify-between items-center">
       <AppBreadcrumb title="Projetos" description="Gerencie seus projetos aqui." />
 
-      <AppButton @click="goToCreateProject">
+      <AppButton @click="openCreateModal">
         <AppIcon name="add" />
         <span class="hidden md:block">
           Novo Projeto
@@ -169,7 +219,7 @@ const confirmDelete = async () => {
               <div class="flex item-center gap-3">
                 <button
                   class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center"
-                  @click="goToEditProject(project.id)"
+                  @click="openEditModal(project.id)"
                 >
                   <AppIcon name="edit" size="sm" />
                 </button>
@@ -190,6 +240,18 @@ const confirmDelete = async () => {
         message="Nenhum projeto encontrado."
       />
     </div>
+
+    <AppModal
+      ref="modalRef"
+      :title="editingProjectId ? 'Editar Projeto' : 'Novo Projeto'"
+    >
+      <ProjectForm
+        :initial-data="selectedProject"
+        :is-loading="isFormLoading"
+        @save="handleSaveProject"
+        @cancel="modalRef?.closeModal()"
+      />
+    </AppModal>
 
     <AppDialog
       ref="dialogRef"
