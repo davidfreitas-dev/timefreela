@@ -13,15 +13,29 @@ service cloud.firestore {
     function isUnchanged(field) {
       return !(field in request.resource.data) || request.resource.data[field] == resource.data[field];
     }
+    
+    // Schema Helpers
+    function isValidString(text, min, max) {
+      return text is string && text.size() >= min && text.size() <= max;
+    }
 
     match /users/{userId} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && isValidUser();
+      
+      function isValidUser() {
+        let data = request.resource.data;
+        // Permite opcionalmente outros campos de preferencias se existirem
+        return data.keys().hasAny(['name', 'email', 'createdAt']) &&
+               (!('name' in data) || isValidString(data.name, 1, 100)) &&
+               (!('image' in data) || isValidString(data.image, 0, 500));
+      }
     }
     
     match /projects/{projectId} {
       allow create: if isAuthenticated() && 
                        request.resource.data.userId == request.auth.uid &&
-                       isValidProject();
+                       isValidProject(true);
       
       allow read, delete: if isAuthenticated() && isOwner(resource.data.userId);
       
@@ -29,15 +43,24 @@ service cloud.firestore {
                        isOwner(resource.data.userId) &&
                        isUnchanged('userId') &&
                        isUnchanged('createdAt') &&
-                       isValidProject();
+                       isValidProject(false);
       
-      function isValidProject() {
+      function isValidProject(isCreate) {
         let data = request.resource.data;
-        return data.keys().hasAll(['userId', 'title', 'active', 'createdAt', 'updatedAt']) &&
-               data.title is string && data.title.size() >= 3 &&
+        let requiredKeys = ['userId', 'title', 'active', 'createdAt', 'updatedAt'];
+        let allowedKeys = requiredKeys.concat(['description', 'tags', 'billingType', 'billingAmount', 'estimatedDuration']);
+        
+        let hasCorrectKeys = isCreate ? data.keys().hasAll(requiredKeys) && data.keys().hasOnly(allowedKeys)
+                                      : data.keys().hasOnly(allowedKeys);
+
+        return hasCorrectKeys &&
+               isValidString(data.title, 3, 100) &&
                data.active is bool &&
-               data.createdAt is timestamp &&
-               data.updatedAt is timestamp;
+               (!('description' in data) || isValidString(data.description, 0, 1000)) &&
+               (!('tags' in data) || (data.tags is list && data.tags.size() <= 10)) &&
+               (!('billingType' in data) || data.billingType in ['hourly', 'fixed']) &&
+               (!('billingAmount' in data) || (data.billingAmount is number && data.billingAmount >= 0)) &&
+               (!('estimatedDuration' in data) || data.estimatedDuration == null || (data.estimatedDuration is number && data.estimatedDuration >= 0));
       }
     }
     
@@ -51,30 +74,32 @@ service cloud.firestore {
       allow update: if isAuthenticated() && 
                        isOwner(resource.data.userId) &&
                        isUnchanged('userId') &&
-                       isUnchanged('projectId') &&
+                       // Para suportar 'restore' sem abrir vulnerabilidade, validamos a propriedade novamente caso o projeto mude
+                       (isUnchanged('projectId') || (request.resource.data.projectId is string && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.userId == request.auth.uid)) &&
                        isUnchanged('createdAt') &&
                        isValidSessionUpdate();
 
-      // ✅ Permite set() no restore (sobrescrever documento próprio)
-      allow write: if isAuthenticated() &&
-                      request.resource.data.userId == request.auth.uid &&
-                      isValidSessionCreate();
+      function getSessionKeys() {
+        return ['userId', 'projectId', 'projectTitle', 'duration', 'isManual', 'isBilled', 'billingType', 'billingAmount', 'date', 'startTime', 'endTime', 'createdAt', 'updatedAt'];
+      }
 
       function isValidSessionCreate() {
         let data = request.resource.data;
-        // ✅ Validação de vínculo: O projeto deve existir e pertencer ao usuário
-        return data.projectId is string && 
+        return data.keys().hasAll(['userId', 'projectId', 'duration', 'isBilled', 'createdAt']) &&
+               data.keys().hasOnly(getSessionKeys()) &&
+               data.projectId is string && 
                get(/databases/$(database)/documents/projects/$(data.projectId)).data.userId == request.auth.uid &&
                data.duration is number && data.duration >= 0 &&
                data.isBilled is bool &&
-               data.createdAt is timestamp;
+               (!('projectTitle' in data) || isValidString(data.projectTitle, 0, 100));
       }
       
       function isValidSessionUpdate() {
         let data = request.resource.data;
-        return data.duration is number && data.duration >= 0 &&
+        return data.keys().hasOnly(getSessionKeys()) &&
+               data.duration is number && data.duration >= 0 &&
                data.isBilled is bool &&
-               data.updatedAt is timestamp;
+               (!('projectTitle' in data) || isValidString(data.projectTitle, 0, 100));
       }
     }
   }
