@@ -16,9 +16,9 @@ import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import AppInputSearch from '@/components/ui/AppInputSearch.vue';
 import AppInputDate from '@/components/ui/AppInputDate.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 import AppTable from '@/components/ui/AppTable.vue';
-import AppLoader from '@/components/ui/AppLoader.vue';
+import AppDotsLoader from '@/components/ui/AppDotsLoader.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 import type { Option } from '@/types';
 import type { BillingType } from '@/constants/billing';
@@ -222,23 +222,17 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
         <AppButton
           color="outline"
           :is-loading="isExporting"
-          class="rounded-xl"
           @click="handleExportCsv"
         >
-          <template #left>
-            <AppIcon name="table_chart" class="w-5 h-5" />
-          </template>
+          <AppIcon name="table_chart" class="w-5 h-5" />
           Exportar CSV
         </AppButton>
         <AppButton
           color="outline"
           :is-loading="isExporting"
-          class="rounded-xl"
           @click="handleExportPdf"
         >
-          <template #left>
-            <AppIcon name="download" class="w-5 h-5" />
-          </template>
+          <AppIcon name="download" class="w-5 h-5" />
           Exportar PDF
         </AppButton>
       </div>
@@ -273,10 +267,10 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
             mode="range"
             placeholder="Selecione um período"
           />
-          <AppSelect v-model="selectedFilter" :options="filterOptions" />
+          <AppListbox v-model="selectedFilter" :options="filterOptions" />
         </div>
 
-        <AppLoader
+        <AppDotsLoader
           v-if="isLoading"
           color="primary"
           class="w-4 h-4 mx-auto my-10"
@@ -285,16 +279,16 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
         <div v-else-if="filteredRevenue.length" class="rounded-2xl overflow-auto">
           <AppTable :headers="tableHeaders" :items="filteredRevenue">
             <template #row="{ item }">
-              <td class="px-6 py-3 w-[50%] max-w-[500px] truncate text-font dark:text-white">
+              <td class="px-6 py-3 w-[50%] max-w-125 truncate text-font dark:text-white">
                 {{ item.projectTitle }}
               </td>
-              <td class="px-6 py-3 w-[15%] min-w-[150px] whitespace-nowrap text-font dark:text-white">
+              <td class="px-6 py-3 w-[15%] min-w-37.5 whitespace-nowrap text-font dark:text-white">
                 {{ item.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
               </td>
-              <td class="px-6 py-3 w-[15%] min-w-[150px] whitespace-nowrap text-font dark:text-white font-mono">
+              <td class="px-6 py-3 w-[15%] min-w-37.5 whitespace-nowrap text-font dark:text-white font-mono">
                 {{ $filters.formatDuration(item.totalSeconds) }}
               </td>
-              <td class="px-6 py-3 w-[20%] min-w-[150px] whitespace-nowrap text-font dark:text-white font-mono">
+              <td class="px-6 py-3 w-[20%] min-w-37.5 whitespace-nowrap text-font dark:text-white font-mono">
                 {{ $filters.formatCurrencyBRL(item.totalAmount) }}
               </td>
             </template>

@@ -13,7 +13,7 @@ import {
 } from 'chart.js';
 import type { ChartOptions, ChartData } from 'chart.js';
 import type { Option } from '@/types';
-import AppSelect from '@/components/ui/AppSelect.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -143,7 +143,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
       </div>
 
       <div>
-        <AppSelect
+        <AppListbox
           v-model="selectedYear"
           :options="props.years"
           placeholder="Selecione o ano"

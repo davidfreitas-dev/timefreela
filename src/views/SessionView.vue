@@ -13,7 +13,7 @@ import { type Option } from '@/types';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppInputDate from '@/components/ui/AppInputDate.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
@@ -177,7 +177,7 @@ onMounted(() => {
     <section class="project my-7">
       <div class="content p-6 md:p-8 bg-background dark:bg-accent-dark shadow-md rounded-xl">
         <form class="flex flex-col gap-4" @submit.prevent="saveSession">
-          <AppSelect
+          <AppListbox
             v-model="selectedProject"
             :options="projectOptions"
             label="Projeto"
@@ -218,7 +218,7 @@ onMounted(() => {
               :is-loading="isLoading"
             >
               <AppIcon name="check" /> 
-              <span class="ml-2">Confirmar</span>
+              <span>Confirmar</span>
             </AppButton>
           </div>
         </form>

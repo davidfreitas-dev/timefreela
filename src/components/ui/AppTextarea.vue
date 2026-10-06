@@ -2,8 +2,9 @@
 import { type PropType } from 'vue';
 
 const emit = defineEmits<{
-  (event: 'update:modelValue', value: string | number): void;
-  (event: 'onKeyupEnter'): void;
+ (event: 'update:modelValue', value: string | number): void;
+ (event: 'onKeyupEnter'): void;
+ (event: 'blur', e: FocusEvent): void;
 }>();
 
 const { disabled, label, placeholder, modelValue, error } = defineProps({
@@ -45,15 +46,16 @@ const updateValue = (event: Event) => {
       :disabled="disabled"
       rows="4"
       :class="[
-        'text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark bg-accent/70 dark:bg-background-dark/70 text-base w-full rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 disabled:cursor-not-allowed',
+        'text-font dark:text-font-dark bg-neutral dark:bg-neutral-dark text-[14px] w-full rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
         error
-          ? 'border border-danger focus:ring-danger'
-          : 'focus:ring-primary dark:focus:ring-primary'
+          ? 'border border-danger focus:ring-danger focus:border-danger'
+          : 'border border-disabled dark:border-disabled-dark focus:ring-primary focus:border-primary'
       ]"
       @input="updateValue"
       @keyup.enter="$emit('onKeyupEnter')"
+      @blur="$emit('blur', $event)"
     />
 
-    <span v-if="error" class="text-sm text-danger">{{ error }}</span>
+    <span v-if="error" class="text-[14px] text-danger">{{ error }}</span>
   </div>
 </template>

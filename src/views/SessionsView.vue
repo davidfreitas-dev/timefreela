@@ -11,12 +11,12 @@ import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppInputSearch from '@/components/ui/AppInputSearch.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 import AppInputDate from '@/components/ui/AppInputDate.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppBadge from '@/components/ui/AppBadge.vue';
 import AppTable from '@/components/ui/AppTable.vue';
-import AppLoader from '@/components/ui/AppLoader.vue';
+import AppDotsLoader from '@/components/ui/AppDotsLoader.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 
@@ -190,12 +190,12 @@ const deleteSession = async () => {
           color="success"
           @click="markSelectedAsBilled"
         >
-          <AppIcon name="check" class="md:mr-2" />
+          <AppIcon name="check" />
           <span class="hidden md:block">Faturar Selecionadas</span>
         </AppButton>
 
-        <AppButton class="h-fit" @click="goToCreateSession">
-          <AppIcon name="add" class="md:mr-2" />
+        <AppButton @click="goToCreateSession">
+          <AppIcon name="add" />
           <span class="hidden md:block">Nova Sessão</span>
         </AppButton>
       </div>
@@ -211,10 +211,10 @@ const deleteSession = async () => {
           placeholder="Selecione um período"
         />
 
-        <AppSelect v-model="selectedFilter" :options="filterOptions" />
+        <AppListbox v-model="selectedFilter" :options="filterOptions" />
       </div>
 
-      <AppLoader
+      <AppDotsLoader
         v-if="isLoading"
         color="primary"
         class="w-4 h-4 mx-auto my-10"
@@ -237,7 +237,7 @@ const deleteSession = async () => {
               </td>
             </template>
 
-            <td class="px-6 py-3 max-w-[250px] truncate text-font dark:text-white">
+            <td class="px-6 py-3 max-w-62.5 truncate text-font dark:text-white">
               {{ getProjectTitle(session) }}
             </td>
             <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white">

@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import AppIcon from '@/components/ui/AppIcon.vue';
 
-const props = defineProps<{
-  modelValue: string;
-  placeholder?: string;
+const emit = defineEmits<{
+ (event: 'update:modelValue', value: string): void;
+ (event: 'enter'): void;
+ (event: 'blur', e: FocusEvent): void;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
+const { disabled, label, placeholder, modelValue } = defineProps<{
+ modelValue: string;
+ label?: string;
+ placeholder?: string;
+ disabled?: boolean;
 }>();
 
 const updateValue = (event: Event) => {
@@ -17,14 +21,27 @@ const updateValue = (event: Event) => {
 </script>
 
 <template>
-  <div class="flex items-center gap-3 h-[52px] w-full p-4 bg-accent/70 dark:bg-background-dark/70 focus-within:border-none rounded-xl focus-within:ring-2 ring-primary dark:ring-primary">
-    <AppIcon name="search" class="w-5 h-5 text-disabled dark:text-disabled-dark" />
-    <input
-      type="text"
-      class="flex-1 bg-transparent text-base text-font dark:text-font-dark placeholder:text-disabled dark:placeholder:text-disabled-dark outline-none"
-      :value="props.modelValue"
-      :placeholder="props.placeholder || 'O que você busca?'"
-      @input="updateValue"
-    >
+  <div class="flex flex-col gap-2 relative w-full">
+    <label v-if="label" class="text-font dark:text-font-dark font-semibold">{{ label }}</label>
+
+    <div class="relative">
+      <input
+        type="text"
+        :value="modelValue"
+        :placeholder="placeholder || ''"
+        :disabled="disabled"
+        :class="[
+          'text-font dark:text-font-dark bg-neutral dark:bg-neutral-dark text-[14px] w-full h-11 rounded-lg pl-4 pr-10 focus:outline-none focus:ring-1 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
+          'border border-disabled dark:border-disabled-dark focus:ring-primary focus:border-primary '
+        ]"
+        :aria-label="label"
+        @input="updateValue"
+        @blur="$emit('blur', $event)"
+        @keyup.enter="emit('enter')"
+      >
+      <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-disabled dark:text-secondary-dark pointer-events-none">
+        <AppIcon name="search" class="w-5 h-5" />
+      </div>
+    </div>
   </div>
 </template>

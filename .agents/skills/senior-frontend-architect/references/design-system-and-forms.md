@@ -84,6 +84,6 @@ toast.warning('Atenção.');
 Antes de considerar uma View concluída, valide se:
 - [ ] TypeScript está limpo (sem `any` ou `unknown`).
 - [ ] Imports internos usam o alias absoluto `@/`.
-- [ ] Há um loader (`<AppSpinnerLoader />`) protegendo chamadas assíncronas.
+- [ ] Há um loader (`<AppSpinnerLoaderLoader />`) protegendo chamadas assíncronas.
 - [ ] O `AppModal` invoca `closeModal()` corretamente após um envio com sucesso.
 - [ ] O form reseta seus dados reativos (limpa o estado local) quando o usuário cancela ou fecha.

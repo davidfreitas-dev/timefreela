@@ -10,7 +10,7 @@ import { useToast } from '@/composables/useToast';
 import { type Option } from '@/types';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
@@ -105,7 +105,7 @@ onMounted(() => {
         </h2>
 
         <div class="flex flex-col gap-5">
-          <AppSelect
+          <AppListbox
             v-model="selectedProject"
             :options="projectOptions"
             label="Projeto"
@@ -120,7 +120,7 @@ onMounted(() => {
                 @click="handlePauseResume"
               >
                 <AppIcon :name="isRunning ? 'pause' : 'play_arrow'" /> 
-                <span class="ml-2">{{ isRunning ? 'Pausar' : 'Continuar' }}</span>
+                <span>{{ isRunning ? 'Pausar' : 'Continuar' }}</span>
               </AppButton>
 
               <AppButton
@@ -130,7 +130,7 @@ onMounted(() => {
                 @click="handleFinish"
               >
                 <AppIcon name="stop" /> 
-                <span class="ml-2">Finalizar</span>
+                <span>Finalizar</span>
               </AppButton>
             </template>
 
@@ -141,7 +141,7 @@ onMounted(() => {
                 @click="startTimer"
               >
                 <AppIcon name="play_arrow" /> 
-                <span class="ml-2">Iniciar Timer</span>
+                <span>Iniciar Timer</span>
               </AppButton>
             </template>
           </div>

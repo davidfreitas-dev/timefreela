@@ -86,7 +86,7 @@ defineExpose({ showToast });
     @animationend="handleAnimationEnd"
   >
     <div
-      class="inline-flex flex-shrink-0 justify-center items-center w-8 h-8 rounded-full"
+      class="inline-flex shrink-0 justify-center items-center w-8 h-8 rounded-full"
       :class="{
         'bg-success text-white': props.toastData.type === 'success',
         'bg-danger text-white': props.toastData.type === 'error',

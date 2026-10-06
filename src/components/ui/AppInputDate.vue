@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { VueDatePicker } from '@vuepic/vue-datepicker';
 import { useDark } from '@vueuse/core';
 import { ptBR } from 'date-fns/locale';
-import dayjs from '@/lib/dayjs';
+import dayjs from 'dayjs';
 import '@vuepic/vue-datepicker/dist/main.css';
 
 interface TimeValue {
@@ -15,23 +15,27 @@ interface TimeValue {
 const props = withDefaults(defineProps<{
   label?: string;
   placeholder?: string;
-  modelValue: Date | Date[] | null;
+  modelValue: Date | Date[] | string | null;
   disabled?: boolean;
   error?: string;
-  mode?: 'date' | 'range' | 'time';
+  mode?: 'date' | 'datetime' | 'range' | 'time';
 }>(), {
   mode: 'date',
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Date | Date[] | null): void;
+  (e: 'update:modelValue', value: Date | Date[] | string | null): void;
   (e: 'onKeyupEnter'): void;
   (e: 'blur'): void;
 }>();
 
 const isDark = useDark();
 const hasError = computed(() => !!props.error);
-const formatStr = computed(() => props.mode === 'time' ? 'HH:mm' : 'dd/MM/yyyy');
+const formatStr = computed(() => {
+  if (props.mode === 'time') return 'HH:mm';
+  if (props.mode === 'datetime') return 'dd/MM/yyyy HH:mm';
+  return 'dd/MM/yyyy';
+});
 
 const isTimeValue = (val: unknown): val is TimeValue => 
   !!val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date) && 'hours' in val;
@@ -83,8 +87,8 @@ const dateValue = computed({
       :dark="isDark"
       :locale="ptBR"
       :time-picker="mode === 'time'"
+      :time-config="{ enableTimePicker: mode === 'datetime', is24: true }"
       :range="mode === 'range'"
-      :is-24="true"
       :formats="{ input: formatStr }"
       :action-row="{ selectBtnLabel: 'Selecionar', cancelBtnLabel: 'Cancelar' }"
       teleport="body"
@@ -93,103 +97,142 @@ const dateValue = computed({
       @keydown.enter="emit('onKeyupEnter')"
     />
 
-    <span v-if="error" class="text-sm text-danger">{{ error }}</span>
+    <span v-if="error" class="text-[14px] text-danger">{{ error }}</span>
   </div>
 </template>
 
-<style scoped>
+<style>
 /* Configurações globais do componente */
-:deep(.dp__main) {
+.dp__main {
   font-family: inherit;
-  --dp-font-size: 1rem;
-  --dp-border-radius: 12px; /* rounded-xl */
+  --dp-font-size: 14px;
+  --dp-border-radius: 0.5rem; /* rounded-lg */
   --dp-input-padding: 1rem;
-  --dp-input-height: 52px;
+  --dp-input-height: 44px;
 }
 
 /* Variáveis para Tema Claro */
-:deep(.dp__theme_light) {
-  --dp-background-color: color-mix(in srgb, var(--color-accent), transparent 30%);
+.dp__theme_light {
+  --dp-background-color: var(--color-neutral);
   --dp-text-color: var(--color-font);
-  --dp-hover-color: var(--color-accent);
+  --dp-hover-color: var(--color-neutral);
   --dp-primary-color: var(--color-primary);
-  --dp-border-color: transparent;
+  --dp-primary-text-color: #ffffff;
+  --dp-border-color: var(--color-disabled);
   --dp-border-color-focus: var(--color-primary);
-  --dp-menu-border-color: var(--color-neutral);
+  --dp-menu-border-color: var(--color-disabled);
 }
 
 /* Variáveis para Tema Escuro */
-:deep(.dp__theme_dark) {
-  --dp-background-color: color-mix(in srgb, var(--color-background-dark), transparent 30%);
+.dp__theme_dark {
+  --dp-background-color: var(--color-neutral-dark);
   --dp-text-color: var(--color-font-dark);
-  --dp-hover-color: var(--color-accent-dark);
-  --dp-primary-color: var(--color-primary-dark);
-  --dp-border-color: transparent;
-  --dp-border-color-focus: var(--color-primary-dark);
-  --dp-menu-border-color: var(--color-neutral-dark);
+  --dp-hover-color: var(--color-neutral-dark);
+  --dp-primary-color: var(--color-primary);
+  --dp-primary-text-color: #ffffff;
+  --dp-border-color: var(--color-disabled-dark);
+  --dp-border-color-focus: var(--color-primary);
+  --dp-menu-border-color: var(--color-disabled-dark);
+}
+
+/* Forçar a cor primária no botão selecionar e datas ativas (caso a variável não tenha pego) */
+.dp__action_select,
+.dp__active_date,
+.dp__overlay_action {
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
 }
 
 /* Ajustes finos no input para bater 100% com o layout */
-:deep(.dp__input) {
-  border: none !important;
-  height: 52px !important;
+.dp__input {
+  background-color: var(--dp-background-color) !important;
+  color: var(--dp-text-color) !important;
+  border: 1px solid var(--dp-border-color) !important;
+  height: 44px !important;
   transition: all 0.2s ease-in-out;
+  padding-inline-start: 1rem !important;
+  font-size: 14px !important;
 }
 
-:deep(.dp__input:focus),
-:deep(.dp__input_focus) {
-  box-shadow: 0 0 0 2px var(--dp-border-color-focus) !important;
+.dp__input:focus,
+.dp__input_focus {
+  box-shadow: 0 0 0 1px var(--dp-border-color-focus) !important;
+  border-color: var(--dp-border-color-focus) !important;
   outline: none;
 }
 
 /* Estado de Erro */
-.has-error :deep(.dp__input) {
+.has-error .dp__input {
   border: 1px solid var(--color-danger) !important;
 }
 
-.has-error :deep(.dp__input:focus),
-.has-error :deep(.dp__input_focus) {
-  box-shadow: 0 0 0 2px var(--color-danger) !important;
+.has-error .dp__input:focus,
+.has-error .dp__input_focus {
+  box-shadow: 0 0 0 1px var(--color-danger) !important;
+  border-color: var(--color-danger) !important;
 }
 
-/* Esconder o ícone de calendário */
-:deep(.dp__input_icon) {
-  /* display: none !important; */
-  padding-inline-start: 1.15rem !important;
-}
-
-:deep(.dp__input) {
-  padding-inline-start: 2.75rem !important;
+/* Esconder o ícone de calendário extra */
+.dp__input_icon {
+  display: none !important;
 }
 
 /* Placeholder */
-:deep(.dp__input::placeholder) {
-  color: var(--color-disabled);
-  opacity: 1;
+.dp__input::placeholder {
+  color: var(--color-font);
+  opacity: 0.6 !important;
+  font-weight: 400 !important;
 }
 
-:deep(.dp__theme_dark .dp__input::placeholder) {
-  color: var(--color-disabled-dark);
+.dp__theme_dark .dp__input::placeholder {
+  color: var(--color-font-dark);
+  opacity: 0.6 !important;
+  font-weight: 400 !important;
+}
+
+/* Placeholder quando desabilitado */
+.dp__input:disabled::placeholder,
+.dp__input_disabled::placeholder {
+  color: color-mix(in srgb, var(--color-secondary) 60%, transparent);
+}
+
+.dp__theme_dark .dp__input:disabled::placeholder,
+.dp__theme_dark .dp__input_disabled::placeholder {
+  color: color-mix(in srgb, var(--color-secondary-dark) 60%, transparent);
 }
 
 /* Estilização do Menu (Dropdown) */
-:deep(.dp__menu) {
+.dp__menu {
   border: 1px solid var(--dp-menu-border-color) !important;
-  background-color: var(--color-background) !important;
+  background-color: var(--dp-background-color) !important;
 }
 
-:deep(.dp__theme_dark .dp__menu) {
-  background-color: var(--color-background-dark) !important;
+.dp__theme_dark .dp__menu {
+  background-color: var(--dp-background-color) !important;
 }
 
 /* Ajuste da seta do menu */
-:deep(.dp__arrow_top), :deep(.dp__arrow_bottom) {
+.dp__arrow_top, .dp__arrow_bottom {
   border: 1px solid var(--dp-menu-border-color);
-  background-color: var(--color-background) !important;
+  background-color: var(--dp-background-color) !important;
 }
 
-:deep(.dp__theme_dark .dp__arrow_top), 
-:deep(.dp__theme_dark .dp__arrow_bottom) {
-  background-color: var(--color-background-dark) !important;
+.dp__theme_dark .dp__arrow_top, 
+.dp__theme_dark .dp__arrow_bottom {
+  background-color: var(--dp-background-color) !important;
+}
+/* Estado Disabled */
+.dp__input:disabled,
+.dp__input_disabled {
+  opacity: 1 !important;
+  background-color: var(--color-disabled) !important;
+  color: var(--color-secondary) !important;
+  cursor: not-allowed !important;
+}
+
+.dp__theme_dark .dp__input:disabled,
+.dp__theme_dark .dp__input_disabled {
+  background-color: var(--color-disabled-dark) !important;
+  color: var(--color-secondary-dark) !important;
 }
 </style>

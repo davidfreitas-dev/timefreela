@@ -13,9 +13,8 @@ import { BillingType } from '@/constants/billing';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppInput from '@/components/ui/AppInput.vue';
-import AppInputCurrency from '@/components/ui/AppInputCurrency.vue';
 import AppTextarea from '@/components/ui/AppTextarea.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 
@@ -192,7 +191,7 @@ onMounted(() => {
             placeholder="design, frontend, site"
           />
 
-          <AppSelect
+          <AppListbox
             v-model="selectedBillingType"
             :options="billingTypeOptions"
             label="Tipo de cobrança"
@@ -200,8 +199,9 @@ onMounted(() => {
             @blur="v$.billingType.$touch"
           />
 
-          <AppInputCurrency
+          <AppInput
             v-model="formData.billingAmount"
+            mask-type="currency"
             label="Valor"
           />
 
@@ -214,7 +214,7 @@ onMounted(() => {
             min="0"
           />
 
-          <AppSelect
+          <AppListbox
             v-model="selectedStatus"
             :options="statusOptions"
             label="Status"
@@ -228,7 +228,7 @@ onMounted(() => {
               :is-loading="isLoading"
             >
               <AppIcon name="check" /> 
-              <span class="ml-2">Confirmar</span>
+              <span>Confirmar</span>
             </AppButton>
           </div>
         </form>

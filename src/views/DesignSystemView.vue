@@ -5,14 +5,16 @@ import AppButton from '@/components/ui/AppButton.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import AppInputDate from '@/components/ui/AppInputDate.vue';
 import AppInputSearch from '@/components/ui/AppInputSearch.vue';
+
 import AppTextarea from '@/components/ui/AppTextarea.vue';
 import AppSwitch from '@/components/ui/AppSwitch.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
 import AppBadge from '@/components/ui/AppBadge.vue';
+import AppChip from '@/components/ui/AppChip.vue';
+import AppCombobox from '@/components/ui/AppCombobox.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
-import AppSpinner from '@/components/ui/AppSpinner.vue';
-import AppStatCard from '@/components/ui/AppStatCard.vue';
+import AppSpinnerLoader from '@/components/ui/AppSpinnerLoader.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 
 const inputValue = ref('');
@@ -174,14 +176,14 @@ const colorGroups = [
           </h3>
           <div class="flex flex-wrap items-center gap-6">
             <AppButton>
-              <AppIcon name="add" class="w-5 h-5 mr-2" />
+              <AppIcon name="add" class="w-5 h-5" />
               Ícone Esquerda
             </AppButton>
             <AppButton>
               Ícone Direita
-              <AppIcon name="chevron_right" class="w-5 h-5 ml-2" />
+              <AppIcon name="chevron_right" class="w-5 h-5" />
             </AppButton>
-            <AppButton class="p-3!">
+            <AppButton icon-only>
               <AppIcon name="delete" class="w-5 h-5" />
             </AppButton>
           </div>
@@ -192,50 +194,166 @@ const colorGroups = [
     <!-- Formulários -->
     <section class="bg-background dark:bg-accent-dark rounded-3xl p-6 md:p-8 shadow-md mb-12">
       <h2 class="text-2xl font-bold text-font dark:text-font-dark mb-6 border-b pb-2 border-neutral dark:border-neutral-dark">
-        Formulários
+        Inputs & Formulários
       </h2>
- 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="space-y-4">
-          <AppInput
-            v-model="inputValue"
-            label="Input Default"
-            placeholder="Digite algo..."
-          />
-          <AppInput
-            v-model="inputValue"
-            label="Input com Erro"
-            error="Campo obrigatório"
-          />
-          <AppInput
-            v-model="inputValue"
-            label="Input Disabled"
-            disabled
-          />
-          <AppInputSearch v-model="inputValue" placeholder="Buscar..." />
+
+      <div class="space-y-12">
+        <!-- AppInput -->
+        <div>
+          <h3 class="text-lg font-semibold text-font dark:text-font-dark mb-4 border-b border-neutral dark:border-neutral-dark pb-2">
+            AppInput, AppInputSearch & AppInput
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AppInput
+              v-model="inputValue"
+              label="Default"
+              placeholder="Digite algo..."
+            />
+            <AppInput
+              v-model="inputValue"
+              label="Disabled"
+              placeholder="Não clicável"
+              disabled
+            />
+            <AppInput
+              v-model="inputValue"
+              label="Com Erro"
+              placeholder="Digite algo..."
+              error="Este campo é obrigatório"
+            />
+            <AppInput
+              v-model="inputValue"
+              label="Senha"
+              placeholder="Digite a senha"
+              type="password"
+            />
+            <AppInputSearch
+              v-model="inputValue"
+              label="Pesquisar"
+              placeholder="Buscar projetos..."
+            />
+            <AppInputSearch
+              v-model="inputValue"
+              label="Pesquisar (Disabled)"
+              placeholder="Buscar projetos..."
+              disabled
+            />
+            <AppInput
+              v-model="inputValue"
+              mask-type="currency"
+              label="Moeda"
+              placeholder="R$ 0,00"
+            />
+            <AppInput
+              v-model="inputValue"
+              label="Moeda (Disabled)"
+              placeholder="R$ 0,00"
+              disabled
+            />
+          </div>
         </div>
- 
-        <div class="space-y-4">
-          <AppSelect
-            v-model="selectValue"
-            :options="selectOptions"
-            label="Select Default"
-          />
-          <AppSelect
-            v-model="selectValue"
-            :options="selectOptions"
-            label="Select com Erro"
-            error="Selecione uma opção"
-          />
-          <AppInputDate v-model="dateValue" label="Input Date Default" />
+
+        <!-- AppTextarea -->
+        <div>
+          <h3 class="text-lg font-semibold text-font dark:text-font-dark mb-4 border-b border-neutral dark:border-neutral-dark pb-2">
+            AppTextarea
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AppTextarea
+              v-model="inputValue"
+              label="Default"
+              placeholder="Deixe um comentário..."
+            />
+            <AppTextarea
+              v-model="inputValue"
+              label="Disabled"
+              placeholder="Não clicável"
+              disabled
+            />
+            <AppTextarea
+              v-model="inputValue"
+              label="Com Erro"
+              placeholder="Comentário..."
+              error="Descrição muito curta"
+            />
+          </div>
         </div>
- 
-        <div class="space-y-4">
-          <AppTextarea
-            v-model="inputValue"
-            label="Textarea Default"
-            placeholder="Escreva algo..."
-          />
+
+        <!-- Seleção (Listbox, Combobox) -->
+        <div>
+          <h3 class="text-lg font-semibold text-font dark:text-font-dark mb-4 border-b border-neutral dark:border-neutral-dark pb-2">
+            Seleção (Listbox, Combobox)
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="space-y-4">
+              <AppListbox
+                v-model="selectValue"
+                :options="selectOptions"
+                label="AppListbox Default"
+              />
+              <AppListbox
+                v-model="selectValue"
+                :options="selectOptions"
+                label="AppListbox com Erro"
+                error="Selecione uma opção"
+              />
+              <AppListbox
+                v-model="selectValue"
+                :options="selectOptions"
+                label="AppListbox Disabled"
+                disabled
+              />
+            </div>
+
+            <div class="space-y-4">
+              <AppCombobox
+                v-model="selectValue"
+                :options="selectOptions"
+                label="AppCombobox Default"
+                placeholder="Pesquisar..."
+              />
+              <AppCombobox
+                v-model="selectValue"
+                :options="selectOptions"
+                label="AppCombobox Clearable & Loading"
+                clearable
+                loading
+                placeholder="Pesquisar..."
+              />
+              <AppCombobox
+                v-model="selectValue"
+                :options="selectOptions"
+                label="AppCombobox com Erro"
+                error="Nenhum item válido"
+              />
+              <AppCombobox
+                v-model="selectValue"
+                :options="selectOptions"
+                label="AppCombobox Disabled"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- AppInputDate -->
+        <div>
+          <h3 class="text-lg font-semibold text-font dark:text-font-dark mb-4 border-b border-neutral dark:border-neutral-dark pb-2">
+            AppInputDate
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AppInputDate v-model="dateValue" label="Date Default" />
+            <AppInputDate
+              v-model="dateValue"
+              label="Date & Time"
+              mode="datetime"
+            />
+            <AppInputDate
+              v-model="dateValue"
+              label="Disabled"
+              disabled
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -286,12 +404,34 @@ const colorGroups = [
 
         <div>
           <h3 class="font-semibold text-font dark:text-font-dark mb-4">
-            Stat Cards
+            Chips
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <AppStatCard label="Total de Horas" value="120h 30m" />
-            <AppStatCard label="Projetos Ativos" value="5" />
-            <AppStatCard label="Ganhos Estimados" value="R$ 4.500,00" />
+          <div class="flex flex-wrap gap-4 items-center">
+            <AppChip
+              label="Primary"
+              color="primary"
+              closable
+            />
+            <AppChip
+              label="Secondary"
+              color="secondary"
+              closable
+            />
+            <AppChip
+              label="Success"
+              color="success"
+              closable
+            />
+            <AppChip
+              label="Warning"
+              color="warning"
+              closable
+            />
+            <AppChip
+              label="Danger"
+              color="danger"
+              closable
+            />
           </div>
         </div>
       </div>
@@ -306,11 +446,26 @@ const colorGroups = [
       <div class="space-y-8">
         <div>
           <h3 class="font-semibold text-font dark:text-font-dark mb-4">
-            AppSpinner
+            AppSpinnerLoader (Cores)
+          </h3>
+          <div class="flex flex-wrap items-center gap-6 mb-8">
+            <AppSpinnerLoader color="primary" text="Primary" />
+            <AppSpinnerLoader color="secondary" text="Secondary" />
+            <AppSpinnerLoader color="success" text="Success" />
+            <AppSpinnerLoader color="warning" text="Warning" />
+            <AppSpinnerLoader color="danger" text="Danger" />
+            <div class="bg-primary p-2 rounded flex items-center">
+              <AppSpinnerLoader color="white" text="White" />
+            </div>
+          </div>
+          
+          <h3 class="font-semibold text-font dark:text-font-dark mb-4">
+            AppSpinnerLoader (Tamanhos)
           </h3>
           <div class="flex flex-wrap items-center gap-6">
-            <AppSpinner />
-            <AppSpinner color="primary" class="text-primary w-8 h-8" />
+            <AppSpinnerLoader size="sm" text="Small" />
+            <AppSpinnerLoader size="md" text="Medium" />
+            <AppSpinnerLoader size="lg" text="Large" />
           </div>
         </div>
 

@@ -10,11 +10,11 @@ import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppInputSearch from '@/components/ui/AppInputSearch.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
+import AppListbox from '@/components/ui/AppListbox.vue';
 import AppBadge from '@/components/ui/AppBadge.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
-import AppLoader from '@/components/ui/AppLoader.vue';
+import AppDotsLoader from '@/components/ui/AppDotsLoader.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 
 const search = ref('');
@@ -103,8 +103,8 @@ const confirmDelete = async () => {
     <div class="header flex justify-between items-center">
       <AppBreadcrumb title="Projetos" description="Gerencie seus projetos aqui." />
 
-      <AppButton class="h-fit" @click="goToCreateProject">
-        <AppIcon name="add" class="md:mr-2" />
+      <AppButton @click="goToCreateProject">
+        <AppIcon name="add" />
         <span class="hidden md:block">
           Novo Projeto
         </span>
@@ -121,14 +121,14 @@ const confirmDelete = async () => {
         </div>
 
         <div class="w-full">
-          <AppSelect
+          <AppListbox
             v-model="selectedFilter"
             :options="filterOptions"
           />
         </div>
       </div>
 
-      <AppLoader
+      <AppDotsLoader
         v-if="isLoading"
         color="primary"
         class="w-4 h-4 mx-auto my-10"
@@ -141,31 +141,31 @@ const confirmDelete = async () => {
           :items="filteredProjects"
         >
           <template #row="{ item: project }">
-            <td class="px-6 py-3 w-[20%] max-w-[200px] truncate text-font dark:text-white">
+            <td class="px-6 py-3 w-[20%] max-w-50 truncate text-font dark:text-white">
               {{ project.title }}
             </td>
 
-            <td class="px-6 py-3 w-[25%] max-w-[250px] truncate text-font dark:text-white">
+            <td class="px-6 py-3 w-[25%] max-w-62.5 truncate text-font dark:text-white">
               {{ project.description || '-' }}
             </td>
 
-            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate text-font dark:text-white">
+            <td class="px-6 py-3 w-[15%] max-w-37.5 truncate text-font dark:text-white">
               {{ project.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
             </td>
 
-            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate text-font dark:text-white font-mono">
+            <td class="px-6 py-3 w-[15%] max-w-37.5 truncate text-font dark:text-white font-mono">
               {{ $filters.formatCurrencyBRL(project.billingAmount) }}
             </td>
 
-            <td class="px-6 py-3 w-[15%] max-w-[150px] truncate text-font dark:text-white font-mono">
+            <td class="px-6 py-3 w-[15%] max-w-37.5 truncate text-font dark:text-white font-mono">
               {{ $filters.formatDuration(project.estimatedDuration) }}
             </td>
 
-            <td class="px-6 py-3 w-[5%] min-w-[50px]">
+            <td class="px-6 py-3 w-[5%] min-w-12.5">
               <AppBadge :label="project.active ? 'Ativo' : 'Inativo'" :color="project.active ? 'success' : 'danger'" />
             </td>
 
-            <td class="px-6 py-3 w-[5%] min-w-[50px]">
+            <td class="px-6 py-3 w-[5%] min-w-12.5">
               <div class="flex item-center gap-3">
                 <button
                   class="p-2 h-9 w-9 bg-primary-accent dark:bg-primary-accent-dark text-primary dark:text-primary-dark rounded-full cursor-pointer flex items-center justify-center"

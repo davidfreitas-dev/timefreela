@@ -13,10 +13,10 @@ const bgColor = computed(() => {
 </script>
 
 <template>
-  <div class="flex justify-center items-center w-[6.5rem] h-6">
-    <span :class="['w-[10px] h-[10px] mx-[3px] rounded-full inline-block animate-dot-delay-1', bgColor]" />
-    <span :class="['w-[10px] h-[10px] mx-[3px] rounded-full inline-block animate-dot-delay-2', bgColor]" />
-    <span :class="['w-[10px] h-[10px] mx-[3px] rounded-full inline-block animate-dot-delay-3', bgColor]" />
+  <div class="flex justify-center items-center w-26 h-6">
+    <span :class="['w-2.5 h-2.5 mx-[0.75] rounded-full inline-block animate-dot-delay-1', bgColor]" />
+    <span :class="['w-2.5 h-2.5 mx-[0.75] rounded-full inline-block animate-dot-delay-2', bgColor]" />
+    <span :class="['w-2.5 h-2.5 mx-[0.75] rounded-full inline-block animate-dot-delay-3', bgColor]" />
   </div>
 </template>
 
