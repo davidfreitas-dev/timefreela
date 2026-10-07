@@ -81,10 +81,10 @@ const clearSelection = () => {
         <div class="relative flex items-center w-full">
           <ComboboxInput
             :class="[
-              props.inputClass || 'flex items-center gap-3 h-11 w-full pl-4 pr-10 py-2 bg-neutral dark:bg-neutral-dark text-font dark:text-font-dark rounded-xl text-[14px] text-left placeholder:text-secondary focus:outline-none focus:ring-1 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
+              props.inputClass || 'flex items-center gap-3 h-11 w-full pl-4 pr-10 py-2 bg-accent dark:bg-neutral-dark text-font dark:text-font-dark rounded-xl text-[14px] text-left placeholder:text-secondary focus:outline-none focus:ring-1 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-disabled/60 dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
               error
                 ? 'border border-danger focus:ring-danger focus:border-danger'
-                : (props.inputClass ? '' : 'border border-disabled dark:border-disabled-dark dark:placeholder:text-secondary focus:ring-primary focus:border-primary'),
+                : (props.inputClass ? '' : 'border border-neutral dark:border-disabled-dark dark:placeholder:text-secondary focus:ring-primary focus:border-primary'),
               selectedOption && !open && $slots.selected ? 'text-transparent! dark:text-transparent! select-none' : ''
             ]"
             :display-value="(opt) => (opt as Option)?.label || ''"
@@ -134,7 +134,7 @@ const clearSelection = () => {
           leave-to-class="opacity-0"
         >
           <ComboboxOptions
-            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-neutral dark:bg-neutral-dark text-[14px] shadow-lg focus:outline-none border border-disabled dark:border-disabled-dark z-50 scrollbar"
+            class="absolute mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-accent dark:bg-neutral-dark text-[14px] shadow-lg focus:outline-none border border-neutral dark:border-disabled-dark z-50 scrollbar"
           >
             <div
               v-if="filteredOptions.length === 0 && query !== ''"

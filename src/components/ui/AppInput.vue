@@ -114,10 +114,10 @@ const displayValue = computed(() => {
         :placeholder="props.placeholder"
         :disabled="props.disabled"
         :class="[
-          'text-font dark:text-font-dark bg-neutral dark:bg-neutral-dark text-[14px] w-full h-11 rounded-xl px-4 focus:outline-none focus:ring-1 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-disabled dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
+          'text-[14px] text-font dark:text-font-dark bg-accent dark:bg-neutral-dark w-full h-11 rounded-xl px-4 focus:outline-none focus:ring-1 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-disabled/60 dark:disabled:bg-disabled-dark disabled:text-secondary dark:disabled:text-secondary-dark disabled:placeholder:text-secondary/60 dark:disabled:placeholder:text-secondary-dark/60',
           displayError
             ? 'border border-danger focus:ring-danger focus:border-danger'
-            : 'border border-disabled dark:border-disabled-dark focus:ring-primary focus:border-primary'
+            : 'border border-neutral dark:border-disabled-dark focus:ring-primary focus:border-primary'
         ]"
         @input="updateValue"
         @keyup.enter="$emit('onKeyupEnter')"

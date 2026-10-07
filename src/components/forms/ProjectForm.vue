@@ -11,6 +11,7 @@ import AppTextarea from '@/components/ui/AppTextarea.vue';
 import AppListbox from '@/components/ui/AppListbox.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import AppChip from '@/components/ui/AppChip.vue';
 
 export type ProjectPayload = Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'userId'>;
 
@@ -37,7 +38,7 @@ const emit = defineEmits<{
 const formData = ref({
   title: '',
   description: '',
-  tags: '',
+  tags: [] as string[],
   billingType: BillingType.HOURLY as BillingType | null,
   billingAmount: 0 as number | string,
   estimatedDurationHours: '',
@@ -77,15 +78,29 @@ const selectedStatus = computed<StatusOption | null>({
   }
 });
 
-const formatTags = (tags: string[] = []) => tags.join(', ');
-const parseTags = (tagString: string) => tagString.split(',').map(tag => tag.trim()).filter(Boolean);
+const tagInput = ref('');
+
+const handleTagKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const newTag = tagInput.value.trim();
+    if (newTag && !formData.value.tags.includes(newTag)) {
+      formData.value.tags.push(newTag);
+    }
+    tagInput.value = '';
+  }
+};
+
+const removeTag = (index: number) => {
+  formData.value.tags.splice(index, 1);
+};
 
 const initForm = () => {
   if (props.initialData) {
     formData.value = {
       title: props.initialData.title ?? '',
       description: props.initialData.description ?? '',
-      tags: formatTags(props.initialData.tags ?? []),
+      tags: [...(props.initialData.tags ?? [])],
       billingType: props.initialData.billingType ?? BillingType.HOURLY,
       billingAmount: props.initialData.billingAmount ?? 0,
       estimatedDurationHours: props.initialData.estimatedDuration ? String(props.initialData.estimatedDuration / 3600) : '',
@@ -95,7 +110,7 @@ const initForm = () => {
     formData.value = {
       title: '',
       description: '',
-      tags: '',
+      tags: [],
       billingType: BillingType.HOURLY,
       billingAmount: 0,
       estimatedDurationHours: '',
@@ -117,7 +132,7 @@ const submitForm = () => {
   const payload: ProjectPayload = {
     title: formData.value.title,
     description: formData.value.description || '',
-    tags: parseTags(formData.value.tags),
+    tags: formData.value.tags,
     billingType: formData.value.billingType ?? BillingType.HOURLY,
     billingAmount: Number(formData.value.billingAmount) || 0,
     active: formData.value.active ?? true
@@ -150,12 +165,26 @@ const submitForm = () => {
       @blur="v$.description.$touch"
     />
 
-    <AppInput
-      v-model="formData.tags"
-      type="text"
-      label="Tags (separadas por vírgula)"
-      placeholder="design, frontend, site"
-    />
+    <div class="flex flex-col gap-2">
+      <AppInput
+        v-model="tagInput"
+        type="text"
+        label="Tags"
+        placeholder="Pressione Enter ou vírgula para adicionar uma tag"
+        @keydown="handleTagKeydown"
+      />
+      <div v-if="formData.tags.length > 0" class="flex flex-wrap gap-2">
+        <AppChip
+          v-for="(tag, index) in formData.tags"
+          :key="index"
+          :label="tag"
+          closable
+          variant="accent"
+          color="primary"
+          @close="removeTag(index)"
+        />
+      </div>
+    </div>
 
     <AppListbox
       v-model="selectedBillingType"

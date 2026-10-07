@@ -1,24 +1,42 @@
 <script setup lang="ts">
-type colorType = 'primary' | 'success' | 'warning' | 'danger';
+import { computed } from 'vue';
 
-const { label, color } = defineProps<{
+type ColorType = 'primary' | 'success' | 'warning' | 'danger';
+type BadgeVariant = 'solid' | 'accent';
+
+const props = withDefaults(defineProps<{
   label: string;
-  color: colorType;
-}>();
+  color: ColorType;
+  variant?: BadgeVariant;
+}>(), {
+  variant: 'accent'
+});
 
-const colorClasses = {
-  primary: 'bg-primary-accent text-primary dark:bg-primary-accent-dark dark:text-primary-dark',
-  success: 'bg-success-accent text-success dark:bg-success-accent-dark dark:text-success-dark',
-  warning: 'bg-warning-accent text-warning dark:bg-warning-accent-dark dark:text-warning-dark',
-  danger: 'bg-danger-accent text-danger dark:bg-danger-accent-dark dark:text-danger-dark',
-};
+const variantClasses = computed(() => {
+  if (props.variant === 'solid') {
+    return {
+      'bg-primary text-white': props.color === 'primary',
+      'bg-success text-white': props.color === 'success',
+      'bg-warning text-white': props.color === 'warning',
+      'bg-danger text-white': props.color === 'danger',
+    };
+  }
+
+  // Accent
+  return {
+    'bg-primary-accent text-primary dark:bg-primary-accent-dark dark:text-primary-dark': props.color === 'primary',
+    'bg-success-accent text-success dark:bg-success-accent-dark dark:text-success-dark': props.color === 'success',
+    'bg-warning-accent text-warning dark:bg-warning-accent-dark dark:text-warning-dark': props.color === 'warning',
+    'bg-danger-accent text-danger dark:bg-danger-accent-dark dark:text-danger-dark': props.color === 'danger',
+  };
+});
 </script>
 
 <template>
   <span
     :class="[
       'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium truncate whitespace-nowrap overflow-hidden',
-      colorClasses[color]
+      variantClasses
     ]"
   >
     {{ label }}

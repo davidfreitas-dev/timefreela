@@ -67,11 +67,11 @@ const variantClasses = computed(() => {
 
   if (variant === 'accent') {
     return {
-      'bg-primary-accent text-primary dark:bg-primary/20 dark:text-primary-accent dark:ring-1 dark:ring-primary/30 hover:bg-primary/10 dark:hover:bg-primary/30': color === 'primary',
-      'bg-neutral text-secondary dark:bg-secondary/20 dark:text-font-dark dark:ring-1 dark:ring-disabled-dark/30 hover:bg-disabled dark:hover:bg-secondary/40': color === 'secondary',
-      'bg-success-accent text-success-focus dark:bg-success/20 dark:text-success-accent dark:ring-1 dark:ring-success/30 hover:bg-success/10 dark:hover:bg-success/30': color === 'success',
-      'bg-warning-accent text-warning-focus dark:bg-warning/20 dark:text-warning-accent dark:ring-1 dark:ring-warning/30 hover:bg-warning/10 dark:hover:bg-warning/30': color === 'warning',
-      'bg-danger-accent text-danger-focus dark:bg-danger/20 dark:text-danger-accent dark:ring-1 dark:ring-danger/30 hover:bg-danger/10 dark:hover:bg-danger/30': color === 'danger',
+      'bg-primary-accent text-primary dark:bg-primary-accent-dark dark:text-primary-dark hover:bg-primary/10 dark:hover:bg-primary/30': color === 'primary',
+      'bg-neutral text-secondary dark:bg-disabled-dark/40 dark:text-font-dark hover:bg-disabled dark:hover:bg-secondary/40': color === 'secondary',
+      'bg-success-accent text-success dark:bg-success-accent-dark dark:text-success-dark hover:bg-success/10 dark:hover:bg-success/30': color === 'success',
+      'bg-warning-accent text-warning dark:bg-warning-accent-dark dark:text-warning-dark hover:bg-warning/10 dark:hover:bg-warning/30': color === 'warning',
+      'bg-danger-accent text-danger dark:bg-danger-accent-dark dark:text-danger-dark hover:bg-danger/10 dark:hover:bg-danger/30': color === 'danger',
     };
   }
 
@@ -92,7 +92,7 @@ const handleClick = (e: MouseEvent) => {
       baseClasses,
       sizeClasses[size],
       variantClasses,
-      disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+      disabled ? 'opacity-50 cursor-not-allowed' : ($attrs.onClick ? 'cursor-pointer' : 'cursor-default')
     ]"
     @click="handleClick"
   >
@@ -108,7 +108,7 @@ const handleClick = (e: MouseEvent) => {
       v-if="closable"
       type="button"
       :disabled="disabled"
-      class="flex items-center justify-center rounded-full p-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 hover:bg-black/10 dark:hover:bg-white/20 transition-colors disabled:cursor-not-allowed disabled:hover:bg-transparent"
+      class="flex items-center justify-center rounded-full p-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 transition-opacity opacity-70 hover:opacity-100 cursor-pointer disabled:cursor-not-allowed disabled:hover:opacity-70"
       :class="{
         'focus-visible:ring-primary': color === 'primary',
         'focus-visible:ring-disabled': color === 'secondary',

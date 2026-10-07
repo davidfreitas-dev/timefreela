@@ -113,14 +113,14 @@ const dateValue = computed({
 
 /* Variáveis para Tema Claro */
 .dp__theme_light {
-  --dp-background-color: var(--color-neutral);
+  --dp-background-color: var(--color-accent);
   --dp-text-color: var(--color-font);
   --dp-hover-color: var(--color-neutral);
   --dp-primary-color: var(--color-primary);
   --dp-primary-text-color: #ffffff;
-  --dp-border-color: var(--color-disabled);
+  --dp-border-color: var(--color-neutral);
   --dp-border-color-focus: var(--color-primary);
-  --dp-menu-border-color: var(--color-disabled);
+  --dp-menu-border-color: var(--color-neutral);
 }
 
 /* Variáveis para Tema Escuro */
@@ -225,7 +225,7 @@ const dateValue = computed({
 .dp__input:disabled,
 .dp__input_disabled {
   opacity: 1 !important;
-  background-color: var(--color-disabled) !important;
+  background-color: color-mix(in srgb, var(--color-disabled) 60%, transparent) !important;
   color: var(--color-secondary) !important;
   cursor: not-allowed !important;
 }
