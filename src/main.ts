@@ -11,6 +11,7 @@ import './style.css';
 import './tailwind.css';
 
 import filters from '@/plugins/filters';
+import toastifyPlugin from '@/plugins/toastify';
 
 const pinia = createPinia();
 
@@ -21,6 +22,7 @@ const app = createApp(App);
 app.use(pinia);
 app.use(filters);
 app.use(router);
+app.use(toastifyPlugin);
 
 const authStore = useAuthStore();
 authStore.init(); 

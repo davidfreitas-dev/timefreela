@@ -5,11 +5,9 @@ import { useAuthStore } from '@/stores/authStore';
 import { useTimerStore } from '@/stores/timerStore';
 import { useLayoutStore } from '@/stores/layoutStore';
 import { useBeforeUnloadGuard } from '@/composables/useBeforeUnloadGuard';
-import { useToast } from '@/composables/useToast';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppTimerWidget from '@/components/layout/AppTimerWidget.vue';
-import AppToast from '@/components/ui/AppToast.vue';
 
 const route = useRoute();
 
@@ -18,8 +16,6 @@ const { isRunning } = storeToRefs(useTimerStore());
 const { isSidebarExpanded } = storeToRefs(useLayoutStore());
 
 useBeforeUnloadGuard(() => isRunning.value);
-
-const { toast, toastData } = useToast();
 </script>
 
 <template>
@@ -61,6 +57,5 @@ const { toast, toastData } = useToast();
     </div>
 
     <AppTimerWidget />
-    <AppToast ref="toast" :toast-data="toastData" />
   </div>
 </template>

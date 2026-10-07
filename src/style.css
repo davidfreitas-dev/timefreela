@@ -1,3 +1,5 @@
+@import 'vue3-toastify/dist/index.css';
+
 :root {
   font-family: "Geist", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -8,6 +10,19 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Toastify Custom Variables (Base) */
+  --toastify-color-light: #ffffff;
+  --toastify-color-dark: #202020;
+  --toastify-color-info: #038de7;
+  --toastify-color-success: #50a97b;
+  --toastify-color-warning: #e5b44a;
+  --toastify-color-error: #d35c5c;
+  --toastify-text-color-light: #3c3c3c;
+  --toastify-text-color-dark: #f4f4f4;
+  --toastify-font-family: 'Geist', sans-serif;
+  --toastify-z-index: 9999;
+  --toastify-toast-min-width: 320px;
 }
 
 html {
@@ -17,4 +32,17 @@ html {
 
 html.dark {
   color-scheme: dark;
+
+  /* Toastify Custom Variables (Dark) */
+  --toastify-color-light: #202020;
+  --toastify-text-color-light: #f4f4f4;
+  --toastify-color-success: #4caf75;
+  --toastify-color-warning: #F4B740;
+  --toastify-color-error: #cc5f5f;
+}
+
+.Toastify__toast {
+  border-radius: 0.75rem !important; /* rounded-xl */
+  padding: 1rem !important; /* increased padding */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; /* shadow-lg */
 }
