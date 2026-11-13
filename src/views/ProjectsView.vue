@@ -137,12 +137,20 @@ const handleDeleteProject = (projectId: string) => {
   dialogRef.value?.openModal();
 };
 
+const handleToggleActive = async (project: Project) => {
+  await withLoading(async () => {
+    await projectStore.toggleActive(project.id, !project.active);
+    showToast('success', project.active ? 'Projeto inativado com sucesso.' : 'Projeto reativado com sucesso.');
+  }, 'Erro ao alterar status do projeto.');
+};
+
 const confirmDelete = async () => {
   if (!projectToDelete.value) return;
 
   await withLoading(async () => {
     await projectStore.remove(projectToDelete.value!);
     projectToDelete.value = null;
+    showToast('success', 'Projeto excluído com sucesso.');
   }, 'Erro ao deletar o projeto. Tente novamente.');
 };
 
@@ -218,15 +226,24 @@ const confirmDelete = async () => {
             </td>
 
             <td class="px-6 py-3 w-[5%] min-w-12.5">
-              <div class="flex item-center gap-3">
+              <div class="flex item-center gap-2">
                 <button
-                  class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center"
+                  :title="project.active ? 'Inativar/Arquivar projeto' : 'Reativar projeto'"
+                  class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center transition-colors"
+                  @click="handleToggleActive(project)"
+                >
+                  <AppIcon :name="project.active ? 'archive' : 'unarchive'" size="sm" />
+                </button>
+                <button
+                  title="Editar projeto"
+                  class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center transition-colors"
                   @click="openEditModal(project.id)"
                 >
                   <AppIcon name="edit" size="sm" />
                 </button>
                 <button
-                  class="p-2 h-9 w-9 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer flex items-center justify-center"
+                  title="Excluir projeto"
+                  class="p-2 h-9 w-9 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer flex items-center justify-center transition-colors"
                   @click="handleDeleteProject(project.id)"
                 >
                   <AppIcon name="delete" size="sm" />
@@ -237,10 +254,13 @@ const confirmDelete = async () => {
         </AppTable>
       </div>
 
-      <AppEmptyState
-        v-if="!isLoading && !filteredProjects.length"
-        message="Nenhum projeto encontrado."
-      />
+      <div v-if="!isLoading && !filteredProjects.length" class="py-12 px-4">
+        <AppEmptyState
+          icon="folder"
+          title="Nenhum projeto encontrado"
+          message="Nenhum projeto corresponde à busca ou aos filtros selecionados."
+        />
+      </div>
     </div>
 
     <AppModal
@@ -258,7 +278,7 @@ const confirmDelete = async () => {
     <AppDialog
       ref="dialogRef"
       header="Tem certeza que deseja deletar este projeto?"
-      message="Ao confirmar, todas as sessões associadas a este projeto também serão excluídas permanentemente. Esta ação não poderá ser desfeita."
+      message="Ao confirmar, o projeto será excluído. O histórico de sessões e receitas já contabilizadas será preservado nos seus relatórios para fins contábeis."
       @confirm-action="confirmDelete"
     />
   </AppContainer>

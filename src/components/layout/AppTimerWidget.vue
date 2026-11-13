@@ -18,6 +18,8 @@ const formattedDuration = computed(() => {
 const toggle = () => {
   if (isRunning.value) {
     timerStore.pause();
+  } else if (timerStore.isPaused) {
+    timerStore.resume();
   } else {
     timerStore.start();
   }

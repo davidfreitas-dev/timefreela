@@ -5,6 +5,7 @@ import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useReportStore } from '@/stores/reportStore';
 import { useUserStore } from '@/stores/userStore';
 
 import type { Session } from '@/types';
@@ -24,15 +25,26 @@ import AppDialog from '@/components/ui/AppDialog.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 import AppModal from '@/components/ui/AppModal.vue';
 import AppPagination from '@/components/ui/AppPagination.vue';
+import AppChip from '@/components/ui/AppChip.vue';
 import SessionForm, { type SessionPayload } from '@/components/forms/SessionForm.vue';
 
 const sessionStore = useSessionStore();
 const projectStore = useProjectStore();
+const reportStore = useReportStore();
 const userStore = useUserStore();
 
 const { user } = storeToRefs(userStore);
 const { items: sessions } = storeToRefs(sessionStore);
 const { showToast } = useToast();
+
+const getSessionAmount = (session: Session): number => {
+  const project = projectStore.items.find(p => p.id === session.projectId);
+  return reportStore.calculateSessionAmount({
+    ...session,
+    billingType: session.billingType || project?.billingType,
+    billingAmount: session.billingAmount !== undefined ? session.billingAmount : project?.billingAmount,
+  });
+};
 
 const search = ref('');
 
@@ -124,7 +136,7 @@ const paginatedSessions = computed(() => {
 const selectedSessions = ref<string[]>([]);
 
 const allSelectableSessionIds = computed(() =>
-  filteredSessions.value.filter(s => !s.isBilled).map(s => s.id)
+  filteredSessions.value.map(s => s.id)
 );
 
 const isAllSelected = computed({
@@ -149,16 +161,84 @@ const toggleSelection = (id: string, value: boolean) => {
   }
 };
 
+const hasUnbilledSelected = computed(() =>
+  selectedSessions.value.some(id => {
+    const s = filteredSessions.value.find(item => item.id === id);
+    return s && !s.isBilled;
+  })
+);
+
+const hasBilledSelected = computed(() =>
+  selectedSessions.value.some(id => {
+    const s = filteredSessions.value.find(item => item.id === id);
+    return s && s.isBilled;
+  })
+);
+
 const markSelectedAsBilled = async () => {
   await withLoading(async () => {
-    await sessionStore.markBilled(selectedSessions.value);
+    await sessionStore.setBillingStatus(selectedSessions.value, true);
+    showToast('success', `${selectedSessions.value.length} sessão(ões) faturada(s).`);
     selectedSessions.value = [];
   }, 'Não foi possível faturar as sessões.');
 };
 
+const markSelectedAsUnbilled = async () => {
+  await withLoading(async () => {
+    await sessionStore.setBillingStatus(selectedSessions.value, false);
+    showToast('success', `${selectedSessions.value.length} sessão(ões) desmarcada(s) como faturada(s).`);
+    selectedSessions.value = [];
+  }, 'Não foi possível desmarcar faturamento.');
+};
+
+const toggleSessionBilled = async (session: Session) => {
+  await withLoading(async () => {
+    await sessionStore.setBillingStatus([session.id], !session.isBilled);
+    showToast('success', session.isBilled ? 'Sessão desmarcada como faturada.' : 'Sessão faturada com sucesso.');
+  }, 'Erro ao atualizar faturamento.');
+};
+
+type PresetType = 'today' | 'last30' | 'thisMonth' | 'lastMonth' | 'thisYear';
+
+const presetOptions: { label: string; value: PresetType }[] = [
+  { label: 'Hoje', value: 'today' },
+  { label: 'Últimos 30 dias', value: 'last30' },
+  { label: 'Este Mês', value: 'thisMonth' },
+  { label: 'Mês Anterior', value: 'lastMonth' },
+  { label: 'Este Ano', value: 'thisYear' },
+];
+
+const activePreset = ref<PresetType | null>('last30');
+
+const setPresetRange = (preset: PresetType) => {
+  activePreset.value = preset;
+  const now = new Date();
+  if (preset === 'today') {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    dateInterval.value = [start, end];
+  } else if (preset === 'last30') {
+    const start = new Date();
+    start.setDate(now.getDate() - 30);
+    dateInterval.value = [start, now];
+  } else if (preset === 'thisMonth') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    dateInterval.value = [start, end];
+  } else if (preset === 'lastMonth') {
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    dateInterval.value = [start, end];
+  } else if (preset === 'thisYear') {
+    const start = new Date(now.getFullYear(), 0, 1);
+    const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+    dateInterval.value = [start, end];
+  }
+};
+
 const tableHead = computed<(string | VNode)[]>(() => {
   const baseHeaders: (string | VNode)[] = [
-    'Projeto', 'Data', 'Início', 'Término', 'Duração', 'Status', 'Ações',
+    'Projeto', 'Data', 'Início', 'Término', 'Duração', 'Valor', 'Status', 'Ações',
   ];
 
   return allSelectableSessionIds.value.length > 0
@@ -242,12 +322,21 @@ const deleteSession = async () => {
 
       <div class="flex gap-2 ml-auto">
         <AppButton
-          v-if="selectedSessions.length"
+          v-if="selectedSessions.length && hasUnbilledSelected"
           color="success"
           @click="markSelectedAsBilled"
         >
           <AppIcon name="check" />
           <span class="hidden md:block">Faturar Selecionadas</span>
+        </AppButton>
+
+        <AppButton
+          v-if="selectedSessions.length && hasBilledSelected"
+          color="outline"
+          @click="markSelectedAsUnbilled"
+        >
+          <AppIcon name="close" />
+          <span class="hidden md:block">Desmarcar Faturamento</span>
         </AppButton>
 
         <AppButton @click="openCreateModal">
@@ -258,7 +347,20 @@ const deleteSession = async () => {
     </div>
 
     <div class="relative bg-background dark:bg-accent-dark rounded-3xl shadow-md my-8">
-      <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark px-8 pt-8 pb-6">
+      <div class="px-8 pt-6 flex flex-wrap items-center gap-2">
+        <span class="text-xs font-semibold text-secondary dark:text-secondary-dark mr-1">Atalhos:</span>
+        <AppChip
+          v-for="preset in presetOptions"
+          :key="preset.value"
+          :label="preset.label"
+          :variant="activePreset === preset.value ? 'solid' : 'accent'"
+          :color="activePreset === preset.value ? 'primary' : 'secondary'"
+          size="sm"
+          @click="setPresetRange(preset.value)"
+        />
+      </div>
+
+      <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark px-8 pt-4 pb-6">
         <AppInputSearch v-model="search" label="Buscar Projeto" placeholder="Pesquisar por projeto" />
 
         <AppInputDate
@@ -287,7 +389,6 @@ const deleteSession = async () => {
             <template v-if="allSelectableSessionIds.length > 0">
               <td class="pl-6 py-3">
                 <AppCheckbox
-                  v-if="!session.isBilled"
                   :model-value="isSelected(session.id)"
                   @update:model-value="checked => toggleSelection(session.id, checked)"
                 />
@@ -309,11 +410,21 @@ const deleteSession = async () => {
             <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white font-mono">
               {{ $filters.formatDuration(session.duration) }}
             </td>
+            <td class="px-6 py-3 whitespace-nowrap text-font dark:text-white font-mono font-medium">
+              {{ $filters.formatCurrencyBRL(getSessionAmount(session)) }}
+            </td>
             <td class="px-6 py-3">
-              <AppBadge
-                :label="session.isBilled ? 'Faturada' : 'Não Faturada'"
-                :color="session.isBilled ? 'success' : 'warning'"
-              />
+              <button
+                type="button"
+                :title="session.isBilled ? 'Clique para desmarcar faturamento' : 'Clique para marcar como faturada'"
+                class="cursor-pointer focus:outline-none"
+                @click="toggleSessionBilled(session)"
+              >
+                <AppBadge
+                  :label="session.isBilled ? 'Faturada' : 'Não Faturada'"
+                  :color="session.isBilled ? 'success' : 'warning'"
+                />
+              </button>
             </td>
             <td class="px-6 py-3">
               <div class="flex items-center gap-3">

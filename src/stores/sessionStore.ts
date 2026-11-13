@@ -75,15 +75,20 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
   const update = async (sessionId: string, updatedData: Partial<Session>): Promise<void> => {
     const dataToUpdate: Partial<SessionFirestoreData> = { ...updatedData } as Partial<SessionFirestoreData>;
+    const currentSession = items.value.find(s => s.id === sessionId);
 
-    // If projectId is being changed, we should also update projectTitle and billing info
-    if (updatedData.projectId) {
+    // Only update project details and billing snapshots if the project actually changed
+    if (updatedData.projectId && updatedData.projectId !== currentSession?.projectId) {
       const project = projectStore.items.find(p => p.id === updatedData.projectId);
       if (project) {
         dataToUpdate.projectTitle = project.title;
         dataToUpdate.billingType = project.billingType;
         dataToUpdate.billingAmount = project.billingAmount;
       }
+    } else {
+      // Preserve existing historical billing snapshot
+      delete dataToUpdate.billingType;
+      delete dataToUpdate.billingAmount;
     }
 
     await sessionService.updateSession(sessionId, dataToUpdate);
@@ -114,8 +119,16 @@ export const useSessionStore = defineStore('sessionStore', () => {
     activeSession.value = null;
   };
 
+  const setBillingStatus = async (selectedIds: string[], isBilled: boolean): Promise<void> => {
+    await sessionService.setSessionsBillingStatus(selectedIds, isBilled);
+  };
+
   const markBilled = async (selectedIds: string[]): Promise<void> => {
-    await sessionService.markSessionsAsBilled(selectedIds);
+    await setBillingStatus(selectedIds, true);
+  };
+
+  const markUnbilled = async (selectedIds: string[]): Promise<void> => {
+    await setBillingStatus(selectedIds, false);
   };
 
   const stopListeningSessions = () => {
@@ -152,6 +165,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
     remove,
     finishSession,
     markBilled,
+    markUnbilled,
+    setBillingStatus,
     stopListeningSessions,
     reset,
     restoreSessions,

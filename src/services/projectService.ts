@@ -66,7 +66,12 @@ export const projectService = {
     return this.updateProject(id, { active: false });
   },
 
-  async deleteProject(id: string, userId: string): Promise<void> {
+  async deleteProject(id: string, userId: string, keepSessions = true): Promise<void> {
+    if (keepSessions) {
+      // Preserva o histórico de sessões e faturamento com os snapshots já gravados
+      return firestoreClient.deleteDoc(COLLECTIONS.PROJECTS, id);
+    }
+
     // 1. Get all sessions for this project that belong to this user
     const sessions = await firestoreClient.getDocs<Session>(COLLECTIONS.SESSIONS, [
       where('projectId', '==', id),

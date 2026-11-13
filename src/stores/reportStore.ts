@@ -37,13 +37,14 @@ export const useReportStore = defineStore('reportStore', () => {
   const currentMonthStats = computed(() => {
     const now = new Date();
     const yearMonth = now.toISOString().slice(0, 7); // formato YYYY-MM
+    const sourceData = yearlyReports.value.length > 0 ? yearlyReports.value : reports.value;
 
     let totalSeconds = 0;
     let estimated = 0;
     let billed = 0;
     let toReceive = 0;
 
-    reports.value
+    sourceData
       .filter(r => r.date.startsWith(yearMonth))
       .forEach(day => {
         totalSeconds += day.totalSeconds;
@@ -72,8 +73,9 @@ export const useReportStore = defineStore('reportStore', () => {
     let estimated = 0;
     let billed = 0;
     let toReceive = 0;
+    const sourceData = yearlyReports.value.length > 0 ? yearlyReports.value : reports.value;
 
-    reports.value
+    sourceData
       .forEach(day => {
         totalSeconds += day.totalSeconds;
         estimated += day.totalAmount;

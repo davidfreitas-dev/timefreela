@@ -36,7 +36,9 @@ import {
   Sun,
   Moon,
   Inbox,
-  SearchX
+  SearchX,
+  Archive,
+  ArchiveRestore
 } from '@lucide/vue';
 
 defineOptions({ 
@@ -86,7 +88,9 @@ const iconMap: Record<string, Component> = {
   'light_mode': Sun,
   'dark_mode': Moon,
   'inbox': Inbox,
-  'search_off': SearchX
+  'search_off': SearchX,
+  'archive': Archive,
+  'unarchive': ArchiveRestore
 };
 
 const iconComponent = computed<Component>(() => {

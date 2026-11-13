@@ -51,10 +51,14 @@ const mapSession = (id: string, data: SessionFirestoreData): Session => {
 };
 
 export const reportService = {
-  calculateSessionAmount(session: EnrichedSession, totalProjectSeconds?: number): number {
-    const amount = session.billingAmount;
+  calculateSessionAmount(
+    session: { duration: number; billingType?: BillingType | string; billingAmount?: number; estimatedDuration?: number },
+    totalProjectSeconds?: number
+  ): number {
+    const amount = session.billingAmount ?? 0;
+    const type = session.billingType ?? BillingType.HOURLY;
     
-    if (session.billingType === BillingType.HOURLY) {
+    if (type === BillingType.HOURLY) {
       return (session.duration / 3600) * amount;
     } else {
       // For fixed projects, we distribute the total amount based on worked hours

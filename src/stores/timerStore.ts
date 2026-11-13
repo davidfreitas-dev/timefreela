@@ -31,6 +31,11 @@ export const useTimerStore = defineStore('timer', () => {
   };
 
   const start = (id?: string) => {
+    if (isPaused.value && !id) {
+      resume();
+      return;
+    }
+
     if (isRunning.value && !isPaused.value) {
       startInterval();
       return;

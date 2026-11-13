@@ -136,15 +136,19 @@ export const sessionService = {
     return firestoreClient.deleteDoc(COLLECTIONS.SESSIONS, id);
   },
 
-  async markSessionsAsBilled(sessionIds: string[]): Promise<void> {
+  async setSessionsBillingStatus(sessionIds: string[], isBilled: boolean): Promise<void> {
     const now = Timestamp.now();
     const operations: BatchOperation[] = sessionIds.map((id) => ({
       type: 'update',
       path: COLLECTIONS.SESSIONS,
       id,
-      data: { isBilled: true, updatedAt: now },
+      data: { isBilled, updatedAt: now },
     }));
     return firestoreClient.batchWrite(operations);
+  },
+
+  async markSessionsAsBilled(sessionIds: string[]): Promise<void> {
+    return this.setSessionsBillingStatus(sessionIds, true);
   },
 
   async restore(userId: string, sessionsToRestore: Partial<Session>[], projects: Project[]): Promise<void> {
@@ -175,10 +179,12 @@ export const sessionService = {
           data: {
             userId,
             projectId: String(s.projectId),
-            projectTitle: project?.title || String(s.projectTitle || 'Projeto não encontrado'),
+            projectTitle: String(s.projectTitle || project?.title || 'Projeto não encontrado'),
             duration: Math.max(0, Number(s.duration || 0)),
             isManual: s.isManual ?? true,
             isBilled: s.isBilled ?? false,
+            billingType: s.billingType || project?.billingType || 'hourly',
+            billingAmount: s.billingAmount !== undefined ? Number(s.billingAmount) : (project?.billingAmount ?? 0),
             date: toTimestamp(s.date),
             startTime: toTimestamp(s.startTime),
             endTime: toTimestamp(s.endTime),

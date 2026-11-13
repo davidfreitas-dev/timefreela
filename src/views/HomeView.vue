@@ -20,6 +20,7 @@ import AppListbox from '@/components/ui/AppListbox.vue';
 import AppTable from '@/components/ui/AppTable.vue';
 import AppDotsLoader from '@/components/ui/AppDotsLoader.vue';
 import AppEmptyState from '@/components/ui/AppEmptyState.vue';
+import AppChip from '@/components/ui/AppChip.vue';
 import type { Option } from '@/types';
 import type { BillingType } from '@/constants/billing';
 
@@ -91,6 +92,9 @@ onMounted(async () => {
       
       const now = new Date();
       const currentYear = now.getFullYear();
+
+      // Carrega dados anuais completos para o gráfico e métricas do topo
+      await reportStore.fetchYearlyReports(currentYear);
       
       // Set initial state for filters
       const firstDayOfYear = new Date(currentYear, 0, 1);
@@ -116,15 +120,11 @@ onMounted(async () => {
   }
 });
 
-// When chart year changes, update the main date filter and reload
-watch(selectedYear, (newYear) => {
+// When chart year changes, fetch yearly data for chart
+watch(selectedYear, async (newYear) => {
   if (newYear) {
     const year = parseInt(newYear.value as string);
-    // Do not trigger reload if the year is already selected
-    if (dateInterval.value?.[0].getFullYear() === year) return;
-
-    dateInterval.value = [new Date(year, 0, 1), new Date(year, 11, 31, 23, 59, 59)];
-    // The watcher on dateInterval will trigger the reload
+    await reportStore.fetchYearlyReports(year);
   }
 });
 
@@ -143,12 +143,12 @@ watch(() => selectedFilter.value.value, () => {});
 
 // Chart computed logic
 const sortedMonthly = computed(() => {
-  const year = dateInterval.value ? dateInterval.value[0].getFullYear() : new Date().getFullYear();
+  const year = selectedYear.value ? parseInt(selectedYear.value.value as string) : new Date().getFullYear();
   const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
   const allMonths = Array.from({ length: 12 }, (_, i) => `${year}-${(i + 1).toString().padStart(2, '0')}`);
 
   const entries = allMonths.map((monthKey, index) => {
-    const data = reportStore.monthlySummary[monthKey] ?? { totalEarnings: 0, totalTime: 0 };
+    const data = reportStore.yearlyMonthlySummary[monthKey] ?? { totalEarnings: 0, totalTime: 0 };
     const earnings = data.totalEarnings / 100;
     const hours = data.totalTime / 3600;
     return { label: monthNames[index], amount: earnings, hours: hours };
@@ -211,6 +211,44 @@ const filteredRevenue = computed(() => {
 
 const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
 
+type PresetType = 'today' | 'last30' | 'thisMonth' | 'lastMonth' | 'thisYear';
+
+const presetOptions: { label: string; value: PresetType }[] = [
+  { label: 'Hoje', value: 'today' },
+  { label: 'Últimos 30 dias', value: 'last30' },
+  { label: 'Este Mês', value: 'thisMonth' },
+  { label: 'Mês Anterior', value: 'lastMonth' },
+  { label: 'Este Ano', value: 'thisYear' },
+];
+
+const activePreset = ref<PresetType | null>('thisYear');
+
+const setPresetRange = (preset: PresetType) => {
+  activePreset.value = preset;
+  const now = new Date();
+  if (preset === 'today') {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    dateInterval.value = [start, end];
+  } else if (preset === 'last30') {
+    const start = new Date();
+    start.setDate(now.getDate() - 30);
+    dateInterval.value = [start, now];
+  } else if (preset === 'thisMonth') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    dateInterval.value = [start, end];
+  } else if (preset === 'lastMonth') {
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    dateInterval.value = [start, end];
+  } else if (preset === 'thisYear') {
+    const start = new Date(now.getFullYear(), 0, 1);
+    const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+    dateInterval.value = [start, end];
+  }
+};
+
 </script>
 
 <template>
@@ -260,15 +298,35 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
         <h1 class="section-title text-xl font-bold text-font dark:text-secondary-dark px-8 pt-8">
           Faturamento
         </h1>
+        <div class="px-8 pt-4 flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold text-secondary dark:text-secondary-dark mr-1">Atalhos:</span>
+          <AppChip
+            v-for="preset in presetOptions"
+            :key="preset.value"
+            :label="preset.label"
+            :variant="activePreset === preset.value ? 'solid' : 'accent'"
+            :color="activePreset === preset.value ? 'primary' : 'secondary'"
+            size="sm"
+            @click="setPresetRange(preset.value)"
+          />
+        </div>
         <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark px-8 py-5">
-          <AppInputSearch v-model="search" label="Buscar Projeto" placeholder="Pesquisar por projeto" />
+          <AppInputSearch
+            v-model="search"
+            label="Buscar Projeto"
+            placeholder="Pesquisar por projeto"
+          />
           <AppInputDate
             v-model="dateInterval"
             label="Período"
             mode="range"
             placeholder="Selecione um período"
           />
-          <AppListbox v-model="selectedFilter" label="Status" :options="filterOptions" />
+          <AppListbox
+            v-model="selectedFilter"
+            label="Status"
+            :options="filterOptions"
+          />
         </div>
 
         <AppDotsLoader
@@ -296,10 +354,13 @@ const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
           </AppTable>
         </div>
 
-        <AppEmptyState
-          v-else
-          message="Nenhum dado encontrado para os filtros selecionados."
-        />
+        <div v-else class="p-4">
+          <AppEmptyState
+            icon="search_off"
+            title="Nenhum dado encontrado"
+            message="Não encontramos nenhum registro de faturamento para os filtros selecionados."
+          />
+        </div>
       </div>
     </section>
   </AppContainer>

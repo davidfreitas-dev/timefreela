@@ -79,16 +79,29 @@ export const useProjectStore = defineStore('projects', () => {
     }
   };
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, keepSessions = true) => {
     if (!userStore.user?.id) {
       throw new Error('Usuário não autenticado');
     }
 
     try {
-      await projectService.deleteProject(id, userStore.user.id);
+      await projectService.deleteProject(id, userStore.user.id, keepSessions);
       items.value = items.value.filter(item => item.id !== id);
     } catch (error) {
       console.error('Erro ao deletar projeto:', error);
+      throw error;
+    }
+  };
+
+  const toggleActive = async (id: string, active: boolean) => {
+    try {
+      await projectService.updateProject(id, { active });
+      const index = items.value.findIndex(item => item.id === id);
+      if (index !== -1) {
+        items.value[index] = { ...items.value[index], active };
+      }
+    } catch (error) {
+      console.error('Erro ao alternar status do projeto:', error);
       throw error;
     }
   };
@@ -118,6 +131,7 @@ export const useProjectStore = defineStore('projects', () => {
     create,
     update,
     archive,
+    toggleActive,
     remove,
     restoreProjects,
     reset,

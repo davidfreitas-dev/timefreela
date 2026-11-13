@@ -7,13 +7,17 @@ interface Props {
   icon?: string;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  icon: 'search_off',
+});
 </script>
 
 <template>
   <div class="flex flex-col items-center justify-center text-center my-10 px-5">
-    <div v-if="icon" class="mb-4 text-secondary/30 dark:text-secondary-dark/30">
-      <AppIcon :name="icon" size="lg" />
+    <div v-if="icon || $slots.icon" class="mb-4 text-secondary/40 dark:text-secondary-dark/40">
+      <slot name="icon">
+        <AppIcon :name="icon" size="lg" />
+      </slot>
     </div>
     <h3 v-if="title" class="text-lg font-bold text-font dark:text-font-dark mb-1">
       {{ title }}
