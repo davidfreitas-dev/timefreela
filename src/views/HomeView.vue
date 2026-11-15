@@ -209,7 +209,7 @@ const filteredRevenue = computed(() => {
   );
 });
 
-const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita'];
+const tableHeaders = ['Projeto', 'Tipo', 'Horas', 'Receita', 'Taxa Real / h'];
 
 type PresetType = 'today' | 'last30' | 'thisMonth' | 'lastMonth' | 'thisYear';
 
@@ -338,17 +338,20 @@ const setPresetRange = (preset: PresetType) => {
         <div v-else-if="filteredRevenue.length" class="rounded-2xl overflow-auto">
           <AppTable :headers="tableHeaders" :items="filteredRevenue">
             <template #row="{ item }">
-              <td class="px-6 py-3 w-[50%] max-w-125 truncate text-font dark:text-white">
+              <td class="px-6 py-3 w-[40%] max-w-100 truncate text-font dark:text-white">
                 {{ item.projectTitle }}
               </td>
-              <td class="px-6 py-3 w-[15%] min-w-37.5 whitespace-nowrap text-font dark:text-white">
+              <td class="px-6 py-3 w-[15%] min-w-30 whitespace-nowrap text-font dark:text-white">
                 {{ item.billingType === 'hourly' ? 'Por Hora' : 'Valor Fixo' }}
               </td>
-              <td class="px-6 py-3 w-[15%] min-w-37.5 whitespace-nowrap text-font dark:text-white font-mono">
+              <td class="px-6 py-3 w-[15%] min-w-30 whitespace-nowrap text-font dark:text-white font-mono">
                 {{ $filters.formatDuration(item.totalSeconds) }}
               </td>
-              <td class="px-6 py-3 w-[20%] min-w-37.5 whitespace-nowrap text-font dark:text-white font-mono">
+              <td class="px-6 py-3 w-[15%] min-w-30 whitespace-nowrap text-font dark:text-white font-mono">
                 {{ $filters.formatCurrencyBRL(item.totalAmount) }}
+              </td>
+              <td class="px-6 py-3 w-[15%] min-w-30 whitespace-nowrap text-font dark:text-white font-mono font-semibold">
+                {{ item.totalSeconds > 0 ? `${$filters.formatCurrencyBRL(Math.round((item.totalAmount * 3600) / item.totalSeconds))}/h` : '-' }}
               </td>
             </template>
           </AppTable>

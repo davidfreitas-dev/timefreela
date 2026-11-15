@@ -7,6 +7,7 @@ import { useTimerStore } from '@/stores/timerStore';
 import { useUserStore } from '@/stores/userStore';
 import { useLoading } from '@/composables/useLoading';
 import { useToast } from '@/composables/useToast';
+import { useTimerForgottenAlert } from '@/composables/useTimerForgottenAlert';
 import { type Option } from '@/types';
 import AppContainer from '@/components/layout/AppContainer.vue';
 import AppBreadcrumb from '@/components/ui/AppBreadcrumb.vue';
@@ -24,6 +25,7 @@ const { user } = storeToRefs(userStore);
 const { isRunning, isPaused, projectId, elapsedFormatted } = storeToRefs(timerStore);
 const { isLoading, withLoading } = useLoading();
 const { showToast } = useToast();
+const { requestPermission } = useTimerForgottenAlert();
 
 const selectedProject = computed({
   get: () => {
@@ -56,6 +58,7 @@ const startTimer = () => {
     showToast('error', 'Selecione um projeto para iniciar o timer.');
     return;
   }
+  requestPermission();
   timerStore.start(projectId.value);
 };
 
@@ -63,6 +66,7 @@ const handlePauseResume = () => {
   if (isRunning.value) {
     timerStore.pause();
   } else {
+    requestPermission();
     timerStore.resume();
   }
 };

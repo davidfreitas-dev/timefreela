@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { useTimerStore } from '@/stores/timerStore';
 import { useLayoutStore } from '@/stores/layoutStore';
 import { useBeforeUnloadGuard } from '@/composables/useBeforeUnloadGuard';
+import { useTimerTab } from '@/composables/useTimerTab';
+import { useTimerForgottenAlert } from '@/composables/useTimerForgottenAlert';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppTimerWidget from '@/components/layout/AppTimerWidget.vue';
@@ -16,6 +18,8 @@ const { isRunning } = storeToRefs(useTimerStore());
 const { isSidebarExpanded } = storeToRefs(useLayoutStore());
 
 useBeforeUnloadGuard(() => isRunning.value);
+useTimerTab();
+useTimerForgottenAlert();
 </script>
 
 <template>

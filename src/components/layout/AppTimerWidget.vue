@@ -2,9 +2,11 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useTimerStore } from '@/stores/timerStore';
+import { useTimerForgottenAlert } from '@/composables/useTimerForgottenAlert';
 import AppIcon from '@/components/ui/AppIcon.vue';
 
 const timerStore = useTimerStore();
+const { requestPermission } = useTimerForgottenAlert();
 
 const { isRunning, duration } = storeToRefs(timerStore);
 
@@ -19,8 +21,10 @@ const toggle = () => {
   if (isRunning.value) {
     timerStore.pause();
   } else if (timerStore.isPaused) {
+    requestPermission();
     timerStore.resume();
   } else {
+    requestPermission();
     timerStore.start();
   }
 };

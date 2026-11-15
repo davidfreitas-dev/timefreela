@@ -1,9 +1,29 @@
 <script setup lang="ts" generic="T">
 import { type VNode } from 'vue';
+
+export type TableHeaderItem = string | VNode | {
+  label: string | VNode;
+  class?: string;
+};
+
 defineProps<{
-  headers: (string | VNode)[];
+  headers: (string | VNode | { label: string | VNode; class?: string })[];
   items: T[];
 }>();
+
+const getHeaderLabel = (header: string | VNode | { label: string | VNode; class?: string }) => {
+  if (typeof header === 'object' && header !== null && 'label' in header) {
+    return (header as { label: string | VNode }).label;
+  }
+  return header;
+};
+
+const getHeaderClass = (header: string | VNode | { label: string | VNode; class?: string }) => {
+  if (typeof header === 'object' && header !== null && 'class' in header) {
+    return (header as { class?: string }).class || '';
+  }
+  return '';
+};
 </script>
 
 <template>
@@ -15,15 +35,16 @@ defineProps<{
             v-for="(header, index) in headers"
             :key="index"
             :class="[
-              'px-6 py-4 text-font dark:text-font-dark',
-              index === 0 && 'pr-0'
+              'px-6 py-4 text-font dark:text-font-dark whitespace-nowrap',
+              index === 0 && 'pr-0',
+              getHeaderClass(header)
             ]"
           >
             <component 
-              :is="header" 
-              v-if="typeof header !== 'string'" 
+              :is="getHeaderLabel(header)" 
+              v-if="typeof getHeaderLabel(header) !== 'string'" 
             />
-            <span v-else>{{ header }}</span>
+            <span v-else>{{ getHeaderLabel(header) }}</span>
           </th>
         </tr>
       </thead>
