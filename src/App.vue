@@ -32,7 +32,7 @@ useTimerForgottenAlert();
     <div 
       :class="[
         'flex flex-col flex-1 min-w-0 h-full overflow-hidden transition-all duration-300',
-        isAuthenticated ? (isSidebarExpanded ? 'ml-60' : 'ml-16.25') : ''
+        isAuthenticated ? (isSidebarExpanded ? 'ml-64' : 'ml-16.25') : ''
       ]"
     >
       <!-- Alerta de Modo Offline / Cache Firestore -->

@@ -4,23 +4,46 @@ import AppMenuItem from '@/components/layout/AppMenuItem.vue';
 import AppThemeSwitcher from '@/components/layout/AppThemeSwitcher.vue';
 import { ROUTES } from '@/constants/routes';
 
-interface MenuItemData {
- to: string;
- icon: string;
- text: string;
- group?: string;
+interface MenuItem {
+  to: string;
+  icon: string;
+  text: string;
+}
+
+interface MenuSection {
+  title?: string;
+  items: MenuItem[];
 }
 
 defineProps<{
- isExpanded: boolean;
+  isExpanded: boolean;
 }>();
 
-const menuItems: MenuItemData[] = [
-  { to: ROUTES.DASHBOARD, icon: 'dashboard', text: 'Painel' },
-  { to: ROUTES.PROJECTS, icon: 'folder', text: 'Projetos', group: 'Gestão' },
-  { to: ROUTES.SESSIONS, icon: 'schedule', text: 'Sessões', group: 'Gestão' },
-  { to: ROUTES.TIMER, icon: 'timer', text: 'Timer', group: 'Ferramentas' },
-  { to: ROUTES.SETTINGS, icon: 'settings', text: 'Configurações', group: 'Sistema' }
+const menuSections: MenuSection[] = [
+  {
+    items: [
+      { to: ROUTES.DASHBOARD, icon: 'dashboard', text: 'Painel' }
+    ]
+  },
+  {
+    title: 'Gestão',
+    items: [
+      { to: ROUTES.PROJECTS, icon: 'folder', text: 'Projetos' },
+      { to: ROUTES.SESSIONS, icon: 'schedule', text: 'Sessões' }
+    ]
+  },
+  {
+    title: 'Ferramentas',
+    items: [
+      { to: ROUTES.TIMER, icon: 'timer', text: 'Timer' }
+    ]
+  },
+  {
+    title: 'Sistema',
+    items: [
+      { to: ROUTES.SETTINGS, icon: 'settings', text: 'Configurações' }
+    ]
+  }
 ];
 </script>
 
@@ -28,30 +51,50 @@ const menuItems: MenuItemData[] = [
   <aside
     :class="[
       'fixed left-0 top-0 h-full bg-background dark:bg-accent-dark border-r border-neutral/50 dark:border-neutral-dark/50 z-50 flex flex-col overflow-x-hidden transition-all duration-300',
-      isExpanded ? 'w-[240px]' : 'w-[65px]'
+      isExpanded ? 'w-64' : 'w-16.25'
     ]"
   >
     <div :class="['py-7 flex items-center gap-2', isExpanded ? 'px-6' : 'px-0 justify-center']">
       <AppLogo :is-expanded="isExpanded" />
     </div>
 
-    <nav :class="['flex-1 mt-4 space-y-1 overflow-y-auto overflow-x-hidden', isExpanded ? 'px-4' : 'px-2']">
-      <template v-for="(item, index) in menuItems" :key="item.to">
+    <nav
+      :class="[
+        'flex-1 mt-2 overflow-y-auto overflow-x-hidden',
+        isExpanded ? 'px-4 space-y-3' : 'px-2'
+      ]"
+    >
+      <template
+        v-for="(section, sIndex) in menuSections"
+        :key="section.title || sIndex"
+      >
+        <!-- Divisor sutil entre seções (Colapsado) -->
         <div
-          v-if="item.group && item.group !== menuItems[index - 1]?.group"
-          :class="['mt-6 flex items-center transition-all duration-300', isExpanded ? 'px-4 py-2' : 'justify-center py-2']"
+          v-if="sIndex > 0 && !isExpanded"
+          class="flex justify-center my-2.5"
         >
-          <span v-if="isExpanded" class="font-bold text-disabled dark:text-disabled-dark uppercase tracking-wider text-[11px] truncate">
-            {{ item.group }}
-          </span>
-          <div v-else class="h-[1px] w-6 bg-neutral dark:bg-neutral-dark" />
+          <div class="h-px w-6 bg-neutral dark:bg-neutral-dark" />
         </div>
-        <AppMenuItem
-          :to="item.to"
-          :icon="item.icon"
-          :text="item.text"
-          :is-expanded="isExpanded"
-        />
+
+        <div class="space-y-1">
+          <!-- Título da Seção (Expandido) -->
+          <div
+            v-if="section.title && isExpanded"
+            class="px-4 pt-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-disabled dark:text-disabled-dark truncate select-none"
+          >
+            {{ section.title }}
+          </div>
+
+          <!-- Itens da Seção -->
+          <AppMenuItem
+            v-for="item in section.items"
+            :key="item.to"
+            :to="item.to"
+            :icon="item.icon"
+            :text="item.text"
+            :is-expanded="isExpanded"
+          />
+        </div>
       </template>
     </nav>
 

@@ -13,9 +13,10 @@ const emit = defineEmits<{
   (e: 'onModalClose'): void;
 }>();
 
-const { title, align } = defineProps<{
+const { title, align, size = 'lg' } = defineProps<{
   title: string;
   align?: 'top' | 'center' | 'bottom';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }>();
 
 const open = ref(false);
@@ -35,14 +36,46 @@ defineExpose({
 });
 
 const alignmentClass = computed(() => {
-  switch (align) {
-  case 'top':
-    return 'items-start';
-  case 'bottom':
-    return 'items-end';
-  default:
-    return 'items-center';
+  if (align) {
+    switch (align) {
+    case 'top':
+      return 'items-start';
+    case 'bottom':
+      return 'items-end';
+    case 'center':
+      return 'items-center';
+    }
   }
+
+  // Padrão automático: 'sm' centralizado; 'md', 'lg', 'xl', '2xl' alinhados ao topo
+  return size === 'sm' ? 'items-center' : 'items-start';
+});
+
+const sizeClass = computed(() => {
+  switch (size) {
+  case 'sm':
+    return 'w-[95%] sm:max-w-md';
+  case 'md':
+    return 'w-[95%] sm:max-w-lg';
+  case 'lg':
+    return 'w-[95%] sm:max-w-3xl';
+  case 'xl':
+    return 'w-[95%] sm:max-w-5xl';
+  case '2xl':
+    return 'w-[95%] sm:max-w-7xl';
+  default:
+    return 'w-[95%] sm:max-w-3xl';
+  }
+});
+
+const titleClass = computed(() => {
+  if (size === 'sm') {
+    return 'text-lg font-semibold leading-6 text-font dark:text-font-dark';
+  }
+  if (size === 'md') {
+    return 'text-xl font-semibold leading-6 text-font dark:text-font-dark';
+  }
+  return 'text-2xl font-semibold leading-6 text-font dark:text-font-dark';
 });
 </script>
 
@@ -54,7 +87,7 @@ const alignmentClass = computed(() => {
   >
     <Dialog
       as="div"
-      class="relative z-60"
+      class="relative z-100"
       @close="closeModal"
     >
       <TransitionChild
@@ -69,7 +102,7 @@ const alignmentClass = computed(() => {
         <div class="fixed inset-0 bg-black/50 dark:bg-black/80" />
       </TransitionChild>
 
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="fixed inset-0 z-100 overflow-y-auto">
         <div
           class="flex min-h-full justify-center p-4 text-center sm:p-0"
           :class="alignmentClass"
@@ -84,31 +117,46 @@ const alignmentClass = computed(() => {
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-background-dark text-left shadow-xl transition-all sm:my-8 w-[95%] md:w-[75%] lg:w-[65%]"
+              class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-accent-dark text-left shadow-xl transition-all my-4 sm:my-8 flex flex-col max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-4rem)]"
+              :class="sizeClass"
             >
-              <div class="p-6">
-                <div class="sm:flex sm:items-start">
-                  <div class="w-full">
-                    <div class="modal-header flex justify-between items-center mb-5">
-                      <DialogTitle as="h3" class="text-xl font-bold uppercase leading-6 text-font dark:text-font-dark">
-                        {{ title }}
-                      </DialogTitle>
-                      
-                      <button
-                        type="button"
-                        class="text-secondary dark:text-secondary-dark bg-transparent hover:border-brand hover:text-brand rounded-lg text-sm p-1.5 ml-auto inline-flex items-center outline-none"
-                        @click="closeModal"
-                      >
-                        <AppIcon name="close" class="text-xl" />
-                        <span class="sr-only">Close modal</span>
-                      </button>
-                    </div>
+              <!-- Cabeçalho fixo no topo -->
+              <div
+                class="modal-header flex justify-between items-center shrink-0 border-b border-neutral/50 dark:border-neutral-dark/50"
+                :class="size === 'sm' ? 'px-5 py-4' : 'px-6 py-5'"
+              >
+                <DialogTitle
+                  as="h3"
+                  :class="titleClass"
+                >
+                  {{ title }}
+                </DialogTitle>
+                
+                <button
+                  type="button"
+                  class="text-secondary dark:text-secondary-dark bg-transparent hover:text-font dark:hover:text-font-dark rounded-lg text-sm p-1.5 ml-auto inline-flex items-center outline-none cursor-pointer transition-colors"
+                  @click="closeModal"
+                >
+                  <AppIcon name="close" class="text-xl" />
+                  <span class="sr-only">Close modal</span>
+                </button>
+              </div>
 
-                    <div class="modal-body overflow-y-auto p-0.5">
-                      <slot />
-                    </div>
-                  </div>
-                </div>
+              <!-- Corpo com rolagem independente -->
+              <div
+                class="modal-body flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+                :class="[size === 'sm' ? 'p-5' : 'p-6', $slots.footer ? 'pb-0' : '']"
+              >
+                <slot />
+              </div>
+
+              <!-- Rodapé opcional via slot #footer -->
+              <div
+                v-if="$slots.footer"
+                class="modal-footer shrink-0 border-t border-neutral/50 dark:border-neutral-dark/50 bg-white dark:bg-accent-dark"
+                :class="size === 'sm' ? 'px-5 py-3' : 'px-6 py-4'"
+              >
+                <slot name="footer" />
               </div>
             </DialogPanel>
           </TransitionChild>
@@ -120,12 +168,14 @@ const alignmentClass = computed(() => {
 
 <style scoped>
 .modal-body {
-  overflow-y: auto; /* Garante que o scroll vertical funcione */
-  -webkit-overflow-scrolling: touch; /* Melhora o desempenho de rolagem em dispositivos móveis */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE e Edge */
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Oculta a barra de rolagem */
 .modal-body::-webkit-scrollbar {
-  display: none;
+  display: none; /* Chrome, Safari e Opera */
+  width: 0;
+  height: 0;
 }
 </style>

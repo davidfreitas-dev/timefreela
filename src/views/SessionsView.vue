@@ -27,7 +27,7 @@ import AppModal from '@/components/ui/AppModal.vue';
 import AppPagination from '@/components/ui/AppPagination.vue';
 import AppChip from '@/components/ui/AppChip.vue';
 import SessionForm, { type SessionPayload } from '@/components/forms/SessionForm.vue';
-import InvoiceModal from '@/components/forms/InvoiceModal.vue';
+import InvoiceForm from '@/components/forms/InvoiceForm.vue';
 
 const sessionStore = useSessionStore();
 const projectStore = useProjectStore();
@@ -67,7 +67,8 @@ const dateInterval = ref<Date[] | null>([thirtyDaysAgo, today]);
 const itemsPerPage = computed(() => pageSize.value);
 
 const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
-const invoiceModalRef = ref<InstanceType<typeof InvoiceModal> | null>(null);
+const invoiceModalRef = ref<InstanceType<typeof AppModal> | null>(null);
+const invoiceFormRef = ref<InstanceType<typeof InvoiceForm> | null>(null);
 const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
 
 const editingSessionId = ref<string | null>(null);
@@ -192,6 +193,7 @@ const openInvoiceModal = () => {
 };
 
 const handleInvoiceSuccess = async () => {
+  invoiceModalRef.value?.closeModal();
   selectedSessions.value = [];
   await fetchSessions(currentPage.value);
 };
@@ -397,7 +399,11 @@ const deleteSession = async () => {
       </div>
 
       <div class="filters grid grid-cols-1 md:grid-cols-3 gap-4 w-full border-b border-neutral dark:border-neutral-dark px-8 pt-4 pb-6">
-        <AppInputSearch v-model="search" label="Buscar Projeto" placeholder="Pesquisar por projeto" />
+        <AppInputSearch
+          v-model="search"
+          label="Buscar Projeto"
+          placeholder="Pesquisar por projeto"
+        />
 
         <AppInputDate
           v-model="dateInterval"
@@ -406,10 +412,18 @@ const deleteSession = async () => {
           placeholder="Selecione um período"
         />
 
-        <AppListbox v-model="selectedFilter" label="Status" :options="filterOptions" />
+        <AppListbox
+          v-model="selectedFilter"
+          label="Status"
+          :options="filterOptions"
+        />
       </div>
 
-      <AppDotsLoader v-if="isLoading" color="primary" class="w-4 h-4 mx-auto my-10" />
+      <AppDotsLoader
+        v-if="isLoading"
+        color="primary"
+        class="w-4 h-4 mx-auto my-10"
+      />
 
       <div v-if="!isLoading && displayedSessions.length" class="rounded-2xl overflow-auto">
         <AppTable
@@ -513,11 +527,37 @@ const deleteSession = async () => {
     </AppModal>
 
     <!-- Modal de Emissão de Fatura / Invoice Formal -->
-    <InvoiceModal
+    <AppModal
       ref="invoiceModalRef"
-      :sessions="sessionsForInvoice"
-      @success="handleInvoiceSuccess"
-    />
+      title="Emitir Fatura / Invoice Formal (PDF)"
+      size="xl"
+    >
+      <InvoiceForm
+        ref="invoiceFormRef"
+        :sessions="sessionsForInvoice"
+        @success="handleInvoiceSuccess"
+        @cancel="invoiceModalRef?.closeModal()"
+      />
+      <template #footer>
+        <div class="flex justify-end gap-3 w-full">
+          <AppButton
+            color="secondary"
+            type="button"
+            @click="invoiceModalRef?.closeModal()"
+          >
+            Cancelar
+          </AppButton>
+          <AppButton
+            type="button"
+            :is-loading="invoiceFormRef?.isGenerating"
+            @click="invoiceFormRef?.handleGeneratePdf()"
+          >
+            <AppIcon name="download" />
+            <span>Baixar Fatura PDF</span>
+          </AppButton>
+        </div>
+      </template>
+    </AppModal>
 
     <!-- Dialog de Confirmação de Exclusão -->
     <AppDialog

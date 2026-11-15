@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, getCurrentInstance } from 'vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 
 defineOptions({ inheritAttrs: false });
@@ -15,18 +15,33 @@ const props = withDefaults(defineProps<{
   size?: ChipSize;
   closable?: boolean;
   disabled?: boolean;
+  clickable?: boolean;
 }>(), {
   color: 'primary',
   variant: 'solid',
   size: 'md',
   closable: false,
   disabled: false,
+  clickable: undefined,
 });
 
 const emit = defineEmits<{
   (e: 'click', event: MouseEvent): void;
   (e: 'close', event: MouseEvent): void;
 }>();
+
+const instance = getCurrentInstance();
+
+const isClickable = computed(() => {
+  if (props.disabled) return false;
+  if (props.clickable !== undefined) return props.clickable;
+  const vnodeProps = instance?.vnode.props;
+  return Boolean(
+    vnodeProps?.onClick ||
+    vnodeProps?.onClickCapture ||
+    vnodeProps?.onClickOnce
+  );
+});
 
 const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 ease-in max-w-full select-none';
 
@@ -48,7 +63,7 @@ const variantClasses = computed(() => {
   if (variant === 'solid') {
     return {
       'bg-primary text-white hover:bg-primary-hover': color === 'primary',
-      'bg-disabled/30 dark:bg-disabled-dark/40 text-font dark:text-font-dark hover:bg-disabled/40 dark:hover:bg-disabled-dark/50': color === 'secondary',
+      'bg-disabled/30 dark:bg-disabled-dark/40 text-font dark:text-font-dark hover:bg-disabled/20 dark:hover:bg-disabled-dark/60': color === 'secondary',
       'bg-success text-white hover:bg-success-hover': color === 'success',
       'bg-warning text-white hover:bg-warning-hover': color === 'warning',
       'bg-danger text-white hover:bg-danger-hover': color === 'danger',
@@ -58,7 +73,7 @@ const variantClasses = computed(() => {
   if (variant === 'outline') {
     return {
       'bg-transparent border border-primary text-primary hover:bg-primary-accent dark:hover:bg-primary/10': color === 'primary',
-      'bg-transparent border border-disabled text-secondary dark:border-disabled-dark dark:text-secondary-dark hover:bg-neutral dark:hover:bg-background-dark': color === 'secondary',
+      'bg-transparent border border-disabled text-secondary dark:border-disabled-dark dark:text-secondary-dark hover:bg-neutral/40 hover:text-font dark:hover:bg-neutral-dark/40 dark:hover:text-font-dark': color === 'secondary',
       'bg-transparent border border-success text-success hover:bg-success-accent dark:hover:bg-success/10': color === 'success',
       'bg-transparent border border-warning text-warning hover:bg-warning-accent dark:hover:bg-warning/10': color === 'warning',
       'bg-transparent border border-danger text-danger hover:bg-danger-accent dark:hover:bg-danger/10': color === 'danger',
@@ -68,7 +83,7 @@ const variantClasses = computed(() => {
   if (variant === 'accent') {
     return {
       'bg-primary-accent text-primary dark:bg-primary-accent-dark dark:text-primary-dark hover:bg-primary/10 dark:hover:bg-primary/30': color === 'primary',
-      'bg-neutral text-secondary dark:bg-disabled-dark/40 dark:text-font-dark hover:bg-disabled dark:hover:bg-secondary/40': color === 'secondary',
+      'bg-neutral text-secondary dark:bg-disabled-dark/40 dark:text-secondary-dark hover:bg-neutral/50 hover:text-font dark:hover:bg-disabled-dark/60 dark:hover:text-font-dark': color === 'secondary',
       'bg-success-accent text-success dark:bg-success-accent-dark dark:text-success-dark hover:bg-success/10 dark:hover:bg-success/30': color === 'success',
       'bg-warning-accent text-warning dark:bg-warning-accent-dark dark:text-warning-dark hover:bg-warning/10 dark:hover:bg-warning/30': color === 'warning',
       'bg-danger-accent text-danger dark:bg-danger-accent-dark dark:text-danger-dark hover:bg-danger/10 dark:hover:bg-danger/30': color === 'danger',
@@ -92,7 +107,7 @@ const handleClick = (e: MouseEvent) => {
       baseClasses,
       sizeClasses[size],
       variantClasses,
-      disabled ? 'opacity-50 cursor-not-allowed' : ($attrs.onClick ? 'cursor-pointer' : 'cursor-default')
+      disabled ? 'opacity-50 cursor-not-allowed' : (isClickable ? 'cursor-pointer' : 'cursor-default')
     ]"
     @click="handleClick"
   >
@@ -115,7 +130,7 @@ const handleClick = (e: MouseEvent) => {
         'focus-visible:ring-success': color === 'success',
         'focus-visible:ring-warning': color === 'warning',
         'focus-visible:ring-danger': color === 'danger',
-        '-mr-1': true // Pull the icon slightly to the right to align better with padding
+        '-mr-1': true
       }"
       aria-label="Remover"
       @click.stop="emit('close', $event)"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useReportStore } from '@/stores/reportStore';
@@ -9,19 +9,24 @@ import { invoiceService, type InvoiceData } from '@/services/invoiceService';
 import type { Session } from '@/types';
 import dayjs from '@/lib/dayjs';
 
-import AppModal from '@/components/ui/AppModal.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import AppCheckbox from '@/components/ui/AppCheckbox.vue';
 import AppTextarea from '@/components/ui/AppTextarea.vue';
 
-const props = defineProps<{
-  sessions: Session[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    sessions: Session[];
+    showActions?: boolean;
+  }>(),
+  {
+    showActions: false,
+  }
+);
 
 const emit = defineEmits<{
-  (e: 'close'): void;
+  (e: 'cancel'): void;
   (e: 'success'): void;
 }>();
 
@@ -31,8 +36,8 @@ const reportStore = useReportStore();
 const sessionStore = useSessionStore();
 const { showToast } = useToast();
 
-const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
 const markAsBilled = ref(true);
+const isGenerating = ref(false);
 
 const invoiceNumber = ref(invoiceService.generateInvoiceNumber());
 const issueDate = ref(dayjs().format('DD/MM/YYYY'));
@@ -101,14 +106,21 @@ const saveProfile = () => {
 
 onMounted(() => {
   loadSavedProfile();
-  // Se as sessões pertencerem a um projeto com título, sugerir nome do cliente baseado no projeto
-  if (props.sessions.length > 0) {
-    const firstProject = projectStore.items.find(p => p.id === props.sessions[0].projectId);
-    if (firstProject && !clientName.value) {
-      clientName.value = `Cliente - ${firstProject.title}`;
-    }
-  }
 });
+
+watch(
+  () => props.sessions,
+  (newSessions) => {
+    invoiceNumber.value = invoiceService.generateInvoiceNumber();
+    if (newSessions.length > 0) {
+      const firstProject = projectStore.items.find(p => p.id === newSessions[0].projectId);
+      if (firstProject && (!clientName.value || clientName.value.startsWith('Cliente - '))) {
+        clientName.value = `Cliente - ${firstProject.title}`;
+      }
+    }
+  },
+  { immediate: true }
+);
 
 const calculatedItems = computed(() => {
   return props.sessions.map(s => {
@@ -140,17 +152,6 @@ const taxCents = computed(() => Math.round(Number(tax.value || 0) * 100));
 const totalFinalCents = computed(() => {
   return Math.max(0, subtotalCents.value - discountCents.value + taxCents.value);
 });
-
-const openModal = () => {
-  invoiceNumber.value = invoiceService.generateInvoiceNumber();
-  loadSavedProfile();
-  modalRef.value?.openModal();
-};
-
-const closeModal = () => {
-  modalRef.value?.closeModal();
-  emit('close');
-};
 
 const handleGeneratePdf = async () => {
   if (!clientName.value.trim()) {
@@ -191,6 +192,7 @@ const handleGeneratePdf = async () => {
   };
 
   try {
+    isGenerating.value = true;
     invoiceService.downloadPdf(invoiceData);
     showToast('success', `Fatura ${invoiceNumber.value} gerada com sucesso!`);
 
@@ -201,28 +203,41 @@ const handleGeneratePdf = async () => {
       showToast('info', `${ids.length} sessão(ões) marcada(s) como faturada(s).`);
     }
 
-    closeModal();
     emit('success');
   } catch (err) {
     console.error('Erro ao gerar fatura PDF:', err);
     showToast('error', 'Ocorreu um erro ao gerar a fatura.');
+  } finally {
+    isGenerating.value = false;
   }
 };
 
 defineExpose({
-  openModal,
-  closeModal,
+  handleGeneratePdf,
+  isGenerating,
+  invoiceNumber,
 });
 </script>
 
 <template>
-  <AppModal
-    ref="modalRef"
-    title="Emitir Fatura / Invoice Formal (PDF)"
+  <form
+    id="invoice-form"
+    class="space-y-6"
+    @submit.prevent="handleGeneratePdf"
   >
-    <div class="space-y-6 max-h-[75vh] overflow-y-auto px-1">
-      <!-- Identificação e Datas -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-neutral/40 dark:bg-neutral-dark/40 border border-neutral dark:border-neutral-dark">
+    <!-- Identificação e Prazos -->
+    <div>
+      <h4
+        class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2"
+      >
+        <AppIcon
+          name="description"
+          size="sm"
+          class="text-primary"
+        />
+        <span>Identificação da Fatura</span>
+      </h4>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <AppInput
           v-model="invoiceNumber"
           label="Número da Fatura"
@@ -239,149 +254,179 @@ defineExpose({
           placeholder="DD/MM/AAAA"
         />
       </div>
+    </div>
 
-      <!-- Dados do Freelancer / Emissor -->
-      <div>
-        <h4 class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-          <AppIcon name="person" size="sm" class="text-primary" />
-          <span>Seus Dados (Prestador)</span>
-        </h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <!-- Dados do Freelancer / Emissor -->
+    <div class="pt-2 border-t border-neutral/60 dark:border-neutral-dark/60">
+      <h4
+        class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2"
+      >
+        <AppIcon
+          name="person"
+          size="sm"
+          class="text-primary"
+        />
+        <span>Seus Dados (Prestador)</span>
+      </h4>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AppInput
+          v-model="issuerName"
+          label="Seu Nome / Razão Social"
+          placeholder="Nome Completo ou MEI"
+        />
+        <AppInput
+          v-model="issuerDocument"
+          label="Seu CPF / CNPJ"
+          placeholder="000.000.000-00"
+        />
+        <AppInput
+          v-model="issuerEmail"
+          label="Seu E-mail"
+          placeholder="seuemail@exemplo.com"
+        />
+        <AppInput
+          v-model="issuerPhone"
+          label="Seu Telefone / WhatsApp"
+          placeholder="(11) 99999-9999"
+        />
+      </div>
+    </div>
+
+    <!-- Dados do Cliente -->
+    <div class="pt-2 border-t border-neutral/60 dark:border-neutral-dark/60">
+      <h4
+        class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2"
+      >
+        <AppIcon
+          name="folder"
+          size="sm"
+          class="text-primary"
+        />
+        <span>Dados do Cliente / Tomador</span>
+      </h4>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AppInput
+          v-model="clientName"
+          label="Nome do Cliente / Empresa *"
+          placeholder="Empresa Contratante Ltda"
+        />
+        <AppInput
+          v-model="clientDocument"
+          label="CNPJ ou CPF do Cliente"
+          placeholder="00.000.000/0001-00"
+        />
+        <AppInput
+          v-model="clientEmail"
+          label="E-mail de Cobrança do Cliente"
+          placeholder="financeiro@empresa.com"
+        />
+        <AppInput
+          v-model="clientAddress"
+          label="Endereço / Cidade do Cliente"
+          placeholder="São Paulo - SP"
+        />
+      </div>
+    </div>
+
+    <!-- Dados de Pagamento (PIX e Bancários) -->
+    <div class="pt-2 border-t border-neutral/60 dark:border-neutral-dark/60">
+      <h4
+        class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2"
+      >
+        <AppIcon
+          name="table_chart"
+          size="sm"
+          class="text-primary"
+        />
+        <span>Dados para Pagamento (PIX e Banco)</span>
+      </h4>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AppInput
+          v-model="pixKey"
+          label="Chave Pix"
+          placeholder="E-mail, CPF, CNPJ ou chave aleatória"
+        />
+        <AppInput
+          v-model="pixBeneficiary"
+          label="Nome do Titular da Chave"
+          placeholder="Nome que aparece no Pix"
+        />
+        <AppInput
+          v-model="bankName"
+          label="Banco (opcional)"
+          placeholder="Ex: Nubank, Itaú, Inter"
+        />
+        <div class="grid grid-cols-2 gap-2">
           <AppInput
-            v-model="issuerName"
-            label="Seu Nome / Razão Social"
-            placeholder="Nome Completo ou MEI"
+            v-model="bankAgency"
+            label="Agência"
+            placeholder="0001"
           />
           <AppInput
-            v-model="issuerDocument"
-            label="Seu CPF / CNPJ"
-            placeholder="000.000.000-00"
-          />
-          <AppInput
-            v-model="issuerEmail"
-            label="Seu E-mail"
-            placeholder="seuemail@exemplo.com"
-          />
-          <AppInput
-            v-model="issuerPhone"
-            label="Seu Telefone / WhatsApp"
-            placeholder="(11) 99999-9999"
+            v-model="bankAccount"
+            label="Conta Corrente"
+            placeholder="123456-7"
           />
         </div>
       </div>
-
-      <!-- Dados do Cliente -->
-      <div>
-        <h4 class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-          <AppIcon name="folder" size="sm" class="text-primary" />
-          <span>Dados do Cliente / Tomador</span>
-        </h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <AppInput
-            v-model="clientName"
-            label="Nome do Cliente / Empresa *"
-            placeholder="Empresa Contratante Ltda"
-          />
-          <AppInput
-            v-model="clientDocument"
-            label="CNPJ ou CPF do Cliente"
-            placeholder="00.000.000/0001-00"
-          />
-          <AppInput
-            v-model="clientEmail"
-            label="E-mail de Cobrança do Cliente"
-            placeholder="financeiro@empresa.com"
-          />
-          <AppInput
-            v-model="clientAddress"
-            label="Endereço / Cidade do Cliente"
-            placeholder="São Paulo - SP"
-          />
-        </div>
+      <div class="mt-3">
+        <AppTextarea
+          v-model="notes"
+          label="Instruções / Observações no Rodapé da Fatura"
+          rows="2"
+        />
       </div>
+    </div>
 
-      <!-- Dados de Pagamento (PIX e Bancários) -->
-      <div>
-        <h4 class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-          <AppIcon name="table_chart" size="sm" class="text-primary" />
-          <span>Dados para Pagamento (PIX e Banco)</span>
-        </h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <AppInput
-            v-model="pixKey"
-            label="Chave Pix"
-            placeholder="E-mail, CPF, CNPJ ou chave aleatória"
-          />
-          <AppInput
-            v-model="pixBeneficiary"
-            label="Nome do Titular da Chave"
-            placeholder="Nome que aparece no Pix"
-          />
-          <AppInput
-            v-model="bankName"
-            label="Banco (opcional)"
-            placeholder="Ex: Nubank, Itaú, Inter"
-          />
-          <div class="grid grid-cols-2 gap-2">
-            <AppInput
-              v-model="bankAgency"
-              label="Agência"
-              placeholder="0001"
-            />
-            <AppInput
-              v-model="bankAccount"
-              label="Conta Corrente"
-              placeholder="123456-7"
-            />
-          </div>
-        </div>
-        <div class="mt-3">
-          <AppTextarea
-            v-model="notes"
-            label="Instruções / Observações no Rodapé da Fatura"
-            rows="2"
-          />
-        </div>
-      </div>
+    <!-- Resumo Financeiro & Totais -->
+    <div class="pt-2 border-t border-neutral/60 dark:border-neutral-dark/60">
+      <h4
+        class="text-sm font-bold text-font dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2"
+      >
+        <AppIcon
+          name="payments"
+          size="sm"
+          class="text-primary"
+        />
+        <span>Resumo Financeiro ({{ sessions.length }} sessões selecionadas)</span>
+      </h4>
 
-      <!-- Resumo Financeiro & Totais -->
-      <div class="p-4 rounded-2xl bg-neutral/50 dark:bg-neutral-dark/50 border border-neutral dark:border-neutral-dark">
-        <h4 class="text-sm font-bold text-font dark:text-white mb-3">
-          Resumo Financeiro ({{ sessions.length }} sessões selecionadas)
-        </h4>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-          <div class="text-sm">
-            <span class="text-secondary dark:text-secondary-dark block">Subtotal dos Serviços</span>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div class="flex flex-col gap-2">
+          <span class="text-font dark:text-font-dark font-semibold text-[14px]">Subtotal dos Serviços</span>
+          <div class="h-11 flex items-center px-4 rounded-xl bg-accent dark:bg-neutral-dark border border-neutral dark:border-disabled-dark">
             <span class="font-bold text-base font-mono text-font dark:text-white">
               {{ invoiceService.formatCurrency(subtotalCents) }}
             </span>
           </div>
-
-          <div>
-            <AppInput
-              v-model="discount"
-              label="Desconto (R$)"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0,00"
-            />
-          </div>
-
-          <div>
-            <AppInput
-              v-model="tax"
-              label="Impostos / Retenções (R$)"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0,00"
-            />
-          </div>
         </div>
 
-        <div class="flex justify-between items-center pt-3 border-t border-neutral dark:border-neutral-dark">
+        <div>
+          <AppInput
+            v-model="discount"
+            label="Desconto (R$)"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0,00"
+          />
+        </div>
+
+        <div>
+          <AppInput
+            v-model="tax"
+            label="Impostos / Retenções (R$)"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0,00"
+          />
+        </div>
+      </div>
+
+      <!-- Banner do Total Final -->
+      <div class="p-4 rounded-2xl bg-primary/5 dark:bg-primary-dark/10 border border-primary/20 dark:border-primary-dark/30 flex flex-col gap-3">
+        <div class="flex justify-between items-center">
           <span class="text-base font-bold text-font dark:text-white">
             TOTAL FINAL DA FATURA:
           </span>
@@ -390,24 +435,34 @@ defineExpose({
           </span>
         </div>
 
-        <div class="mt-4 pt-3 border-t border-neutral dark:border-neutral-dark flex items-center">
+        <div class="pt-3 border-t border-primary/15 dark:border-primary-dark/20 flex items-center">
           <AppCheckbox
             v-model="markAsBilled"
             label="Marcar automaticamente as sessões incluídas como Faturadas"
           />
         </div>
       </div>
-
-      <!-- Ações do Modal -->
-      <div class="flex justify-end gap-3 pt-4 border-t border-neutral dark:border-neutral-dark">
-        <AppButton color="secondary" @click="closeModal">
-          Cancelar
-        </AppButton>
-        <AppButton @click="handleGeneratePdf">
-          <AppIcon name="download" />
-          <span>Baixar Fatura PDF</span>
-        </AppButton>
-      </div>
     </div>
-  </AppModal>
+
+    <!-- Ações inline opcionais (se não estiver usando slot #footer do modal) -->
+    <div
+      v-if="showActions"
+      class="flex justify-end gap-3 pt-4 border-t border-neutral dark:border-neutral-dark"
+    >
+      <AppButton
+        color="secondary"
+        type="button"
+        @click="emit('cancel')"
+      >
+        Cancelar
+      </AppButton>
+      <AppButton
+        type="submit"
+        :is-loading="isGenerating"
+      >
+        <AppIcon name="download" />
+        <span>Baixar Fatura PDF</span>
+      </AppButton>
+    </div>
+  </form>
 </template>
