@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useNetwork } from '@vueuse/core';
 import { useAuthStore } from '@/stores/authStore';
 import { useTimerStore } from '@/stores/timerStore';
 import { useLayoutStore } from '@/stores/layoutStore';
@@ -10,8 +11,10 @@ import { useTimerForgottenAlert } from '@/composables/useTimerForgottenAlert';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppTimerWidget from '@/components/layout/AppTimerWidget.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
 
 const route = useRoute();
+const { isOnline } = useNetwork();
 
 const { isAuthenticated } = storeToRefs(useAuthStore());
 const { isRunning } = storeToRefs(useTimerStore());
@@ -32,6 +35,15 @@ useTimerForgottenAlert();
         isAuthenticated ? (isSidebarExpanded ? 'ml-60' : 'ml-16.25') : ''
       ]"
     >
+      <!-- Alerta de Modo Offline / Cache Firestore -->
+      <div
+        v-if="!isOnline"
+        class="bg-amber-500 text-white text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2 z-40 shrink-0"
+      >
+        <AppIcon name="warning" size="sm" />
+        <span>Você está offline. O TimeFreela continua funcionando com o cache do Firestore e sincronizará automaticamente quando reconectar.</span>
+      </div>
+
       <AppHeader v-if="isAuthenticated" />
       
       <main 

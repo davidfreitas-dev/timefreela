@@ -8,13 +8,24 @@ import AppIcon from '@/components/ui/AppIcon.vue';
 const timerStore = useTimerStore();
 const { requestPermission } = useTimerForgottenAlert();
 
-const { isRunning, duration } = storeToRefs(timerStore);
+const { isRunning, isPaused, duration, isPomodoro, pomodoroPhase, pomodoroRemainingFormatted } = storeToRefs(timerStore);
 
-const formattedDuration = computed(() => {
+const formattedContinuous = computed(() => {
   const h = String(Math.floor(duration.value / 3600)).padStart(2, '0');
   const m = String(Math.floor((duration.value % 3600) / 60)).padStart(2, '0');
   const s = String(duration.value % 60).padStart(2, '0');
   return `${h}:${m}:${s}`;
+});
+
+const displayedTime = computed(() => {
+  return isPomodoro.value ? pomodoroRemainingFormatted.value : formattedContinuous.value;
+});
+
+const shouldShowWidget = computed(() => {
+  if (isPomodoro.value) {
+    return isRunning.value || isPaused.value;
+  }
+  return duration.value > 0 || isRunning.value || isPaused.value;
 });
 
 const toggle = () => {
@@ -32,22 +43,32 @@ const toggle = () => {
 
 <template>
   <div
-    v-if="duration > 0"
-    class="fixed bottom-4 right-4 bg-primary dark:bg-primary-dark shadow-lg rounded-full px-5 py-3 w-40 text-white flex items-center justify-between z-50"
+    v-if="shouldShowWidget"
+    class="fixed bottom-4 right-4 bg-primary dark:bg-primary-dark shadow-xl rounded-full pl-4 pr-3 py-2.5 text-white flex items-center gap-3 z-50 transition-all"
+    :class="{
+      'bg-emerald-600 dark:bg-emerald-700': isPomodoro && pomodoroPhase === 'focus',
+      'bg-blue-600 dark:bg-blue-700': isPomodoro && pomodoroPhase !== 'focus'
+    }"
   >
-    <span
-      class="text-lg font-bold leading-none font-mono w-24 text-left select-none ml-1"
-      aria-label="Tempo decorrido"
-    >
-      {{ formattedDuration }}
-    </span>
+    <div class="flex items-center gap-2">
+      <span v-if="isPomodoro" class="text-xs font-semibold uppercase tracking-wider opacity-90">
+        {{ pomodoroPhase === 'focus' ? '🎯 Foco' : '☕ Pausa' }}
+      </span>
+      <span
+        class="text-base sm:text-lg font-bold leading-none font-mono text-left select-none"
+        aria-label="Tempo decorrido"
+      >
+        {{ displayedTime }}
+      </span>
+    </div>
+
     <button
-      class="flex items-center justify-center w-8 h-8 text-white cursor-pointer rounded focus:outline-none focus:ring-2 focus:ring-primary-pressed"
+      class="flex items-center justify-center w-8 h-8 text-white cursor-pointer rounded-full bg-white/20 hover:bg-white/30 focus:outline-none transition-colors"
       aria-label="Toggle Timer"
       type="button"
       @click="toggle"
     >
-      <AppIcon :name="isRunning ? 'pause' : 'play_arrow'" />
+      <AppIcon :name="isRunning ? 'pause' : 'play_arrow'" size="sm" />
     </button>
   </div>
 </template>
