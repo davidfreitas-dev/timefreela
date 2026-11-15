@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from 'pinia';
-import { ref, type Ref } from 'vue';
-import type { Unsubscribe } from 'firebase/firestore';
+import { ref, toRaw, markRaw, type Ref } from 'vue';
+import type { Unsubscribe, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { useUserStore } from '@/stores/userStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { sessionService } from '@/services/sessionService';
@@ -13,6 +13,17 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const unsubscribe: Ref<Unsubscribe | null> = ref(null);
   const activeSession: Ref<NewSession | null> = ref(null);
   const items: Ref<Session[]> = ref([]);
+
+  // Estado da paginação por cursores no Firestore
+  const paginatedItems: Ref<Session[]> = ref([]);
+  const totalCount = ref(0);
+  const currentPage = ref(1);
+  const pageSize = ref(15);
+  const hasMore = ref(false);
+
+  // Mapa nativo puro (NÃO reativo) para armazenar os cursores brutos do Firestore
+  // Isso evita que o Vue envolva o DocumentSnapshot em um Proxy, o que quebrava o structuredClone no IndexedDB
+  const pageCursors = new Map<number, QueryDocumentSnapshot<DocumentData> | null>([[1, null]]);
 
   const getUserId = (): string => {
     if (!user.value?.id) throw new Error('Usuário não autenticado.');
@@ -45,6 +56,40 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
   const fetchOne = async (sessionId: string): Promise<Session | null> => {
     return sessionService.getSessionById(sessionId);
+  };
+
+  const resetPagination = () => {
+    currentPage.value = 1;
+    pageCursors.clear();
+    pageCursors.set(1, null);
+  };
+
+  const fetchPaginated = async (
+    userId: string,
+    page: number = 1,
+    filters: { projectId?: string; startDate?: Date; endDate?: Date; isBilled?: boolean } = {}
+  ) => {
+    const rawCursor = page > 1 ? (pageCursors.get(page) || null) : null;
+    const cleanCursor = rawCursor ? markRaw(toRaw(rawCursor)) : null;
+
+    const result = await sessionService.getPaginatedSessions(
+      userId,
+      pageSize.value,
+      cleanCursor,
+      filters
+    );
+
+    paginatedItems.value = result.sessions;
+    items.value = result.sessions;
+    totalCount.value = result.totalCount;
+    currentPage.value = page;
+    hasMore.value = result.hasMore;
+
+    if (result.lastVisibleDoc) {
+      pageCursors.set(page + 1, markRaw(toRaw(result.lastVisibleDoc)));
+    }
+
+    return result;
   };
 
   const startSession = (projectId: string): void => {
@@ -156,9 +201,16 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
   return {
     items,
+    paginatedItems,
+    totalCount,
+    currentPage,
+    pageSize,
+    hasMore,
     activeSession,
     fetchAll,
     fetchOne,
+    fetchPaginated,
+    resetPagination,
     startSession,
     create,
     update,

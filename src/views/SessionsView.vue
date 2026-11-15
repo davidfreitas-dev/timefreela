@@ -27,6 +27,7 @@ import AppModal from '@/components/ui/AppModal.vue';
 import AppPagination from '@/components/ui/AppPagination.vue';
 import AppChip from '@/components/ui/AppChip.vue';
 import SessionForm, { type SessionPayload } from '@/components/forms/SessionForm.vue';
+import InvoiceModal from '@/components/forms/InvoiceModal.vue';
 
 const sessionStore = useSessionStore();
 const projectStore = useProjectStore();
@@ -34,7 +35,7 @@ const reportStore = useReportStore();
 const userStore = useUserStore();
 
 const { user } = storeToRefs(userStore);
-const { items: sessions } = storeToRefs(sessionStore);
+const { paginatedItems, totalCount, currentPage, pageSize } = storeToRefs(sessionStore);
 const { showToast } = useToast();
 
 const getSessionAmount = (session: Session): number => {
@@ -63,10 +64,10 @@ thirtyDaysAgo.setDate(today.getDate() - 30);
 
 const dateInterval = ref<Date[] | null>([thirtyDaysAgo, today]);
 
-const currentPage = ref(1);
-const itemsPerPage = ref(15);
+const itemsPerPage = computed(() => pageSize.value);
 
 const modalRef = ref<InstanceType<typeof AppModal> | null>(null);
+const invoiceModalRef = ref<InstanceType<typeof InvoiceModal> | null>(null);
 const dialogRef = ref<InstanceType<typeof AppDialog> | null>(null);
 
 const editingSessionId = ref<string | null>(null);
@@ -74,11 +75,26 @@ const selectedSession = ref<Session | null>(null);
 const isFormLoading = ref(false);
 const sessionToDelete = ref<string | null>(null);
 
-const fetchSessions = async () => {
+const fetchSessions = async (page = 1) => {
   if (!user.value?.id) return;
 
   const [start, end] = dateInterval.value ?? [];
-  await sessionStore.fetchAll(user.value.id, undefined, start, end);
+  const isBilled = selectedFilter.value.value === 'all'
+    ? undefined
+    : (selectedFilter.value.value === 'billed');
+
+  await sessionStore.fetchPaginated(user.value.id, page, {
+    startDate: start,
+    endDate: end,
+    isBilled,
+  });
+};
+
+const handlePageChange = async (newPage: number) => {
+  await withLoading(async () => {
+    selectedSessions.value = [];
+    await fetchSessions(newPage);
+  }, 'Erro ao carregar página de sessões.');
 };
 
 onMounted(async () => {
@@ -86,7 +102,7 @@ onMounted(async () => {
     await withLoading(
       async () => {
         await Promise.all([
-          fetchSessions(),
+          fetchSessions(1),
           projectStore.fetchAll(user.value!.id),
         ]);
       },
@@ -95,14 +111,11 @@ onMounted(async () => {
   }
 });
 
-// Refetch sessions when date interval changes to filter on server-side
-watch(dateInterval, () => {
-  currentPage.value = 1;
-  fetchSessions();
-});
-
-watch([search, selectedFilter], () => {
-  currentPage.value = 1;
+// Refetch com cursor na página 1 ao alterar filtros
+watch([dateInterval, selectedFilter], () => {
+  sessionStore.resetPagination();
+  selectedSessions.value = [];
+  fetchSessions(1);
 });
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
@@ -110,33 +123,21 @@ const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 const getProjectTitle = (session: Session) =>
   session.projectTitle || projectStore.items.find((p) => p.id === session.projectId)?.title || 'Projeto não encontrado';
 
-const filteredSessions = computed(() => {
-  if (!sessions.value?.length) return [];
-
-  return sessions.value
-    .filter(session => {
-      const status = selectedFilter.value.value;
-      if (status === 'billed') return session.isBilled;
-      if (status === 'unbilled') return !session.isBilled;
-      return true;
-    })
-    .filter(session => {
-      if (!normalizedSearch.value) return true;
-      const title = getProjectTitle(session);
-      return title.toLowerCase().includes(normalizedSearch.value);
-    });
+const displayedSessions = computed(() => {
+  const list = paginatedItems.value || [];
+  if (!normalizedSearch.value) return list;
+  return list.filter(session => {
+    const title = getProjectTitle(session);
+    return title.toLowerCase().includes(normalizedSearch.value);
+  });
 });
 
-const paginatedSessions = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value;
-  const end = start + itemsPerPage.value;
-  return filteredSessions.value.slice(start, end);
-});
+const totalSessionsCount = computed(() => totalCount.value || displayedSessions.value.length);
 
 const selectedSessions = ref<string[]>([]);
 
 const allSelectableSessionIds = computed(() =>
-  filteredSessions.value.map(s => s.id)
+  displayedSessions.value.map(s => s.id)
 );
 
 const isAllSelected = computed({
@@ -163,23 +164,44 @@ const toggleSelection = (id: string, value: boolean) => {
 
 const hasUnbilledSelected = computed(() =>
   selectedSessions.value.some(id => {
-    const s = filteredSessions.value.find(item => item.id === id);
+    const s = displayedSessions.value.find(item => item.id === id);
     return s && !s.isBilled;
   })
 );
 
 const hasBilledSelected = computed(() =>
   selectedSessions.value.some(id => {
-    const s = filteredSessions.value.find(item => item.id === id);
+    const s = displayedSessions.value.find(item => item.id === id);
     return s && s.isBilled;
   })
 );
+
+const sessionsForInvoice = computed(() => {
+  if (selectedSessions.value.length > 0) {
+    return displayedSessions.value.filter(s => selectedSessions.value.includes(s.id));
+  }
+  return displayedSessions.value;
+});
+
+const openInvoiceModal = () => {
+  if (!sessionsForInvoice.value.length) {
+    showToast('error', 'Nenhuma sessão disponível para faturar.');
+    return;
+  }
+  invoiceModalRef.value?.openModal();
+};
+
+const handleInvoiceSuccess = async () => {
+  selectedSessions.value = [];
+  await fetchSessions(currentPage.value);
+};
 
 const markSelectedAsBilled = async () => {
   await withLoading(async () => {
     await sessionStore.setBillingStatus(selectedSessions.value, true);
     showToast('success', `${selectedSessions.value.length} sessão(ões) faturada(s).`);
     selectedSessions.value = [];
+    await fetchSessions(currentPage.value);
   }, 'Não foi possível faturar as sessões.');
 };
 
@@ -188,6 +210,7 @@ const markSelectedAsUnbilled = async () => {
     await sessionStore.setBillingStatus(selectedSessions.value, false);
     showToast('success', `${selectedSessions.value.length} sessão(ões) desmarcada(s) como faturada(s).`);
     selectedSessions.value = [];
+    await fetchSessions(currentPage.value);
   }, 'Não foi possível desmarcar faturamento.');
 };
 
@@ -195,6 +218,7 @@ const toggleSessionBilled = async (session: Session) => {
   await withLoading(async () => {
     await sessionStore.setBillingStatus([session.id], !session.isBilled);
     showToast('success', session.isBilled ? 'Sessão desmarcada como faturada.' : 'Sessão faturada com sucesso.');
+    await fetchSessions(currentPage.value);
   }, 'Erro ao atualizar faturamento.');
 };
 
@@ -264,10 +288,9 @@ const openEditModal = async (sessionId: string) => {
   modalRef.value?.openModal();
   
   try {
-    const session = await sessionStore.fetchOne(sessionId);
-    selectedSession.value = session;
+    selectedSession.value = await sessionStore.fetchOne(sessionId);
   } catch (error) {
-    showToast('error', 'Erro ao carregar os dados da sessão.');
+    showToast('error', 'Erro ao carregar dados da sessão.');
     modalRef.value?.closeModal();
   } finally {
     isFormLoading.value = false;
@@ -275,52 +298,65 @@ const openEditModal = async (sessionId: string) => {
 };
 
 const handleSaveSession = async (payload: SessionPayload) => {
-  if (!user.value?.id) {
-    showToast('error', 'Usuário não autenticado');
-    return;
-  }
-
   isFormLoading.value = true;
   try {
-    const data = { ...payload, userId: user.value.id };
-    
     if (editingSessionId.value) {
-      await sessionStore.update(editingSessionId.value, data);
+      await sessionStore.update(editingSessionId.value, payload);
       showToast('success', 'Sessão atualizada com sucesso.');
     } else {
-      await sessionStore.create(data);
-      showToast('success', 'Sessão cadastrada com sucesso.');
+      await sessionStore.create(payload);
+      showToast('success', 'Sessão criada com sucesso.');
     }
-    
     modalRef.value?.closeModal();
-    await fetchSessions();
+    await fetchSessions(currentPage.value);
   } catch (error) {
-    showToast('error', 'Erro ao salvar a sessão. Tente novamente.');
+    showToast('error', 'Erro ao salvar sessão. Tente novamente.');
   } finally {
     isFormLoading.value = false;
   }
 };
 
-const handleDeleteSession = (sessionId: string) => {
+const confirmDelete = (sessionId: string) => {
   sessionToDelete.value = sessionId;
   dialogRef.value?.openModal();
 };
 
 const deleteSession = async () => {
   if (!sessionToDelete.value) return;
+
   await withLoading(async () => {
     await sessionStore.remove(sessionToDelete.value!);
     sessionToDelete.value = null;
-  }, 'Não foi possível deletar a sessão.');
+    showToast('success', 'Sessão excluída com sucesso.');
+    await fetchSessions(currentPage.value);
+  }, 'Erro ao excluir sessão. Tente novamente.');
 };
 </script>
 
 <template>
   <AppContainer>
     <div class="header flex justify-between items-center flex-wrap gap-4">
-      <AppBreadcrumb title="Sessões" description="Gerencie suas sessões aqui." />
+      <AppBreadcrumb title="Sessões" description="Gerencie suas sessões de trabalho e emita faturas formais em PDF." />
 
-      <div class="flex gap-2 ml-auto">
+      <div class="flex gap-2 ml-auto flex-wrap items-center">
+        <!-- Botão Emitir Fatura / Invoice -->
+        <AppButton
+          v-if="selectedSessions.length"
+          color="primary"
+          @click="openInvoiceModal"
+        >
+          <AppIcon name="table_chart" />
+          <span class="hidden sm:inline">Emitir Fatura ({{ selectedSessions.length }})</span>
+        </AppButton>
+        <AppButton
+          v-else-if="displayedSessions.length"
+          color="outline"
+          @click="openInvoiceModal"
+        >
+          <AppIcon name="table_chart" />
+          <span class="hidden md:inline">Emitir Fatura</span>
+        </AppButton>
+
         <AppButton
           v-if="selectedSessions.length && hasUnbilledSelected"
           color="success"
@@ -373,17 +409,12 @@ const deleteSession = async () => {
         <AppListbox v-model="selectedFilter" label="Status" :options="filterOptions" />
       </div>
 
-      <AppDotsLoader
-        v-if="isLoading"
-        color="primary"
-        class="w-4 h-4 mx-auto my-10"
-      />
+      <AppDotsLoader v-if="isLoading" color="primary" class="w-4 h-4 mx-auto my-10" />
 
-      <div class="rounded-2xl overflow-auto">
+      <div v-if="!isLoading && displayedSessions.length" class="rounded-2xl overflow-auto">
         <AppTable
-          v-if="!isLoading && paginatedSessions.length"
           :headers="tableHead"
-          :items="paginatedSessions"
+          :items="displayedSessions"
         >
           <template #row="{ item: session }">
             <template v-if="allSelectableSessionIds.length > 0">
@@ -429,14 +460,16 @@ const deleteSession = async () => {
             <td class="px-6 py-3">
               <div class="flex items-center gap-3">
                 <button
-                  class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center"
+                  title="Editar sessão"
+                  class="p-2 h-9 w-9 bg-neutral dark:bg-neutral-dark text-secondary dark:text-secondary-dark hover:text-font dark:hover:text-font-dark rounded-full cursor-pointer flex items-center justify-center transition-colors"
                   @click="openEditModal(session.id)"
                 >
                   <AppIcon name="edit" size="sm" />
                 </button>
                 <button
-                  class="p-2 h-9 w-9 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer flex items-center justify-center"
-                  @click="handleDeleteSession(session.id)"
+                  title="Excluir sessão"
+                  class="p-2 h-9 w-9 bg-danger-accent dark:bg-danger-accent-dark text-danger dark:text-danger-dark rounded-full cursor-pointer flex items-center justify-center transition-colors"
+                  @click="confirmDelete(session.id)"
                 >
                   <AppIcon name="delete" size="sm" />
                 </button>
@@ -446,7 +479,7 @@ const deleteSession = async () => {
         </AppTable>
       </div>
 
-      <div v-if="!isLoading && !filteredSessions.length" class="pb-8">
+      <div v-if="!isLoading && !displayedSessions.length" class="pb-8">
         <AppEmptyState
           icon="inbox"
           title="Nenhuma sessão por aqui"
@@ -454,15 +487,18 @@ const deleteSession = async () => {
         />
       </div>
 
-      <div v-if="filteredSessions.length > itemsPerPage" class="pb-8 pt-4">
+      <!-- Paginação Baseada em Cursores no Firestore -->
+      <div v-if="totalSessionsCount > itemsPerPage" class="pb-8 pt-4">
         <AppPagination
-          v-model:current-page="currentPage"
-          :total-items="filteredSessions.length"
+          :current-page="currentPage"
+          :total-items="totalSessionsCount"
           :items-per-page="itemsPerPage"
+          @update:current-page="handlePageChange"
         />
       </div>
     </div>
 
+    <!-- Modal de Edição / Criação de Sessão -->
     <AppModal
       ref="modalRef"
       :title="editingSessionId ? 'Editar Sessão' : 'Nova Sessão'"
@@ -476,6 +512,14 @@ const deleteSession = async () => {
       />
     </AppModal>
 
+    <!-- Modal de Emissão de Fatura / Invoice Formal -->
+    <InvoiceModal
+      ref="invoiceModalRef"
+      :sessions="sessionsForInvoice"
+      @success="handleInvoiceSuccess"
+    />
+
+    <!-- Dialog de Confirmação de Exclusão -->
     <AppDialog
       ref="dialogRef"
       header="Tem certeza que deseja deletar esta sessão?"
@@ -484,4 +528,3 @@ const deleteSession = async () => {
     />
   </AppContainer>
 </template>
-

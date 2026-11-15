@@ -6,10 +6,16 @@ import {
   collection,
   onSnapshot,
   limit,
+  startAfter,
+  getDocs,
+  getCountFromServer,
   type Unsubscribe,
   type QueryConstraint,
+  type QueryDocumentSnapshot,
+  type DocumentData,
   FieldValue
 } from 'firebase/firestore';
+import { toRaw, markRaw } from 'vue';
 import { db } from '../lib/firebase';
 import { firestoreClient, type BatchOperation } from '../api/firestore';
 import { COLLECTIONS } from '../constants';
@@ -99,6 +105,77 @@ export const sessionService = {
 
   async getRawSessionsByUser(userId: string): Promise<Session[]> {
     return firestoreClient.getDocs<Session>(COLLECTIONS.SESSIONS, [where('userId', '==', userId)]);
+  },
+
+  async getPaginatedSessions(
+    userId: string,
+    pageSize: number = 15,
+    cursorDoc: QueryDocumentSnapshot<DocumentData> | null = null,
+    filters: { projectId?: string; startDate?: Date; endDate?: Date; isBilled?: boolean } = {}
+  ): Promise<{
+    sessions: Session[];
+    totalCount: number;
+    lastVisibleDoc: QueryDocumentSnapshot<DocumentData> | null;
+    hasMore: boolean;
+  }> {
+    const baseConstraints: QueryConstraint[] = [
+      where('userId', '==', userId)
+    ];
+
+    if (filters.isBilled !== undefined) {
+      baseConstraints.push(where('isBilled', '==', filters.isBilled));
+    }
+
+    if (filters.projectId) {
+      baseConstraints.push(where('projectId', '==', filters.projectId));
+    }
+
+    if (filters.startDate && filters.endDate) {
+      const rawStart = toRaw(filters.startDate);
+      const rawEnd = toRaw(filters.endDate);
+      const startDate = rawStart instanceof Date ? new Date(rawStart.getTime()) : new Date(rawStart);
+      const endDate = rawEnd instanceof Date ? new Date(rawEnd.getTime()) : new Date(rawEnd);
+      endDate.setHours(23, 59, 59, 999);
+      baseConstraints.push(where('date', '>=', Timestamp.fromDate(startDate)));
+      baseConstraints.push(where('date', '<=', Timestamp.fromDate(endDate)));
+    }
+
+    // 1. Obter contagem total de itens correspondentes via agregação nativa do Firestore
+    let totalCount = 0;
+    try {
+      const countQuery = query(collection(db, COLLECTIONS.SESSIONS), ...baseConstraints);
+      const countSnapshot = await getCountFromServer(countQuery);
+      totalCount = countSnapshot.data().count;
+    } catch (countError) {
+      console.warn('Erro ao obter contagem do servidor, usando fallback:', countError);
+    }
+
+    // 2. Query paginada com ordenação e cursor desprovido de Proxies do Vue
+    const queryConstraints: QueryConstraint[] = [
+      ...baseConstraints,
+      orderBy('date', 'desc'),
+    ];
+
+    const rawCursor = cursorDoc ? markRaw(toRaw(cursorDoc)) : null;
+    if (rawCursor) {
+      queryConstraints.push(startAfter(rawCursor));
+    }
+
+    queryConstraints.push(limit(pageSize));
+
+    const pageQuery = query(collection(db, COLLECTIONS.SESSIONS), ...queryConstraints);
+    const snapshot = await getDocs(pageQuery);
+
+    const sessions = snapshot.docs.map(doc => mapSession(doc.id, doc.data() as SessionFirestoreData));
+    const lastVisibleDoc = snapshot.docs.length > 0 ? markRaw(toRaw(snapshot.docs[snapshot.docs.length - 1])) : null;
+    const hasMore = snapshot.docs.length === pageSize;
+
+    return {
+      sessions,
+      totalCount: totalCount || sessions.length,
+      lastVisibleDoc,
+      hasMore,
+    };
   },
 
   async getSessionById(id: string): Promise<Session | null> {
